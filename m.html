@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>今日決策 · 錢往哪流</title>
+  <style>
+    :root {
+      --bg:#0b0f14; --panel:#121821; --panel2:#18202b; --border:#243041;
+      --text:#e8eef7; --muted:#8b9bb0; --accent:#38bdf8; --green:#22c55e;
+      --amber:#fbbf24; --red:#f87171; --violet:#c4b5fd;
+      --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.5;
+      padding-bottom: calc(64px + var(--safe-b));
+      -webkit-tap-highlight-color: transparent;
+    }
+    a { color:var(--accent); text-decoration:none; }
+    .top {
+      position:sticky; top:0; z-index:20;
+      background:rgba(11,15,20,0.92); backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);
+      padding:12px 16px 10px;
+    }
+    .top h1 { margin:0; font-size:1.05rem; }
+    .top .meta { color:var(--muted); font-size:0.75rem; margin-top:2px; }
+    .disc {
+      margin:10px 16px 0; padding:8px 10px; border-radius:10px;
+      background:#1a1520; border:1px solid #4c1d95; color:#ddd6fe; font-size:0.72rem;
+    }
+    .wrap { padding:12px 16px 24px; max-width:720px; margin:0 auto; }
+    .hero {
+      background:var(--panel); border:1px solid var(--border); border-radius:14px;
+      padding:14px; margin-top:12px;
+    }
+    .state {
+      font-size:1.35rem; font-weight:800; margin:4px 0 8px;
+    }
+    .state.repair,.state.push { color:var(--green); }
+    .state.defend,.state.stress { color:var(--red); }
+    .state.mixed { color:var(--accent); }
+    .script {
+      font-size:0.92rem; color:#cbd5e1; margin:0 0 12px;
+      padding:10px; border-radius:10px; background:var(--panel2);
+    }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .stat {
+      background:var(--panel2); border:1px solid var(--border); border-radius:10px;
+      padding:10px 8px; text-align:center;
+    }
+    .stat .l { font-size:0.65rem; color:var(--muted); }
+    .stat .v { font-size:1.2rem; font-weight:700; font-variant-numeric:tabular-nums; }
+    .section { margin-top:18px; }
+    .section h2 {
+      margin:0 0 8px; font-size:0.85rem; color:var(--muted);
+      letter-spacing:0.04em; text-transform:uppercase;
+    }
+    .card {
+      background:var(--panel); border:1px solid var(--border); border-radius:12px;
+      padding:12px; margin-bottom:8px;
+    }
+    .card .row1 { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+    .card .code { font-weight:700; font-size:1rem; }
+    .card .reb { font-variant-numeric:tabular-nums; color:var(--accent); font-size:0.85rem; }
+    .card .name { color:var(--muted); font-size:0.8rem; }
+    .card .action { margin-top:6px; font-size:0.82rem; color:#cbd5e1; }
+    .card.danger { border-color:#7f1d1d; }
+    .card.good { border-color:#166534; }
+    .tag {
+      display:inline-block; font-size:0.65rem; padding:2px 6px; border-radius:4px;
+      background:#1e293b; color:#94a3b8; margin-right:4px;
+    }
+    .tag.sw { background:#052e16; color:#4ade80; }
+    .tag.dist { background:#3f1d1d; color:#fca5a5; }
+    .empty { color:var(--muted); font-size:0.85rem; padding:8px 0; }
+    .links { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+    .links a {
+      display:block; text-align:center; padding:12px 8px; border-radius:12px;
+      background:var(--panel2); border:1px solid var(--border); color:var(--text); font-size:0.85rem;
+    }
+    .nav {
+      position:fixed; left:0; right:0; bottom:0; z-index:30;
+      display:grid; grid-template-columns:repeat(4,1fr);
+      background:rgba(18,24,33,0.96); border-top:1px solid var(--border);
+      padding:6px 4px calc(6px + var(--safe-b));
+    }
+    .nav button {
+      background:none; border:0; color:var(--muted); font-size:0.68rem;
+      padding:6px 2px; cursor:pointer;
+    }
+    .nav button.on { color:var(--accent); }
+    .nav .ico { display:block; font-size:1.05rem; margin-bottom:2px; }
+    .panel { display:none; }
+    .panel.on { display:block; }
+    .digest {
+      white-space:pre-wrap; word-break:break-word; font-size:0.8rem;
+      background:var(--panel); border:1px solid var(--border); border-radius:12px;
+      padding:12px; max-height:60vh; overflow:auto; color:#cbd5e1;
+    }
+    @media (min-width:768px) {
+      .wrap { max-width:900px; padding:16px 24px 32px; }
+      .lists { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+      .lists .section { margin-top:0; }
+      .hero-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h1>今日決策</h1>
+    <div class="meta" id="meta">載入中…</div>
+  </div>
+  <div class="disc">啟發式草案 · 短樣本 ≠ edge · 非投資建議</div>
+
+  <div class="wrap">
+    <div id="panel-today" class="panel on">
+      <div class="hero-grid">
+        <div class="hero">
+          <div class="meta" id="dateLine">—</div>
+          <div class="state mixed" id="macroState">—</div>
+          <p class="script" id="dailyScript">—</p>
+          <div class="stats">
+            <div class="stat"><div class="l">焦點</div><div class="v pos" id="nFocus">—</div></div>
+            <div class="stat"><div class="l">謹慎</div><div class="v" style="color:var(--amber)" id="nCaution">—</div></div>
+            <div class="stat"><div class="l">假動作*</div><div class="v" style="color:var(--red)" id="nFake">—</div></div>
+          </div>
+          <div class="meta" style="margin-top:8px" id="macroHint">—</div>
+        </div>
+        <div class="hero" id="playbookBox">
+          <div class="section" style="margin:0"><h2>作戰劇本</h2></div>
+          <div id="playbookList" class="empty">—</div>
+        </div>
+      </div>
+
+      <div class="lists" style="margin-top:16px">
+        <div class="section">
+          <h2>可跟湯 · focus</h2>
+          <div id="focusList" class="empty">—</div>
+        </div>
+        <div class="section">
+          <h2>躲开 · caution</h2>
+          <div id="cautionList" class="empty">—</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>更多</h2>
+        <div class="links">
+          <a href="./digest.html">制式日報</a>
+          <a href="./action-radar.html">動作雷達</a>
+          <a href="./research.html">策略研究</a>
+          <a href="./">完整桌面版</a>
+        </div>
+        <div class="meta" style="margin-top:8px">*假動作數來自校準事件庫（若有）</div>
+      </div>
+    </div>
+
+    <div id="panel-lists" class="panel">
+      <div class="section">
+        <h2>焦點完整</h2>
+        <div id="focusFull" class="empty">—</div>
+      </div>
+      <div class="section">
+        <h2>謹慎完整</h2>
+        <div id="cautionFull" class="empty">—</div>
+      </div>
+    </div>
+
+    <div id="panel-digest" class="panel">
+      <div class="section">
+        <h2>今日制式日報</h2>
+        <div class="meta" id="digestMeta">—</div>
+        <pre class="digest" id="digestView">載入中…</pre>
+      </div>
+    </div>
+
+    <div id="panel-more" class="panel">
+      <div class="section">
+        <h2>入口</h2>
+        <div class="links">
+          <a href="./">桌面看板</a>
+          <a href="./research.html">NOW/EDGE</a>
+          <a href="./action-radar.html">動作雷達</a>
+          <a href="./HOW_TO_READ.html">怎麼讀</a>
+        </div>
+      </div>
+      <div class="section">
+        <h2>讀法</h2>
+        <div class="card">
+          手機版只回答「今天跟／躲」。圖表與全市場表請用桌面版。
+          iPad 橫屏會自動變雙欄名單。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav" aria-label="底部導航">
+    <button type="button" class="on" data-panel="today"><span class="ico">◎</span>今日</button>
+    <button type="button" data-panel="lists"><span class="ico">☰</span>跟躲</button>
+    <button type="button" data-panel="digest"><span class="ico">▤</span>日報</button>
+    <button type="button" data-panel="more"><span class="ico">…</span>更多</button>
+  </nav>
+
+  <script>
+    const esc = (s) => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const pct = (x) => (x == null || Number.isNaN(+x)) ? "—" : Number(x).toFixed(1) + "%";
+
+    function stockCards(rows, kind, limit) {
+      if (!rows || !rows.length) return '<div class="empty">（無）</div>';
+      return rows.slice(0, limit).map((r) => {
+        const cls = kind === "caution" ? "danger" : "good";
+        const flags = (r.flags || []).slice(0, 3).map((f) => `<span class="tag">${esc(f)}</span>`).join("");
+        return `<div class="card ${cls}">
+          <div class="row1"><span class="code">${esc(r.code)} <span class="name">${esc(r.name||"")}</span></span>
+            <span class="reb">${pct(r.rebound_pct)}</span></div>
+          <div class="name">${esc(r.topic||"")} · ${esc(r.bucket||"")}</div>
+          <div>${flags}</div>
+          <div class="action">${esc(r.suggested_action||"")}</div>
+        </div>`;
+      }).join("");
+    }
+
+    function showPanel(id) {
+      document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.id === "panel-" + id));
+      document.querySelectorAll(".nav button").forEach((b) => b.classList.toggle("on", b.dataset.panel === id));
+      window.scrollTo(0, 0);
+    }
+
+    document.querySelector(".nav").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-panel]");
+      if (b) showPanel(b.dataset.panel);
+    });
+
+    async function boot() {
+      const meta = document.getElementById("meta");
+      try {
+        const [arRes, pbRes, digRes, digMdRes, ftRes] = await Promise.all([
+          fetch("data/action_radar_latest.json", { cache: "no-store" }),
+          fetch("data/playbooks/playbook_v0.json", { cache: "no-store" }),
+          fetch("data/digest_latest.json", { cache: "no-store" }),
+          fetch("data/digest_latest.md", { cache: "no-store" }),
+          fetch("data/validation/fake_thrust_events.json", { cache: "no-store" }),
+        ]);
+        if (!arRes.ok) throw new Error("action_radar HTTP " + arRes.status);
+        const ar = await arRes.json();
+        const pb = pbRes.ok ? await pbRes.json() : null;
+        const dig = digRes.ok ? await digRes.json() : null;
+        const digMd = digMdRes.ok ? await digMdRes.text() : "";
+        let fakeN = "—";
+        if (ftRes.ok) {
+          const ft = await ftRes.json();
+          const ev = ft.events || ft.rows || [];
+          const asof = ar.date;
+          fakeN = String(ev.filter((e) => (e.event_date || e.date) === asof).length || ev.length);
+          if (ev.length && !ev.some((e) => (e.event_date || e.date) === asof)) {
+            fakeN = String(ev.length) + "*";
+          }
+        }
+
+        const macro = ar.macro || {};
+        const st = macro.macro_state || "mixed";
+        const lists = ar.lists || {};
+        const focus = lists.focus_list || [];
+        const caution = lists.caution_list || [];
+
+        meta.textContent = (ar.date || "") + " · " + (ar.engine || "") + " · llm=false";
+        document.getElementById("dateLine").textContent =
+          "資料日 " + (ar.date || "—") + " · 谷底 " + (macro.market_trough_date || "—") +
+          " · 大盤反彈 " + (macro.market_rebound_pct != null ? macro.market_rebound_pct + "%" : "—");
+        const stEl = document.getElementById("macroState");
+        stEl.textContent = "宏觀 · " + st;
+        stEl.className = "state " + st;
+
+        document.getElementById("dailyScript").textContent =
+          (pb && pb.daily_script) || (macro.actions_macro && macro.actions_macro[0] && macro.actions_macro[0].detail) || "—";
+        document.getElementById("nFocus").textContent = focus.length;
+        document.getElementById("nCaution").textContent = caution.length;
+        document.getElementById("nFake").textContent = fakeN;
+        document.getElementById("macroHint").textContent =
+          "risk_off_streak=" + (macro.risk_off_streak ?? "—") +
+          " · foreign_lead_sell=" + String(!!macro.foreign_lead_sell);
+
+        if (pb && pb.playbooks) {
+          document.getElementById("playbookList").innerHTML = pb.playbooks.map((p) => {
+            const danger = String(p.action || "").indexOf("躲開") >= 0;
+            return `<div class="card ${danger ? "danger" : "good"}" style="margin-bottom:6px">
+              <span class="tag ${danger ? "dist" : "sw"}">${esc(p.action)}</span>
+              <strong>${esc(p.name)}</strong>
+              <div class="action" style="margin-top:4px">失效：${esc(p["失效"] || "")}</div>
+            </div>`;
+          }).join("");
+        }
+
+        document.getElementById("focusList").innerHTML = stockCards(focus, "focus", 5);
+        document.getElementById("cautionList").innerHTML = stockCards(caution, "caution", 5);
+        document.getElementById("focusFull").innerHTML = stockCards(focus, "focus", 20);
+        document.getElementById("cautionFull").innerHTML = stockCards(caution, "caution", 20);
+
+        document.getElementById("digestMeta").textContent = dig
+          ? ((dig.date || "") + " · " + (dig.headline || ""))
+          : "尚無日報";
+        document.getElementById("digestView").textContent = digMd || dig?.one_liner || "尚無 digest";
+        document.title = "今日 " + (ar.date || "") + " · 錢往哪流";
+      } catch (e) {
+        meta.textContent = "載入失敗：" + (e && e.message ? e.message : String(e));
+      }
+    }
+    boot();
+  </script>
+</body>
+</html>

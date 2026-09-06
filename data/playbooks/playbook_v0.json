@@ -1,0 +1,101 @@
+{
+  "id": "playbook_v0",
+  "version": "0.1",
+  "generated_at": "2026-09-06T11:33:00+08:00",
+  "status": "draft_short_sample",
+  "disclaimer": "短樣本（約60日）作戰草案 · 非經驗證 edge · 非投資建議。未扣稅佣滑價；需 3–5 年 OOS 後才可升級。",
+  "philosophy": "小資金吃肉喝湯：跟大戶動作，不追第一根高潮；可跟湯／只觀察／躲开 + 寫死失效。",
+  "sample_evidence_asof": "2026-09-04",
+  "base_rate_excess_5d_gt0": 0.4217,
+  "playbooks": [
+    {
+      "id": "avoid_fake_thrust",
+      "name": "躲開 · 假動作",
+      "action": "躲开",
+      "priority": 1,
+      "gate": {
+        "signal": "fake_thrust",
+        "description": "Day0 ret_1d 大＋foreign_flow_z 很高；1–3 日內外資翻空或價格回吐"
+      },
+      "do": [
+        "禁止追高／從觀察名單剔除",
+        "已持有則降倉位假設，勿加碼",
+        "優先對照 exit_watch／處置旗標"
+      ],
+      "dont": [
+        "不要把假動作當短空系統（尚未驗證）",
+        "不要在 N 極小的 mixed 格子找例外當依據"
+      ],
+      "失效": "若確認為洗盤後第二波（second_wave confirmation）且 regime 非 risk_off，改列只觀察——仍不追 Day0",
+      "evidence": {
+        "N_with_excess_5d": 532,
+        "mean_excess_5d": -0.0329,
+        "hit_rate_excess_5d": 0.248,
+        "lift_vs_base_pp": -17.4,
+        "mean_MAE_5d": -0.0652,
+        "note": "全樣本最痛；各主要 regime 均偏负"
+      }
+    },
+    {
+      "id": "mild_soup_leverage_relay",
+      "name": "可跟湯 · 輕推×槓桿接力",
+      "action": "可跟湯",
+      "priority": 2,
+      "gate": {
+        "feature_or_screen": "mild_push_like 或 screens.mild_push",
+        "regime_primary_in": ["leverage_relay"],
+        "regime_watch": ["repair"],
+        "exclude_regime": ["risk_off"],
+        "exclude_if": ["fake_thrust", "exit_watch"]
+      },
+      "do": [
+        "僅在 leverage_relay（及後續驗證的 repair）喝湯",
+        "倉位偏小；持有偏 3–5 日",
+        "與 00981A share_delta／題材加速交叉驗證"
+      ],
+      "dont": [
+        "不要在 risk_off 或多數 inst_push 高潮日加仓",
+        "不要無 regime 門控裸追 mild_push"
+      ],
+      "失效": "跌破訊號日前低；或出現 fake_thrust／exit_watch／regime 轉 risk_off",
+      "evidence": {
+        "filter": "label_mild_push_like ∧ regime=leverage_relay",
+        "N": 518,
+        "mean_excess_5d": 0.0228,
+        "hit_rate_excess_5d": 0.637,
+        "note": "裸 mild_push_like 接近打平；天氣門控後才像样。短樣本。"
+      }
+    },
+    {
+      "id": "second_wave_filter",
+      "name": "只觀察→可跟湯 · 第二波過濾",
+      "action": "只觀察／條件可跟湯",
+      "priority": 3,
+      "gate": {
+        "signal": "second_wave",
+        "exclude_regime": ["risk_off"],
+        "prefer_regime": ["leverage_relay", "hot_money"],
+        "process": "Ignition 第一根不買 → 1–5 日整理 → Confirmation 日再評估"
+      },
+      "do": [
+        "第一根高潮棒預設不進場",
+        "Confirmation 日若非 risk_off，可升為小倉可跟湯",
+        "與 mild_push／題材 breadth 同向加分"
+      ],
+      "dont": [
+        "不要把 second_wave 當聖杯 alpha",
+        "risk_off 下的第二波直接跳過"
+      ],
+      "失效": "跌回止跌／整理區間下沿；或 Confirmation 後出現 fake_thrust",
+      "evidence": {
+        "second_wave_mean_excess_5d": -0.0059,
+        "chase_first_bar_mean_excess_5d": -0.0078,
+        "diff_pp": 0.19,
+        "second_wave_in_risk_off": {"N": 44, "mean_excess_5d": -0.0341, "hit": 0.286},
+        "second_wave_in_leverage_relay": {"N": 19, "mean_excess_5d": 0.0044, "hit": 0.579},
+        "note": "整體仍略低于 base；價值在執行紀律與避開 risk_off，非保證超額。"
+      }
+    }
+  ],
+  "daily_script": "看 regime → 只在 leverage_relay（及驗證中的 repair）從 mild／第二波喝湯 → 任何 fake_thrust 立刻躲開 → 倉位小、寫死失效。"
+}

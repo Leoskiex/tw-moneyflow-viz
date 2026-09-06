@@ -206,6 +206,9 @@
         <span id="dateLabel">—</span>
         <select id="dateSelect" aria-label="選擇日期"></select>
         <button type="button" id="btnNext" title="後一日">&#8250;</button>
+        <a href="./action-radar.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--panel2)">動作雷達</a>
+        <a href="./m.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--panel2)">手機版</a>
+        <a href="./research.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--panel2)">策略研究</a>
         <a href="./HOW_TO_READ.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--panel2)">怎麼讀</a>
         <button type="button" id="btnPlay" title="幻燈片播放">▶ 播放</button>
         <select id="playSpeed" aria-label="播放速度" title="每幀秒數">
@@ -275,6 +278,51 @@
       </div>
       <div class="regime-card" style="max-height:420px;overflow:auto">
         <pre id="digestPreview" style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:0.8rem;color:#cbd5e1;font-family:inherit;line-height:1.55">—</pre>
+      </div>
+    </section>
+
+
+    <section class="regime-section" id="actionRadarSection" aria-label="動作雷達">
+      <h2>動作雷達 Action Radar <span class="hint">純 Python · 止跌／加速／樣本新高 · 非投資建議</span></h2>
+      <div class="sub" id="actionRadarMeta" style="margin-bottom:10px;color:var(--muted);font-size:0.82rem">載入中…</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center">
+        <a id="linkActionRadarPage" href="./action-radar.html" style="color:var(--accent);font-size:0.85rem">開整頁雷達 →</a>
+        <a href="data/action_radar_latest.json" download style="color:var(--accent);font-size:0.85rem">下載 JSON</a>
+      </div>
+      <div class="regime-card" id="actionRadarMacro" style="margin-bottom:12px">
+        <div class="label" style="color:var(--muted);font-size:0.78rem" id="actionRadarStateHint">宏觀</div>
+        <div class="regime-primary" id="actionRadarState" style="font-size:1.15rem">—</div>
+        <ul class="regime-evidence" id="actionRadarActions"></ul>
+      </div>
+      <div class="regime-layout">
+        <div class="card">
+          <h2 style="font-size:1rem;margin:0 0 8px">焦點 focus</h2>
+          <div class="sub">止跌／加速 × mild_push · 非 exit_watch</div>
+          <div class="stock-table-wrap"><table id="actionFocusTable"><thead><tr>
+            <th>代碼</th><th>名稱</th><th>桶</th><th>反彈%</th><th>題材</th><th>建議</th>
+          </tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="card">
+          <h2 style="font-size:1rem;margin:0 0 8px">謹慎 caution</h2>
+          <div class="sub">加速／新高 × exit_watch</div>
+          <div class="stock-table-wrap"><table id="actionCautionTable"><thead><tr>
+            <th>代碼</th><th>名稱</th><th>桶</th><th>反彈%</th><th>題材</th><th>建議</th>
+          </tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+      <div class="regime-layout" style="margin-top:12px">
+        <div class="card">
+          <h2 style="font-size:1rem;margin:0 0 8px">新鮮止跌</h2>
+          <div class="stock-table-wrap"><table id="actionStopTable"><thead><tr>
+            <th>代碼</th><th>名稱</th><th>反彈%</th><th>止跌日</th><th>建議</th>
+          </tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="card">
+          <h2 style="font-size:1rem;margin:0 0 8px">加速修復</h2>
+          <div class="stock-table-wrap"><table id="actionAccelTable"><thead><tr>
+            <th>代碼</th><th>名稱</th><th>反彈%</th><th>加速日</th><th>建議</th>
+          </tr></thead><tbody></tbody></table></div>
+        </div>
       </div>
     </section>
 

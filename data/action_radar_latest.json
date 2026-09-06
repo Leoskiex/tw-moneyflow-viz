@@ -1,0 +1,2731 @@
+{
+  "date": "2026-09-04",
+  "generated_at": "2026-09-06T10:36:14+08:00",
+  "engine": "build_action_radar.v1",
+  "llm": false,
+  "disclaimer": "啟發式動作雷達 · 純 Python 規則 · 非預測 · 非投資建議。請與 mild_push／exit_watch／00981A 交叉驗證，勿隔日追單。",
+  "meta": {
+    "sample_start": "2026-03-25",
+    "sample_end": "2026-09-04",
+    "n_dates": 113,
+    "n_series": 1088,
+    "n_bucketed": 775,
+    "rules": {
+      "macro": {
+        "defend": "risk_off_streak>=2 或 (latest risk_off 且 foreign<-300)",
+        "stress": "regulatory 且 (foreign<-150 或 notice/disp 偏高)",
+        "repair": "近15日有 risk_off，且最新為 inst_push/leverage_relay 且 advance>decline",
+        "push": "inst_push 且 foreign>80",
+        "foreign_lead_sell": "近5日任一日 foreign<=-200 且 (advance-decline)>-100"
+      },
+      "stock": {
+        "trough": "樣本內最低收盤",
+        "stop_fall": "谷底後首次收盤 > 前3日收盤最高",
+        "accel": "止跌後10日內：5日漲幅>=8% 或 收盤>=谷底*1.12",
+        "fresh_stop": "止跌日在近5日 且 0<=反彈%<25",
+        "accel_now": "加速日在近5日 且 反彈%>=12",
+        "sample_high": "最新收盤=樣本最高 且 反彈%>=15",
+        "extended": "反彈%>=80"
+      }
+    },
+    "screens_date": "2026-09-04",
+    "etf_date": "2026-09-04",
+    "market_trough_date": "2026-07-30"
+  },
+  "macro": {
+    "macro_state": "repair",
+    "risk_off_streak": 0,
+    "foreign_lead_sell": false,
+    "actions_macro": [
+      {
+        "id": "wait_breadth_confirm",
+        "title": "修復確認",
+        "detail": "風險規避後出現機構推動／槓桿接力且漲跌家數轉多：可看止跌／加速名單，仍忌追高。",
+        "urgency": "med"
+      },
+      {
+        "id": "tilt_to_inflow_themes",
+        "title": "對流入題材",
+        "detail": "交叉 mild_push 與新鮮止跌／加速；設失效＝跌回止跌日前低。",
+        "urgency": "med"
+      }
+    ],
+    "latest_primary": "inst_push",
+    "latest_primary_label": "機構推動",
+    "latest_foreign": 573.58,
+    "latest_advance": 762.0,
+    "latest_decline": 210.0,
+    "market_trough_date": "2026-07-30",
+    "market_rebound_pct": 16.57
+  },
+  "lists": {
+    "fresh_stop": [
+      {
+        "code": "9925",
+        "name": "新保",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 0.64,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-01",
+          "谷底 2026-08-31 反彈 0.64%"
+        ],
+        "inst_net": -0.841
+      },
+      {
+        "code": "1476",
+        "name": "儒鴻",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.29,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-01",
+          "谷底 2026-08-31 反彈 1.29%"
+        ],
+        "inst_net": 0.304
+      },
+      {
+        "code": "1210",
+        "name": "大成",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.56,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-08-31 反彈 1.56%"
+        ],
+        "inst_net": 0.224
+      },
+      {
+        "code": "5531",
+        "name": "鄉林",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.66,
+        "trough_date": "2026-09-02",
+        "stop_fall_date": "2026-09-03",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-03",
+          "谷底 2026-09-02 反彈 1.66%"
+        ],
+        "inst_net": -0.104
+      },
+      {
+        "code": "2505",
+        "name": "國揚",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.18,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-08-31 反彈 1.18%"
+        ],
+        "inst_net": 0.101
+      },
+      {
+        "code": "2548",
+        "name": "華固",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.83,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-03",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-03",
+          "谷底 2026-08-31 反彈 1.83%"
+        ],
+        "inst_net": 0.093
+      },
+      {
+        "code": "2538",
+        "name": "基泰",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 0.91,
+        "trough_date": "2026-09-02",
+        "stop_fall_date": "2026-09-03",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-03",
+          "谷底 2026-09-02 反彈 0.91%"
+        ],
+        "inst_net": -0.052
+      },
+      {
+        "code": "1531",
+        "name": "高林股",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 2.55,
+        "trough_date": "2026-09-02",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-09-02 反彈 2.55%"
+        ],
+        "inst_net": 0.023
+      },
+      {
+        "code": "5522",
+        "name": "遠雄",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 3.73,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-02",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-02",
+          "谷底 2026-08-31 反彈 3.73%"
+        ],
+        "inst_net": 0.017
+      },
+      {
+        "code": "2227",
+        "name": "裕日車",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 0.53,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-01",
+          "谷底 2026-08-31 反彈 0.53%"
+        ],
+        "inst_net": 0.013
+      },
+      {
+        "code": "6988",
+        "name": "威力暘-創",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 4.87,
+        "trough_date": "2026-09-02",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-09-02 反彈 4.87%"
+        ],
+        "inst_net": -0.012
+      },
+      {
+        "code": "2373",
+        "name": "震旦行",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 0.57,
+        "trough_date": "2026-09-02",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-09-02 反彈 0.57%"
+        ],
+        "inst_net": 0.012
+      },
+      {
+        "code": "1410",
+        "name": "南染",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.03,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-01",
+          "谷底 2026-08-31 反彈 1.03%"
+        ],
+        "inst_net": 0.011
+      },
+      {
+        "code": "8482",
+        "name": "商億-KY",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 4.64,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-01",
+          "谷底 2026-08-31 反彈 4.64%"
+        ],
+        "inst_net": 0.01
+      },
+      {
+        "code": "6115",
+        "name": "鎰勝",
+        "topic": "連接器",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.95,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-01",
+          "谷底 2026-08-31 反彈 1.95%"
+        ],
+        "inst_net": -0.006
+      },
+      {
+        "code": "2712",
+        "name": "遠雄來",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.76,
+        "trough_date": "2026-09-03",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-09-03 反彈 1.76%"
+        ],
+        "inst_net": 0.006
+      },
+      {
+        "code": "6655",
+        "name": "科定",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 3.07,
+        "trough_date": "2026-09-02",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-09-02 反彈 3.07%"
+        ],
+        "inst_net": 0.005
+      },
+      {
+        "code": "7818",
+        "name": "溢泰實業",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 0.83,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-03",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-03",
+          "谷底 2026-08-31 反彈 0.83%"
+        ],
+        "inst_net": -0.005
+      },
+      {
+        "code": "6201",
+        "name": "亞弘電",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 0.79,
+        "trough_date": "2026-09-01",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-09-01 反彈 0.79%"
+        ],
+        "inst_net": -0.005
+      },
+      {
+        "code": "7736",
+        "name": "虎山",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 1.02,
+        "trough_date": "2026-09-01",
+        "stop_fall_date": "2026-09-03",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-03",
+          "谷底 2026-09-01 反彈 1.02%"
+        ],
+        "inst_net": -0.001
+      },
+      {
+        "code": "4581",
+        "name": "光隆精密-KY",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 0.95,
+        "trough_date": "2026-08-31",
+        "stop_fall_date": "2026-09-02",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-02",
+          "谷底 2026-08-31 反彈 0.95%"
+        ],
+        "inst_net": 0.001
+      },
+      {
+        "code": "2496",
+        "name": "卓越",
+        "topic": "未對應",
+        "bucket": "fresh_stop",
+        "rebound_pct": 0.92,
+        "trough_date": "2026-08-27",
+        "stop_fall_date": "2026-09-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "止跌觀察：尚無 mild_push，先列入觀察不擴大假設",
+        "why": [
+          "止跌 2026-09-04",
+          "谷底 2026-08-27 反彈 0.92%"
+        ],
+        "inst_net": 0.0
+      }
+    ],
+    "accel_now": [],
+    "sample_high": [
+      {
+        "code": "3231",
+        "name": "緯創",
+        "topic": "AI 伺服器組裝",
+        "bucket": "sample_high",
+        "rebound_pct": 61.63,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": "2026-04-09",
+        "sample_ath": true,
+        "flags": [
+          "heavy_push"
+        ],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-04-08",
+          "加速 2026-04-09",
+          "樣本新高",
+          "谷底 2026-03-31 反彈 61.63%"
+        ],
+        "inst_net": 27.727
+      },
+      {
+        "code": "2892",
+        "name": "第一金",
+        "topic": "銀行金融",
+        "bucket": "sample_high",
+        "rebound_pct": 36.88,
+        "trough_date": "2026-05-28",
+        "stop_fall_date": "2026-06-01",
+        "accel_date": "2026-06-04",
+        "sample_ath": true,
+        "flags": [
+          "heavy_push"
+        ],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-06-01",
+          "加速 2026-06-04",
+          "樣本新高",
+          "谷底 2026-05-28 反彈 36.88%"
+        ],
+        "inst_net": 15.733
+      },
+      {
+        "code": "2884",
+        "name": "玉山金",
+        "topic": "銀行金融",
+        "bucket": "sample_high",
+        "rebound_pct": 41.86,
+        "trough_date": "2026-05-28",
+        "stop_fall_date": "2026-06-01",
+        "accel_date": "2026-06-04",
+        "sample_ath": true,
+        "flags": [
+          "heavy_push"
+        ],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-06-01",
+          "加速 2026-06-04",
+          "樣本新高",
+          "谷底 2026-05-28 反彈 41.86%"
+        ],
+        "inst_net": 12.74
+      },
+      {
+        "code": "2881",
+        "name": "富邦金",
+        "topic": "銀行金融",
+        "bucket": "sample_high",
+        "rebound_pct": 75.0,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-04-01",
+          "樣本新高",
+          "谷底 2026-03-31 反彈 75.0%"
+        ],
+        "inst_net": 3.408
+      },
+      {
+        "code": "2801",
+        "name": "彰銀",
+        "topic": "銀行金融",
+        "bucket": "sample_high",
+        "rebound_pct": 32.67,
+        "trough_date": "2026-05-28",
+        "stop_fall_date": "2026-05-29",
+        "accel_date": "2026-06-09",
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-05-29",
+          "加速 2026-06-09",
+          "樣本新高",
+          "谷底 2026-05-28 反彈 32.67%"
+        ],
+        "inst_net": -2.594
+      },
+      {
+        "code": "2606",
+        "name": "裕民",
+        "topic": "離岸風電",
+        "bucket": "sample_high",
+        "rebound_pct": 36.47,
+        "trough_date": "2026-03-30",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": "2026-04-17",
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-04-01",
+          "加速 2026-04-17",
+          "樣本新高",
+          "谷底 2026-03-30 反彈 36.47%"
+        ],
+        "inst_net": -1.013
+      },
+      {
+        "code": "3017",
+        "name": "奇鋐",
+        "topic": "液冷散熱",
+        "bucket": "sample_high",
+        "rebound_pct": 79.4,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": "2026-04-08",
+        "sample_ath": true,
+        "flags": [
+          "00981A:7.51%"
+        ],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-04-08",
+          "加速 2026-04-08",
+          "樣本新高",
+          "谷底 2026-03-31 反彈 79.4%"
+        ],
+        "inst_net": 0.955
+      },
+      {
+        "code": "2890",
+        "name": "永豐金",
+        "topic": "銀行金融",
+        "bucket": "sample_high",
+        "rebound_pct": 48.01,
+        "trough_date": "2026-05-25",
+        "stop_fall_date": "2026-05-27",
+        "accel_date": "2026-06-03",
+        "sample_ath": true,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-05-27",
+          "加速 2026-06-03",
+          "樣本新高",
+          "谷底 2026-05-25 反彈 48.01%"
+        ],
+        "inst_net": 0.92
+      },
+      {
+        "code": "2520",
+        "name": "冠德",
+        "topic": "未對應",
+        "bucket": "sample_high",
+        "rebound_pct": 29.04,
+        "trough_date": "2026-05-05",
+        "stop_fall_date": "2026-05-07",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-05-07",
+          "樣本新高",
+          "谷底 2026-05-05 反彈 29.04%"
+        ],
+        "inst_net": -0.406
+      },
+      {
+        "code": "3023",
+        "name": "信邦",
+        "topic": "連接器",
+        "bucket": "sample_high",
+        "rebound_pct": 37.65,
+        "trough_date": "2026-03-26",
+        "stop_fall_date": "2026-03-27",
+        "accel_date": "2026-04-09",
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-03-27",
+          "加速 2026-04-09",
+          "樣本新高",
+          "谷底 2026-03-26 反彈 37.65%"
+        ],
+        "inst_net": 0.352
+      },
+      {
+        "code": "6214",
+        "name": "精誠",
+        "topic": "資安防護",
+        "bucket": "sample_high",
+        "rebound_pct": 76.67,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-07",
+        "accel_date": "2026-04-09",
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-04-07",
+          "加速 2026-04-09",
+          "樣本新高",
+          "谷底 2026-03-31 反彈 76.67%"
+        ],
+        "inst_net": 0.325
+      },
+      {
+        "code": "2033",
+        "name": "佳大",
+        "topic": "未對應",
+        "bucket": "sample_high",
+        "rebound_pct": 78.42,
+        "trough_date": "2026-07-17",
+        "stop_fall_date": "2026-07-21",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-07-21",
+          "樣本新高",
+          "谷底 2026-07-17 反彈 78.42%"
+        ],
+        "inst_net": -0.298
+      },
+      {
+        "code": "2617",
+        "name": "台航",
+        "topic": "散裝航運",
+        "bucket": "sample_high",
+        "rebound_pct": 15.48,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-08-03",
+          "樣本新高",
+          "谷底 2026-07-30 反彈 15.48%"
+        ],
+        "inst_net": 0.208
+      },
+      {
+        "code": "2816",
+        "name": "旺旺保",
+        "topic": "銀行金融",
+        "bucket": "sample_high",
+        "rebound_pct": 33.33,
+        "trough_date": "2026-05-06",
+        "stop_fall_date": "2026-05-08",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-05-08",
+          "樣本新高",
+          "谷底 2026-05-06 反彈 33.33%"
+        ],
+        "inst_net": 0.166
+      },
+      {
+        "code": "2845",
+        "name": "遠東銀",
+        "topic": "未對應",
+        "bucket": "sample_high",
+        "rebound_pct": 15.19,
+        "trough_date": "2026-05-29",
+        "stop_fall_date": "2026-06-01",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-06-01",
+          "樣本新高",
+          "谷底 2026-05-29 反彈 15.19%"
+        ],
+        "inst_net": 0.086
+      },
+      {
+        "code": "1459",
+        "name": "聯發",
+        "topic": "未對應",
+        "bucket": "sample_high",
+        "rebound_pct": 36.09,
+        "trough_date": "2026-06-26",
+        "stop_fall_date": "2026-06-30",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-06-30",
+          "樣本新高",
+          "谷底 2026-06-26 反彈 36.09%"
+        ],
+        "inst_net": 0.015
+      },
+      {
+        "code": "1558",
+        "name": "伸興",
+        "topic": "未對應",
+        "bucket": "sample_high",
+        "rebound_pct": 19.39,
+        "trough_date": "2026-07-28",
+        "stop_fall_date": "2026-07-29",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-07-29",
+          "樣本新高",
+          "谷底 2026-07-28 反彈 19.39%"
+        ],
+        "inst_net": 0.004
+      }
+    ],
+    "washout_stop": [
+      {
+        "code": "3045",
+        "name": "台灣大",
+        "topic": "電信與媒體",
+        "bucket": "washout_stop",
+        "rebound_pct": 9.26,
+        "trough_date": "2026-08-14",
+        "stop_fall_date": "2026-08-17",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-17",
+          "谷底 2026-08-14 反彈 9.26%"
+        ],
+        "inst_net": 2.449
+      },
+      {
+        "code": "3036",
+        "name": "文曄",
+        "topic": "IC 通路",
+        "bucket": "washout_stop",
+        "rebound_pct": 4.9,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": "2026-08-04",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-07-31",
+          "加速 2026-08-04",
+          "谷底 2026-07-30 反彈 4.9%"
+        ],
+        "inst_net": -2.439
+      },
+      {
+        "code": "2498",
+        "name": "宏達電",
+        "topic": "AR/VR/XR 光學",
+        "bucket": "washout_stop",
+        "rebound_pct": 9.91,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-07-31",
+          "谷底 2026-07-30 反彈 9.91%"
+        ],
+        "inst_net": -2.071
+      },
+      {
+        "code": "2104",
+        "name": "國際中橡",
+        "topic": "石化與塑橡膠",
+        "bucket": "washout_stop",
+        "rebound_pct": 7.97,
+        "trough_date": "2026-08-03",
+        "stop_fall_date": "2026-08-05",
+        "accel_date": "2026-08-10",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-05",
+          "加速 2026-08-10",
+          "谷底 2026-08-03 反彈 7.97%"
+        ],
+        "inst_net": -0.977
+      },
+      {
+        "code": "1102",
+        "name": "亞泥",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 10.73,
+        "trough_date": "2026-08-13",
+        "stop_fall_date": "2026-08-14",
+        "accel_date": "2026-08-20",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-14",
+          "加速 2026-08-20",
+          "谷底 2026-08-13 反彈 10.73%"
+        ],
+        "inst_net": -0.918
+      },
+      {
+        "code": "2515",
+        "name": "中工",
+        "topic": "水資源工程",
+        "bucket": "washout_stop",
+        "rebound_pct": 4.29,
+        "trough_date": "2026-07-29",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-07-31",
+          "谷底 2026-07-29 反彈 4.29%"
+        ],
+        "inst_net": 0.851
+      },
+      {
+        "code": "9904",
+        "name": "寶成",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 4.9,
+        "trough_date": "2026-08-05",
+        "stop_fall_date": "2026-08-07",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-07",
+          "谷底 2026-08-05 反彈 4.9%"
+        ],
+        "inst_net": -0.702
+      },
+      {
+        "code": "1305",
+        "name": "華夏",
+        "topic": "石化與塑橡膠",
+        "bucket": "washout_stop",
+        "rebound_pct": 12.96,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-04",
+          "谷底 2026-07-30 反彈 12.96%"
+        ],
+        "inst_net": -0.669
+      },
+      {
+        "code": "1304",
+        "name": "台聚",
+        "topic": "石化與塑橡膠",
+        "bucket": "washout_stop",
+        "rebound_pct": 11.76,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-04",
+        "accel_date": "2026-08-10",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-04",
+          "加速 2026-08-10",
+          "谷底 2026-07-30 反彈 11.76%"
+        ],
+        "inst_net": -0.592
+      },
+      {
+        "code": "6120",
+        "name": "達運",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 6.03,
+        "trough_date": "2026-07-29",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": "2026-08-04",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-07-31",
+          "加速 2026-08-04",
+          "谷底 2026-07-29 反彈 6.03%"
+        ],
+        "inst_net": -0.551
+      },
+      {
+        "code": "9907",
+        "name": "統一實",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 5.9,
+        "trough_date": "2026-08-06",
+        "stop_fall_date": "2026-08-10",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-10",
+          "谷底 2026-08-06 反彈 5.9%"
+        ],
+        "inst_net": -0.469
+      },
+      {
+        "code": "2010",
+        "name": "春源",
+        "topic": "鋼鐵與特鋼",
+        "bucket": "washout_stop",
+        "rebound_pct": 8.15,
+        "trough_date": "2026-07-20",
+        "stop_fall_date": "2026-07-27",
+        "accel_date": "2026-08-07",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-07-27",
+          "加速 2026-08-07",
+          "谷底 2026-07-20 反彈 8.15%"
+        ],
+        "inst_net": -0.44
+      },
+      {
+        "code": "1218",
+        "name": "泰山",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 1.4,
+        "trough_date": "2026-08-19",
+        "stop_fall_date": "2026-08-20",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-20",
+          "谷底 2026-08-19 反彈 1.4%"
+        ],
+        "inst_net": 0.387
+      },
+      {
+        "code": "1514",
+        "name": "亞力",
+        "topic": "電器電纜",
+        "bucket": "washout_stop",
+        "rebound_pct": 10.87,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-04",
+        "accel_date": "2026-08-06",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-04",
+          "加速 2026-08-06",
+          "谷底 2026-07-30 反彈 10.87%"
+        ],
+        "inst_net": 0.382
+      },
+      {
+        "code": "2501",
+        "name": "國建",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 4.4,
+        "trough_date": "2026-07-14",
+        "stop_fall_date": "2026-07-23",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-07-23",
+          "谷底 2026-07-14 反彈 4.4%"
+        ],
+        "inst_net": -0.329
+      },
+      {
+        "code": "2014",
+        "name": "中鴻",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 2.41,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-04",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-04",
+          "谷底 2026-07-30 反彈 2.41%"
+        ],
+        "inst_net": -0.326
+      },
+      {
+        "code": "1316",
+        "name": "上曜",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 10.42,
+        "trough_date": "2026-07-29",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-17",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-17",
+          "谷底 2026-07-29 反彈 10.42%"
+        ],
+        "inst_net": -0.295
+      },
+      {
+        "code": "2939",
+        "name": "永邑-KY",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 9.89,
+        "trough_date": "2026-08-05",
+        "stop_fall_date": "2026-08-07",
+        "accel_date": "2026-08-11",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-07",
+          "加速 2026-08-11",
+          "谷底 2026-08-05 反彈 9.89%"
+        ],
+        "inst_net": -0.283
+      },
+      {
+        "code": "8422",
+        "name": "可寧衛*",
+        "topic": "電子廢料回收",
+        "bucket": "washout_stop",
+        "rebound_pct": 7.19,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-03",
+          "谷底 2026-07-30 反彈 7.19%"
+        ],
+        "inst_net": -0.266
+      },
+      {
+        "code": "5521",
+        "name": "工信",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 10.42,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-17",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-17",
+          "谷底 2026-07-30 反彈 10.42%"
+        ],
+        "inst_net": -0.248
+      },
+      {
+        "code": "3703",
+        "name": "欣陸",
+        "topic": "水資源工程",
+        "bucket": "washout_stop",
+        "rebound_pct": 3.09,
+        "trough_date": "2026-08-18",
+        "stop_fall_date": "2026-08-20",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-20",
+          "谷底 2026-08-18 反彈 3.09%"
+        ],
+        "inst_net": 0.214
+      },
+      {
+        "code": "6191",
+        "name": "精成科",
+        "topic": "PCB 硬板",
+        "bucket": "washout_stop",
+        "rebound_pct": 6.59,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-06",
+        "sample_ath": false,
+        "flags": [
+          "00981A:0.12%"
+        ],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-06",
+          "谷底 2026-07-30 反彈 6.59%"
+        ],
+        "inst_net": 0.21
+      },
+      {
+        "code": "2528",
+        "name": "皇普",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 5.74,
+        "trough_date": "2026-08-04",
+        "stop_fall_date": "2026-08-05",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-05",
+          "谷底 2026-08-04 反彈 5.74%"
+        ],
+        "inst_net": 0.193
+      },
+      {
+        "code": "2903",
+        "name": "遠百",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 3.24,
+        "trough_date": "2026-08-17",
+        "stop_fall_date": "2026-08-19",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-08-19",
+          "谷底 2026-08-17 反彈 3.24%"
+        ],
+        "inst_net": -0.187
+      },
+      {
+        "code": "6962",
+        "name": "奕力-KY",
+        "topic": "未對應",
+        "bucket": "washout_stop",
+        "rebound_pct": 10.17,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": "2026-08-06",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "大盤谷底附近止跌：對照題材淨額，等加速確認",
+        "why": [
+          "止跌 2026-07-31",
+          "加速 2026-08-06",
+          "谷底 2026-07-30 反彈 10.17%"
+        ],
+        "inst_net": 0.17
+      }
+    ],
+    "washout_accel": [
+      {
+        "code": "6770",
+        "name": "力積電",
+        "topic": "晶圓代工",
+        "bucket": "washout_accel",
+        "rebound_pct": 38.24,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-04",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-04",
+          "谷底 2026-07-30 反彈 38.24%"
+        ],
+        "inst_net": -16.942
+      },
+      {
+        "code": "2313",
+        "name": "華通",
+        "topic": "智慧型手機",
+        "bucket": "washout_accel",
+        "rebound_pct": 62.01,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [
+          "00981A:0.04%"
+        ],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 62.01%"
+        ],
+        "inst_net": 5.301
+      },
+      {
+        "code": "2449",
+        "name": "京元電子",
+        "topic": "HBM",
+        "bucket": "washout_accel",
+        "rebound_pct": 28.75,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [
+          "00981A:1.19%"
+        ],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 28.75%"
+        ],
+        "inst_net": -4.922
+      },
+      {
+        "code": "1717",
+        "name": "長興",
+        "topic": "AI 先進封裝",
+        "bucket": "washout_accel",
+        "rebound_pct": 38.87,
+        "trough_date": "2026-07-29",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "洗盤後加速但 exit_watch：降低假設",
+        "why": [
+          "止跌 2026-07-31",
+          "加速 2026-08-03",
+          "谷底 2026-07-29 反彈 38.87%"
+        ],
+        "inst_net": -4.797
+      },
+      {
+        "code": "5608",
+        "name": "四維航",
+        "topic": "散裝航運",
+        "bucket": "washout_accel",
+        "rebound_pct": 33.33,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-17",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-17",
+          "谷底 2026-07-30 反彈 33.33%"
+        ],
+        "inst_net": -2.199
+      },
+      {
+        "code": "4906",
+        "name": "正文",
+        "topic": "交換器與網通",
+        "bucket": "washout_accel",
+        "rebound_pct": 27.46,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 27.46%"
+        ],
+        "inst_net": 1.91
+      },
+      {
+        "code": "2337",
+        "name": "旺宏",
+        "topic": "利基記憶體",
+        "bucket": "washout_accel",
+        "rebound_pct": 32.35,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 32.35%"
+        ],
+        "inst_net": 1.786
+      },
+      {
+        "code": "1802",
+        "name": "台玻",
+        "topic": "玻璃基板",
+        "bucket": "washout_accel",
+        "rebound_pct": 38.73,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-04",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-04",
+          "谷底 2026-07-30 反彈 38.73%"
+        ],
+        "inst_net": -1.641
+      },
+      {
+        "code": "2034",
+        "name": "允強",
+        "topic": "未對應",
+        "bucket": "washout_accel",
+        "rebound_pct": 14.67,
+        "trough_date": "2026-07-31",
+        "stop_fall_date": "2026-08-04",
+        "accel_date": "2026-08-07",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-04",
+          "加速 2026-08-07",
+          "谷底 2026-07-31 反彈 14.67%"
+        ],
+        "inst_net": 1.398
+      },
+      {
+        "code": "2368",
+        "name": "金像電",
+        "topic": "低軌衛星",
+        "bucket": "washout_accel",
+        "rebound_pct": 44.94,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [
+          "00981A:0.08%"
+        ],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 44.94%"
+        ],
+        "inst_net": -1.375
+      },
+      {
+        "code": "4526",
+        "name": "東台",
+        "topic": "CNC 工具機",
+        "bucket": "washout_accel",
+        "rebound_pct": 26.98,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-04",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-04",
+          "谷底 2026-07-30 反彈 26.98%"
+        ],
+        "inst_net": -1.371
+      },
+      {
+        "code": "3019",
+        "name": "亞光",
+        "topic": "光學鏡頭",
+        "bucket": "washout_accel",
+        "rebound_pct": 21.43,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": "2026-08-05",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-07-31",
+          "加速 2026-08-05",
+          "谷底 2026-07-30 反彈 21.43%"
+        ],
+        "inst_net": -1.344
+      },
+      {
+        "code": "4956",
+        "name": "光鋐",
+        "topic": "未對應",
+        "bucket": "washout_accel",
+        "rebound_pct": 55.26,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 55.26%"
+        ],
+        "inst_net": 1.199
+      },
+      {
+        "code": "3591",
+        "name": "艾笛森",
+        "topic": "未對應",
+        "bucket": "washout_accel",
+        "rebound_pct": 37.95,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": "2026-08-04",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-07-31",
+          "加速 2026-08-04",
+          "谷底 2026-07-30 反彈 37.95%"
+        ],
+        "inst_net": 0.957
+      },
+      {
+        "code": "3380",
+        "name": "明泰",
+        "topic": "交換器與網通",
+        "bucket": "washout_accel",
+        "rebound_pct": 15.83,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 15.83%"
+        ],
+        "inst_net": 0.82
+      },
+      {
+        "code": "3715",
+        "name": "定穎投控",
+        "topic": "PCB 硬板",
+        "bucket": "washout_accel",
+        "rebound_pct": 29.81,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 29.81%"
+        ],
+        "inst_net": -0.814
+      },
+      {
+        "code": "6153",
+        "name": "嘉聯益",
+        "topic": "智慧型手機",
+        "bucket": "washout_accel",
+        "rebound_pct": 30.74,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-04",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-04",
+          "谷底 2026-07-30 反彈 30.74%"
+        ],
+        "inst_net": 0.81
+      },
+      {
+        "code": "2369",
+        "name": "菱生",
+        "topic": "封測代工",
+        "bucket": "washout_accel",
+        "rebound_pct": 15.43,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 15.43%"
+        ],
+        "inst_net": 0.81
+      },
+      {
+        "code": "2367",
+        "name": "燿華",
+        "topic": "低軌衛星",
+        "bucket": "washout_accel",
+        "rebound_pct": 29.04,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 29.04%"
+        ],
+        "inst_net": 0.758
+      },
+      {
+        "code": "2413",
+        "name": "環科",
+        "topic": "未對應",
+        "bucket": "washout_accel",
+        "rebound_pct": 32.37,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 32.37%"
+        ],
+        "inst_net": 0.678
+      },
+      {
+        "code": "6168",
+        "name": "宏齊",
+        "topic": "未對應",
+        "bucket": "washout_accel",
+        "rebound_pct": 46.72,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 46.72%"
+        ],
+        "inst_net": -0.668
+      },
+      {
+        "code": "6443",
+        "name": "元晶",
+        "topic": "太陽能",
+        "bucket": "washout_accel",
+        "rebound_pct": 12.13,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 12.13%"
+        ],
+        "inst_net": 0.657
+      },
+      {
+        "code": "1319",
+        "name": "東陽",
+        "topic": "汽車精密件",
+        "bucket": "washout_accel",
+        "rebound_pct": 17.83,
+        "trough_date": "2026-07-28",
+        "stop_fall_date": "2026-08-04",
+        "accel_date": "2026-08-10",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-04",
+          "加速 2026-08-10",
+          "谷底 2026-07-28 反彈 17.83%"
+        ],
+        "inst_net": 0.644
+      },
+      {
+        "code": "1711",
+        "name": "永光",
+        "topic": "前段製程材料",
+        "bucket": "washout_accel",
+        "rebound_pct": 44.86,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-04",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-04",
+          "谷底 2026-07-30 反彈 44.86%"
+        ],
+        "inst_net": 0.638
+      },
+      {
+        "code": "3049",
+        "name": "精金",
+        "topic": "未對應",
+        "bucket": "washout_accel",
+        "rebound_pct": 37.19,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-08-03",
+        "accel_date": "2026-08-05",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "洗盤後加速：對照外資／投信是否續買",
+        "why": [
+          "止跌 2026-08-03",
+          "加速 2026-08-05",
+          "谷底 2026-07-30 反彈 37.19%"
+        ],
+        "inst_net": 0.633
+      }
+    ],
+    "repairing": [
+      {
+        "code": "2317",
+        "name": "鴻海",
+        "topic": "AI 伺服器組裝",
+        "bucket": "repairing",
+        "rebound_pct": 36.53,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": "2026-04-14",
+        "sample_ath": false,
+        "flags": [
+          "heavy_push",
+          "00981A:0.00%"
+        ],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-08",
+          "加速 2026-04-14",
+          "谷底 2026-03-31 反彈 36.53%"
+        ],
+        "inst_net": 28.923
+      },
+      {
+        "code": "2834",
+        "name": "臺企銀",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 13.33,
+        "trough_date": "2026-03-30",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-01",
+          "谷底 2026-03-30 反彈 13.33%"
+        ],
+        "inst_net": -19.938
+      },
+      {
+        "code": "2886",
+        "name": "兆豐金",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 28.87,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-02",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "heavy_push"
+        ],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-02",
+          "谷底 2026-03-31 反彈 28.87%"
+        ],
+        "inst_net": 15.878
+      },
+      {
+        "code": "2353",
+        "name": "宏碁",
+        "topic": "PC 與平板",
+        "bucket": "repairing",
+        "rebound_pct": 21.11,
+        "trough_date": "2026-03-30",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "heavy_push"
+        ],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-08",
+          "谷底 2026-03-30 反彈 21.11%"
+        ],
+        "inst_net": 15.056
+      },
+      {
+        "code": "2382",
+        "name": "廣達",
+        "topic": "AI 伺服器組裝",
+        "bucket": "repairing",
+        "rebound_pct": 23.88,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": "2026-04-08",
+        "sample_ath": false,
+        "flags": [
+          "heavy_push",
+          "00981A:0.00%"
+        ],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-01",
+          "加速 2026-04-08",
+          "谷底 2026-03-31 反彈 23.88%"
+        ],
+        "inst_net": 13.164
+      },
+      {
+        "code": "4938",
+        "name": "和碩",
+        "topic": "PC 與平板",
+        "bucket": "repairing",
+        "rebound_pct": 25.2,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-08",
+          "谷底 2026-03-31 反彈 25.2%"
+        ],
+        "inst_net": 9.674
+      },
+      {
+        "code": "5880",
+        "name": "合庫金",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 17.66,
+        "trough_date": "2026-05-25",
+        "stop_fall_date": "2026-05-27",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-05-27",
+          "谷底 2026-05-25 反彈 17.66%"
+        ],
+        "inst_net": 7.932
+      },
+      {
+        "code": "2603",
+        "name": "長榮",
+        "topic": "貨櫃航運",
+        "bucket": "repairing",
+        "rebound_pct": 28.73,
+        "trough_date": "2026-06-26",
+        "stop_fall_date": "2026-07-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-07-01",
+          "谷底 2026-06-26 反彈 28.73%"
+        ],
+        "inst_net": -7.002
+      },
+      {
+        "code": "2891",
+        "name": "中信金",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 33.33,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": "2026-04-08",
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-01",
+          "加速 2026-04-08",
+          "谷底 2026-03-31 反彈 33.33%"
+        ],
+        "inst_net": 6.842
+      },
+      {
+        "code": "2889",
+        "name": "國票金",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 14.88,
+        "trough_date": "2026-04-27",
+        "stop_fall_date": "2026-04-29",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-29",
+          "谷底 2026-04-27 反彈 14.88%"
+        ],
+        "inst_net": 6.745
+      },
+      {
+        "code": "1101",
+        "name": "台泥",
+        "topic": "BBU 電池備援",
+        "bucket": "repairing",
+        "rebound_pct": 9.09,
+        "trough_date": "2026-03-30",
+        "stop_fall_date": "2026-03-31",
+        "accel_date": "2026-04-08",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-03-31",
+          "加速 2026-04-08",
+          "谷底 2026-03-30 反彈 9.09%"
+        ],
+        "inst_net": -4.83
+      },
+      {
+        "code": "2352",
+        "name": "佳世達",
+        "topic": "PC 與平板",
+        "bucket": "repairing",
+        "rebound_pct": 28.57,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": "2026-04-17",
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-08",
+          "加速 2026-04-17",
+          "谷底 2026-03-31 反彈 28.57%"
+        ],
+        "inst_net": 4.234
+      },
+      {
+        "code": "2347",
+        "name": "聯強",
+        "topic": "IC 通路",
+        "bucket": "repairing",
+        "rebound_pct": 16.09,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-07",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-07",
+          "谷底 2026-03-31 反彈 16.09%"
+        ],
+        "inst_net": 3.937
+      },
+      {
+        "code": "1314",
+        "name": "中石化",
+        "topic": "石化與塑橡膠",
+        "bucket": "repairing",
+        "rebound_pct": 20.83,
+        "trough_date": "2026-05-15",
+        "stop_fall_date": "2026-05-19",
+        "accel_date": "2026-06-02",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-05-19",
+          "加速 2026-06-02",
+          "谷底 2026-05-15 反彈 20.83%"
+        ],
+        "inst_net": -3.847
+      },
+      {
+        "code": "5876",
+        "name": "上海商銀",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 20.57,
+        "trough_date": "2026-05-05",
+        "stop_fall_date": "2026-05-07",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-05-07",
+          "谷底 2026-05-05 反彈 20.57%"
+        ],
+        "inst_net": 2.704
+      },
+      {
+        "code": "2323",
+        "name": "中環",
+        "topic": "未對應",
+        "bucket": "repairing",
+        "rebound_pct": 15.26,
+        "trough_date": "2026-05-20",
+        "stop_fall_date": "2026-05-21",
+        "accel_date": "2026-05-25",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-05-21",
+          "加速 2026-05-25",
+          "谷底 2026-05-20 反彈 15.26%"
+        ],
+        "inst_net": -2.35
+      },
+      {
+        "code": "2027",
+        "name": "大成鋼",
+        "topic": "鋼鐵與特鋼",
+        "bucket": "repairing",
+        "rebound_pct": 38.48,
+        "trough_date": "2026-04-23",
+        "stop_fall_date": "2026-04-28",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-28",
+          "谷底 2026-04-23 反彈 38.48%"
+        ],
+        "inst_net": -2.185
+      },
+      {
+        "code": "2330",
+        "name": "台積電",
+        "topic": "晶圓代工",
+        "bucket": "repairing",
+        "rebound_pct": 36.93,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": "2026-04-08",
+        "sample_ath": false,
+        "flags": [
+          "mild_push",
+          "00981A:9.38%"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-01",
+          "加速 2026-04-08",
+          "谷底 2026-03-31 反彈 36.93%"
+        ],
+        "inst_net": 1.97
+      },
+      {
+        "code": "2385",
+        "name": "群光",
+        "topic": "未對應",
+        "bucket": "repairing",
+        "rebound_pct": 9.41,
+        "trough_date": "2026-06-29",
+        "stop_fall_date": "2026-07-01",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-07-01",
+          "谷底 2026-06-29 反彈 9.41%"
+        ],
+        "inst_net": 1.95
+      },
+      {
+        "code": "6919",
+        "name": "康霈*",
+        "topic": "未對應",
+        "bucket": "repairing",
+        "rebound_pct": 10.06,
+        "trough_date": "2026-03-30",
+        "stop_fall_date": "2026-03-31",
+        "accel_date": "2026-04-01",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-03-31",
+          "加速 2026-04-01",
+          "谷底 2026-03-30 反彈 10.06%"
+        ],
+        "inst_net": -1.848
+      },
+      {
+        "code": "1216",
+        "name": "統一",
+        "topic": "未對應",
+        "bucket": "repairing",
+        "rebound_pct": 10.04,
+        "trough_date": "2026-05-06",
+        "stop_fall_date": "2026-05-08",
+        "accel_date": "2026-05-13",
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-05-08",
+          "加速 2026-05-13",
+          "谷底 2026-05-06 反彈 10.04%"
+        ],
+        "inst_net": 1.817
+      },
+      {
+        "code": "2308",
+        "name": "台達電",
+        "topic": "液冷散熱",
+        "bucket": "repairing",
+        "rebound_pct": 32.25,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-07",
+        "accel_date": "2026-04-08",
+        "sample_ath": false,
+        "flags": [
+          "00981A:4.67%"
+        ],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-07",
+          "加速 2026-04-08",
+          "谷底 2026-03-31 反彈 32.25%"
+        ],
+        "inst_net": 1.795
+      },
+      {
+        "code": "1710",
+        "name": "東聯",
+        "topic": "石化與塑橡膠",
+        "bucket": "repairing",
+        "rebound_pct": 38.7,
+        "trough_date": "2026-05-15",
+        "stop_fall_date": "2026-05-20",
+        "accel_date": "2026-05-20",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-05-20",
+          "加速 2026-05-20",
+          "谷底 2026-05-15 反彈 38.7%"
+        ],
+        "inst_net": -1.634
+      },
+      {
+        "code": "2201",
+        "name": "裕隆",
+        "topic": "未對應",
+        "bucket": "repairing",
+        "rebound_pct": 18.03,
+        "trough_date": "2026-04-10",
+        "stop_fall_date": "2026-04-15",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-15",
+          "谷底 2026-04-10 反彈 18.03%"
+        ],
+        "inst_net": -1.625
+      },
+      {
+        "code": "2618",
+        "name": "長榮航",
+        "topic": "未對應",
+        "bucket": "repairing",
+        "rebound_pct": 27.44,
+        "trough_date": "2026-04-27",
+        "stop_fall_date": "2026-04-29",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [],
+        "suggested_action": "修復中：反彈未完也未確認，對照 screens",
+        "why": [
+          "止跌 2026-04-29",
+          "谷底 2026-04-27 反彈 27.44%"
+        ],
+        "inst_net": -1.615
+      }
+    ],
+    "focus_list": [
+      {
+        "code": "5880",
+        "name": "合庫金",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 17.66,
+        "trough_date": "2026-05-25",
+        "stop_fall_date": "2026-05-27",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-05-27",
+          "谷底 2026-05-25 反彈 17.66%"
+        ],
+        "inst_net": 7.932
+      },
+      {
+        "code": "2891",
+        "name": "中信金",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 33.33,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": "2026-04-08",
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-01",
+          "加速 2026-04-08",
+          "谷底 2026-03-31 反彈 33.33%"
+        ],
+        "inst_net": 6.842
+      },
+      {
+        "code": "2889",
+        "name": "國票金",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 14.88,
+        "trough_date": "2026-04-27",
+        "stop_fall_date": "2026-04-29",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-29",
+          "谷底 2026-04-27 反彈 14.88%"
+        ],
+        "inst_net": 6.745
+      },
+      {
+        "code": "2352",
+        "name": "佳世達",
+        "topic": "PC 與平板",
+        "bucket": "repairing",
+        "rebound_pct": 28.57,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": "2026-04-17",
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-08",
+          "加速 2026-04-17",
+          "谷底 2026-03-31 反彈 28.57%"
+        ],
+        "inst_net": 4.234
+      },
+      {
+        "code": "2881",
+        "name": "富邦金",
+        "topic": "銀行金融",
+        "bucket": "sample_high",
+        "rebound_pct": 75.0,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": null,
+        "sample_ath": true,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-04-01",
+          "樣本新高",
+          "谷底 2026-03-31 反彈 75.0%"
+        ],
+        "inst_net": 3.408
+      },
+      {
+        "code": "5876",
+        "name": "上海商銀",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 20.57,
+        "trough_date": "2026-05-05",
+        "stop_fall_date": "2026-05-07",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-05-07",
+          "谷底 2026-05-05 反彈 20.57%"
+        ],
+        "inst_net": 2.704
+      },
+      {
+        "code": "2330",
+        "name": "台積電",
+        "topic": "晶圓代工",
+        "bucket": "repairing",
+        "rebound_pct": 36.93,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": "2026-04-08",
+        "sample_ath": false,
+        "flags": [
+          "mild_push",
+          "00981A:9.38%"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-01",
+          "加速 2026-04-08",
+          "谷底 2026-03-31 反彈 36.93%"
+        ],
+        "inst_net": 1.97
+      },
+      {
+        "code": "2890",
+        "name": "永豐金",
+        "topic": "銀行金融",
+        "bucket": "sample_high",
+        "rebound_pct": 48.01,
+        "trough_date": "2026-05-25",
+        "stop_fall_date": "2026-05-27",
+        "accel_date": "2026-06-03",
+        "sample_ath": true,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "樣本區間新高：趨勢強，留意擁擠與監管旗標",
+        "why": [
+          "止跌 2026-05-27",
+          "加速 2026-06-03",
+          "樣本新高",
+          "谷底 2026-05-25 反彈 48.01%"
+        ],
+        "inst_net": 0.92
+      },
+      {
+        "code": "3005",
+        "name": "神基",
+        "topic": "PC 與平板",
+        "bucket": "repairing",
+        "rebound_pct": 19.79,
+        "trough_date": "2026-06-26",
+        "stop_fall_date": "2026-06-30",
+        "accel_date": "2026-07-03",
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-06-30",
+          "加速 2026-07-03",
+          "谷底 2026-06-26 反彈 19.79%"
+        ],
+        "inst_net": 0.862
+      },
+      {
+        "code": "6005",
+        "name": "群益證",
+        "topic": "銀行金融",
+        "bucket": "repairing",
+        "rebound_pct": 19.53,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": null,
+        "sample_ath": false,
+        "flags": [
+          "mild_push"
+        ],
+        "suggested_action": "修復中＋mild_push：輕倉觀察，勿追高",
+        "why": [
+          "止跌 2026-04-08",
+          "谷底 2026-03-31 反彈 19.53%"
+        ],
+        "inst_net": 0.573
+      }
+    ],
+    "caution_list": [
+      {
+        "code": "3481",
+        "name": "群創",
+        "topic": "面板產業",
+        "bucket": "extended",
+        "rebound_pct": 107.26,
+        "trough_date": "2026-04-24",
+        "stop_fall_date": "2026-04-28",
+        "accel_date": "2026-05-05",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-28",
+          "加速 2026-05-05",
+          "谷底 2026-04-24 反彈 107.26%"
+        ],
+        "inst_net": -17.303
+      },
+      {
+        "code": "2409",
+        "name": "友達",
+        "topic": "面板產業",
+        "bucket": "extended",
+        "rebound_pct": 87.41,
+        "trough_date": "2026-03-30",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": "2026-04-02",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-01",
+          "加速 2026-04-02",
+          "谷底 2026-03-30 反彈 87.41%"
+        ],
+        "inst_net": -16.264
+      },
+      {
+        "code": "2481",
+        "name": "強茂",
+        "topic": "第三代半導體",
+        "bucket": "extended",
+        "rebound_pct": 80.56,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-02",
+        "accel_date": "2026-04-07",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch",
+          "00981A:0.00%"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-02",
+          "加速 2026-04-07",
+          "谷底 2026-03-31 反彈 80.56%"
+        ],
+        "inst_net": -13.416
+      },
+      {
+        "code": "1303",
+        "name": "南亞",
+        "topic": "石化與塑橡膠",
+        "bucket": "extended",
+        "rebound_pct": 205.14,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-07",
+        "accel_date": "2026-04-07",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-07",
+          "加速 2026-04-07",
+          "谷底 2026-03-31 反彈 205.14%"
+        ],
+        "inst_net": -5.568
+      },
+      {
+        "code": "1717",
+        "name": "長興",
+        "topic": "AI 先進封裝",
+        "bucket": "washout_accel",
+        "rebound_pct": 38.87,
+        "trough_date": "2026-07-29",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "洗盤後加速但 exit_watch：降低假設",
+        "why": [
+          "止跌 2026-07-31",
+          "加速 2026-08-03",
+          "谷底 2026-07-29 反彈 38.87%"
+        ],
+        "inst_net": -4.797
+      },
+      {
+        "code": "2455",
+        "name": "全新",
+        "topic": "光學感測",
+        "bucket": "extended",
+        "rebound_pct": 114.2,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-07",
+        "accel_date": "2026-04-07",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-07",
+          "加速 2026-04-07",
+          "谷底 2026-03-31 反彈 114.2%"
+        ],
+        "inst_net": 0.365
+      },
+      {
+        "code": "3406",
+        "name": "玉晶光",
+        "topic": "光學鏡頭",
+        "bucket": "extended",
+        "rebound_pct": 141.14,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-01",
+        "accel_date": "2026-04-13",
+        "sample_ath": true,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-01",
+          "加速 2026-04-13",
+          "樣本新高",
+          "谷底 2026-03-31 反彈 141.14%"
+        ],
+        "inst_net": 0.291
+      },
+      {
+        "code": "6226",
+        "name": "光鼎",
+        "topic": "未對應",
+        "bucket": "extended",
+        "rebound_pct": 199.11,
+        "trough_date": "2026-04-07",
+        "stop_fall_date": "2026-04-09",
+        "accel_date": "2026-04-09",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-09",
+          "加速 2026-04-09",
+          "谷底 2026-04-07 反彈 199.11%"
+        ],
+        "inst_net": 0.248
+      },
+      {
+        "code": "6933",
+        "name": "AMAX-KY",
+        "topic": "未對應",
+        "bucket": "extended",
+        "rebound_pct": 158.78,
+        "trough_date": "2026-03-31",
+        "stop_fall_date": "2026-04-02",
+        "accel_date": "2026-04-02",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-02",
+          "加速 2026-04-02",
+          "谷底 2026-03-31 反彈 158.78%"
+        ],
+        "inst_net": 0.101
+      },
+      {
+        "code": "3008",
+        "name": "大立光",
+        "topic": "光學鏡頭",
+        "bucket": "extended",
+        "rebound_pct": 245.79,
+        "trough_date": "2026-04-02",
+        "stop_fall_date": "2026-04-08",
+        "accel_date": "2026-04-13",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch",
+          "00981A:0.00%"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-08",
+          "加速 2026-04-13",
+          "谷底 2026-04-02 反彈 245.79%"
+        ],
+        "inst_net": -0.092
+      },
+      {
+        "code": "3450",
+        "name": "聯鈞",
+        "topic": "矽光子與 CPO",
+        "bucket": "extended",
+        "rebound_pct": 140.66,
+        "trough_date": "2026-04-02",
+        "stop_fall_date": "2026-04-07",
+        "accel_date": "2026-04-08",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch"
+        ],
+        "suggested_action": "反彈已大：避免追高，改看回撤再評估",
+        "why": [
+          "止跌 2026-04-07",
+          "加速 2026-04-08",
+          "谷底 2026-04-02 反彈 140.66%"
+        ],
+        "inst_net": -0.021
+      },
+      {
+        "code": "6805",
+        "name": "富世達",
+        "topic": "精密機構件",
+        "bucket": "washout_accel",
+        "rebound_pct": 78.86,
+        "trough_date": "2026-07-30",
+        "stop_fall_date": "2026-07-31",
+        "accel_date": "2026-08-03",
+        "sample_ath": false,
+        "flags": [
+          "exit_watch",
+          "00981A:1.35%"
+        ],
+        "suggested_action": "洗盤後加速但 exit_watch：降低假設",
+        "why": [
+          "止跌 2026-07-31",
+          "加速 2026-08-03",
+          "谷底 2026-07-30 反彈 78.86%"
+        ],
+        "inst_net": 0.012
+      }
+    ]
+  },
+  "counts": {
+    "fresh_stop": 22,
+    "accel_now": 0,
+    "sample_high": 17,
+    "washout_stop": 25,
+    "washout_accel": 25,
+    "repairing": 25,
+    "focus_list": 10,
+    "caution_list": 12,
+    "bucketed_all": 775
+  }
+}
