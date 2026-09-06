@@ -162,7 +162,7 @@
       <div class="card-mini" id="c2streaks" style="margin-top:12px">
         <div class="t">誰連續買了好幾天？</div>
         <div class="d" id="c2streakBody">載入中…</div>
-        <div class="fail">提醒：連續買很多天，不代表明天一定會漲。我們查過短資料，它比較像「別被騙」的提醒，不是買進按鈕。</div>
+        <div class="fail">提醒：連續買很多天，不代表明天一定會漲。我們查過大約 648 個交易日：連買滿三天以上，後面也不比較會漲——它比較像「誰一直買」的標籤，不是買進按鈕。</div>
       </div>
       <div class="deep">
         <a href="./board.html">開啟看圖版 →</a>
@@ -214,7 +214,7 @@
     <section class="chapter" id="c5">
       <div class="eyebrow">第 5 段</div>
       <h2>哪些不要亂追？</h2>
-      <p class="how">以前短資料裡：假動作、追第一下衝很高，後面比較常變成付錢。這裡當「紅燈」，不是保證你會賺。</p>
+      <p class="how">以前大約六百多天的資料裡：假動作、追第一下衝很高，後面比較常變成付錢；洗盤後再來的第二波，頂多拿來當「別急著追」的濾鏡。這裡當「紅燈／濾鏡」，不是保證你會賺。</p>
       <div id="c5board"></div>
       <div class="deep">
         <a href="./research.html">看進階分數 →</a>
@@ -421,18 +421,22 @@
         const labels = {
           fake_thrust:"假動作 → 優先躲開",
           chase_first_bar:"追第一下衝很高 → 比較常付錢",
-          second_wave:"等第二波 → 只拿來過濾，不當保證",
+          second_wave:"洗盤後再往上的第二波 → 可當濾鏡，不是保證",
           distribution_detector:"大錢可能在倒貨",
-          institutional_accumulation:"機構慢慢買（短資料裡還不夠好）",
+          institutional_accumulation:"機構慢慢買（樣本裡還不夠好）",
         };
         document.getElementById("c5board").innerHTML = order.filter((k)=>by[k]).map((k) => {
           const r = by[k];
           const ex = r.mean_excess_5d;
           const bad = ex!=null && ex < 0;
           const pct = ex==null ? "—" : ((ex*100).toFixed(1) + "%");
-          const kid = bad
+          const kid = k === "second_wave"
+            ? (bad
+              ? `洗盤後再來的第二波，以前後面五天超額平均大約 ${pct}，偏弱。頂多當「別急著追」的提醒。`
+              : `洗盤後再來的第二波，以前後面五天超額平均大約 ${pct}，比亂追第一下好看一點。可當濾鏡，不是保證會賺。`)
+            : (bad
             ? `以前這招後面五天，平均比較像少賺錢（大約 ${pct}）。當紅燈。`
-            : `以前這招後面五天平均大約 ${pct}。仍要小心。`;
+            : `以前這招後面五天平均大約 ${pct}。仍要小心。`);
           return `<div class="card-mini ${bad?"bad":"good"}">
             <div class="t">${esc(labels[k]||k)}</div>
             <div class="d">${kid}<br/>看過大約 ${r.N||"—"} 次。</div>

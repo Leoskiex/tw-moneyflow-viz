@@ -1,0 +1,128 @@
+{
+  "1_plumbing": {
+    "n_events_second_wave": 3100,
+    "n_events_chase": 15101,
+    "n_days_with_second_wave": 549,
+    "date_min": "2024-01-25",
+    "date_max": "2026-09-04",
+    "n_outcomes_keys": 662019,
+    "n_regimes": 119,
+    "join_rate_second_wave": 0.9883870967741936
+  },
+  "2_base_rate": {
+    "n_excess_5d": 656641,
+    "P_excess_5d_gt0": 0.3961357880485684,
+    "mean_excess_5d": -0.005832867007033492,
+    "median_excess_5d": -0.010153282208640313,
+    "n_fwd_5d": 656641,
+    "P_fwd_ret_5d_gt0": 0.462351574147822,
+    "mean_fwd_ret_5d": 0.002338782820287857
+  },
+  "3_second_wave": {
+    "label": "second_wave",
+    "N": 3100,
+    "N_with_excess_5d": 3064,
+    "N_with_excess_10d": 3042,
+    "date_min": "2024-01-25",
+    "date_max": "2026-09-04",
+    "mean_excess_5d": 0.0008878213628921206,
+    "median_excess_5d": -0.007508377824430479,
+    "hit_rate_excess_5d": 0.429177545691906,
+    "lift_hit_vs_base": 0.03304175764333761,
+    "lift_mean_vs_base": 0.0067206883699256125,
+    "base_hit": 0.3961357880485684,
+    "base_mean": -0.005832867007033492,
+    "mean_excess_10d": -0.001943530858760155,
+    "median_excess_10d": -0.013686318105333106,
+    "hit_rate_excess_10d": 0.4197896120973044,
+    "mean_fwd_ret_5d": 0.008007671175601775,
+    "hit_rate_fwd_5d": 0.4872715404699739,
+    "mean_MAE_5d": -0.02462909736415513,
+    "mean_MFE_5d": 0.03815340108892884
+  },
+  "3b_chase_first_bar": {
+    "label": "chase_first_bar",
+    "N": 15101,
+    "N_with_excess_5d": 14977,
+    "N_with_excess_10d": 14836,
+    "date_min": "2024-01-22",
+    "date_max": "2026-09-04",
+    "mean_excess_5d": -0.004531547581069261,
+    "median_excess_5d": -0.013306865061094353,
+    "hit_rate_excess_5d": 0.397409361020231,
+    "lift_hit_vs_base": 0.0012735729716625843,
+    "lift_mean_vs_base": 0.0013013194259642313,
+    "base_hit": 0.3961357880485684,
+    "base_mean": -0.005832867007033492,
+    "mean_excess_10d": -0.006605709014547137,
+    "median_excess_10d": -0.019398402331384512,
+    "hit_rate_excess_10d": 0.39356969533567,
+    "mean_fwd_ret_5d": 0.002062366388999221,
+    "hit_rate_fwd_5d": 0.44281231221205847,
+    "mean_MAE_5d": -0.028942884776838804,
+    "mean_MFE_5d": 0.0330195936454177
+  },
+  "4_half_sample": {
+    "label": "second_wave",
+    "median_split_date": "2025-06-09",
+    "halves": {
+      "first": {
+        "n": 1447,
+        "too_small": false,
+        "hit_5d": 0.4429854872149274,
+        "lift_hit": 0.016497955010149334,
+        "mean_5d": 0.000654140823886669,
+        "lift_mean": 0.0035477453739178534,
+        "base_hit": 0.4264875322047781,
+        "base_mean": -0.0028936045500311844,
+        "date_min": "2024-01-25",
+        "date_max": "2025-06-09"
+      },
+      "second": {
+        "n": 1617,
+        "too_small": false,
+        "hit_5d": 0.4168212739641311,
+        "lift_hit": 0.0479884365499848,
+        "mean_5d": 0.0010969343746057192,
+        "lift_mean": 0.009822944190195776,
+        "base_hit": 0.3688328374141463,
+        "base_mean": -0.008726009815590057,
+        "date_min": "2025-06-10",
+        "date_max": "2026-09-04"
+      }
+    },
+    "lift_hit_sign_agree": true,
+    "lift_mean_sign_agree": true,
+    "ok": true
+  },
+  "5_verdict": {
+    "verdict": "useful_as_filter",
+    "verdict_zh": "可用作濾鏡（非獨立保證）",
+    "rationale_zh": "「洗盤後再往上的第二波」有一點正 lift（命中比基線 +3.3%、平均超額比基線 +0.67%、N=3064），半段樣本方向大致一致，也比「追第一下衝很高」好看一點。適合當「別急著追第一下、等確認」的濾鏡，不是保證會賺。",
+    "rationale_en": "second_wave 5d excess hit lift=+0.033, mean lift=+0.0067, N=3064; half-sample hit/mean agree=True/True; beats_chase=True.",
+    "half_sample": {
+      "lift_hit_sign_agree": true,
+      "lift_mean_sign_agree": true,
+      "median_split_date": "2025-06-09"
+    },
+    "vs_chase": {
+      "second_wave_mean_excess_5d": 0.0008878213628921206,
+      "chase_first_bar_mean_excess_5d": -0.004531547581069261,
+      "diff_mean_excess_5d": 0.005419368943961381,
+      "beats_chase": true
+    },
+    "caveats": [
+      "樣本約 549 個交易日（優於早期 ~60d，但仍遠短於 3–5 年 OOS）。",
+      "Heuristic / not investment advice. 不構成投資建議。",
+      "超額報酬相對大盤；未扣成本與流動性。",
+      "多數事件的「天氣」標籤在早期特徵檔可能缺值，已用 regimes／features 回填。"
+    ],
+    "n_days": 549
+  },
+  "6_vs_chase": {
+    "second_wave_mean_excess_5d": 0.0008878213628921206,
+    "chase_first_bar_mean_excess_5d": -0.004531547581069261,
+    "diff_mean_excess_5d": 0.005419368943961381,
+    "beats_chase": true
+  }
+}

@@ -1,125 +1,125 @@
 {
   "1_plumbing": {
-    "n_rows": 134021,
-    "n_common_rows": 113160,
-    "n_primary_rows": 64382,
-    "n_stocks": 2360,
-    "n_common_stocks": 2000,
-    "n_primary_stocks": 1086,
-    "n_days": 60,
-    "date_min": "2026-06-11",
+    "n_rows": 859670,
+    "n_common_rows": 729781,
+    "n_primary_rows": 664910,
+    "n_stocks": 2385,
+    "n_common_stocks": 2023,
+    "n_primary_stocks": 1096,
+    "n_days": 648,
+    "date_min": "2024-01-02",
     "date_max": "2026-09-04",
-    "pct_regime_non_null": 1.0,
+    "pct_regime_non_null": 0.24589086509939861,
     "material_foreign_net_threshold": 0.5,
     "primary_universe": "common_non_etf_in_outcomes",
     "note": "Primary stats exclude illiquid names absent from outcomes/by_date; those flatten hit-rate toward zeros and are not comparable to labeled_panel."
   },
   "2_base_rate_common": {
-    "n_5d": 58954,
-    "P_fwd_ret_5d_gt0": 0.4429724870237813,
-    "mean_fwd_ret_5d": -0.0004784427994734112,
-    "median_fwd_ret_5d": -0.003472222222222321
+    "n_5d": 659430,
+    "P_fwd_ret_5d_gt0": 0.46207178927255355,
+    "mean_fwd_ret_5d": 0.0024218489547191174,
+    "median_fwd_ret_5d": -0.001612903225806428
   },
   "2b_base_rate_material": {
-    "n_5d": 12995,
-    "P_fwd_ret_5d_gt0": 0.4578684109272797,
-    "mean_fwd_ret_5d": -0.00034082931578787205,
-    "median_fwd_ret_5d": -0.004444444444444473
+    "n_5d": 129793,
+    "P_fwd_ret_5d_gt0": 0.4775527185595525,
+    "mean_fwd_ret_5d": 0.004308763958941872,
+    "median_fwd_ret_5d": -0.0010204081632652073
   },
   "3_key_foreign_buy_ge3": {
     "available": true,
     "label": "foreign_buy_streak>=3",
-    "n": 10109,
-    "hit_rate_5d": 0.40933821347314275,
-    "mean_fwd_ret_5d": -0.0017415379074197765,
-    "median_fwd_ret_5d": -0.005424954792043302,
-    "lift_hit_vs_base": -0.03363427355063853,
-    "lift_mean_vs_base": -0.0012630951079463653,
-    "base_hit": 0.4429724870237813,
-    "base_mean": -0.0004784427994734112,
+    "n": 100756,
+    "hit_rate_5d": 0.46360514510302114,
+    "mean_fwd_ret_5d": 0.004036776511453154,
+    "median_fwd_ret_5d": -0.001612903225806428,
+    "lift_hit_vs_base": 0.0015333558304675976,
+    "lift_mean_vs_base": 0.0016149275567340364,
+    "base_hit": 0.46207178927255355,
+    "base_mean": 0.0024218489547191174,
     "by_bucket": [
       {
         "bucket": "3-5",
-        "n": 7820,
-        "hit_rate_5d": 0.4150895140664962,
-        "mean_fwd_ret_5d": -0.00040633123438010735,
-        "lift_hit_vs_base": -0.02788297295728509,
-        "lift_mean_vs_base": 7.211156509330383e-05
+        "n": 74221,
+        "hit_rate_5d": 0.46737446275312916,
+        "mean_fwd_ret_5d": 0.004342924851684761,
+        "lift_hit_vs_base": 0.005302673480575615,
+        "lift_mean_vs_base": 0.0019210758969656432
       },
       {
         "bucket": "6+",
-        "n": 2289,
-        "hit_rate_5d": 0.38968982088248144,
-        "mean_fwd_ret_5d": -0.006303056554501563,
-        "lift_hit_vs_base": -0.05328266614129984,
-        "lift_mean_vs_base": -0.005824613755028152
+        "n": 26535,
+        "hit_rate_5d": 0.45306199359336724,
+        "mean_fwd_ret_5d": 0.003180449548561497,
+        "lift_hit_vs_base": -0.009009795679186305,
+        "lift_mean_vs_base": 0.0007586005938423797
       }
     ]
   },
   "3b_key_material_foreign_buy_ge3": {
     "available": true,
     "label": "foreign_buy_streak>=3",
-    "n": 2458,
-    "hit_rate_5d": 0.4438567941415785,
-    "mean_fwd_ret_5d": 0.0016280626241085676,
-    "median_fwd_ret_5d": -0.004756303091314196,
-    "lift_hit_vs_base": -0.014011616785701175,
-    "lift_mean_vs_base": 0.0019688919398964397,
-    "base_hit": 0.4578684109272797,
-    "base_mean": -0.00034082931578787205
+    "n": 22745,
+    "hit_rate_5d": 0.48643657946801494,
+    "mean_fwd_ret_5d": 0.006226493757078984,
+    "median_fwd_ret_5d": 0.0,
+    "lift_hit_vs_base": 0.008883860908462438,
+    "lift_mean_vs_base": 0.001917729798137112,
+    "base_hit": 0.4775527185595525,
+    "base_mean": 0.004308763958941872
   },
   "4_half_sample_stability": {
     "label": "foreign_buy>=3",
-    "median_split_date": "2026-07-27",
+    "median_split_date": "2025-05-13",
     "halves": {
       "first": {
-        "n": 5176,
+        "n": 47495,
         "too_small": false,
-        "hit_5d": 0.3695904173106646,
-        "lift_hit": -0.007230774742315538,
-        "mean_5d": -0.011910216846399587,
-        "lift_mean": 0.0013688538258762248,
-        "base_hit": 0.37682119205298015,
-        "base_mean": -0.013279070672275812
+        "hit_5d": 0.4908095589009369,
+        "lift_hit": 0.017499688969796923,
+        "mean_5d": 0.004192900266056288,
+        "lift_mean": 0.003095494633126918,
+        "base_hit": 0.47330986993114,
+        "base_mean": 0.0010974056329293707
       },
       "second": {
-        "n": 4933,
+        "n": 53261,
         "too_small": false,
-        "hit_5d": 0.4510439894587472,
-        "lift_hit": -0.07732315128890183,
-        "mean_5d": 0.008928051021864534,
-        "lift_mean": -0.007117826452793387,
-        "base_hit": 0.528367140747649,
-        "base_mean": 0.01604587747465792
+        "hit_5d": 0.4393458628264584,
+        "lift_hit": -0.01168816386585858,
+        "mean_5d": 0.003897554609407081,
+        "lift_mean": 0.00017487045150532633,
+        "base_hit": 0.45103402669231696,
+        "base_mean": 0.0037226841579017546
       }
     },
-    "lift_hit_sign_agree": true,
-    "lift_mean_sign_agree": false,
+    "lift_hit_sign_agree": false,
+    "lift_mean_sign_agree": true,
     "ok": true
   },
   "4b_half_sample_material": {
     "label": "material foreign_buy>=3",
-    "median_split_date": "2026-07-27",
+    "median_split_date": "2025-05-13",
     "halves": {
       "first": {
-        "n": 1275,
+        "n": 9715,
         "too_small": false,
-        "hit_5d": 0.4203921568627451,
-        "lift_hit": 0.04067639458884331,
-        "mean_5d": -0.009249367766644834,
-        "lift_mean": 0.007103928389982464,
-        "base_hit": 0.3797157622739018,
-        "base_mean": -0.016353296156627298
+        "hit_5d": 0.4873906330416881,
+        "lift_hit": 0.019168964900451058,
+        "mean_5d": 0.003901854226042805,
+        "lift_mean": 0.0038146292742641777,
+        "base_hit": 0.46822166814123706,
+        "base_mean": 8.722495177862708e-05
       },
       "second": {
-        "n": 1183,
+        "n": 13030,
         "too_small": false,
-        "hit_5d": 0.4691462383770076,
-        "lift_hit": -0.1038318777029163,
-        "mean_5d": 0.013351413214311937,
-        "lift_mean": -0.00989224716506616,
-        "base_hit": 0.5729781160799239,
-        "base_mean": 0.023243660379378098
+        "hit_5d": 0.4857252494244052,
+        "lift_hit": -0.00040475589883370855,
+        "mean_5d": 0.007959715019090994,
+        "lift_mean": -0.00022957139179834336,
+        "base_hit": 0.4861300053232389,
+        "base_mean": 0.008189286410889337
       }
     },
     "lift_hit_sign_agree": false,
@@ -127,31 +127,31 @@
     "ok": true
   },
   "5_verdict": {
-    "verdict": "useful_as_falsifier",
-    "verdict_zh": "有用作為否證器／濾鏡",
-    "rationale_zh": "外資連買≥3 並未穩定優於基線（5d hit lift=-0.034、mean lift=-0.0013、N=10109）；長連買(6+)亦未顯示正優勢。適合用來否證「連買=必漲」敘事，或當 persistence 清晰度工具，而非獨立買訊。半樣本 lift 符號一致=True/False（hit/mean）。",
-    "rationale_en": "foreign_buy>=3 does not reliably beat base (5d hit lift=-0.034, mean lift=-0.0013, N=10109); long streaks (6+) also lack positive edge. Useful to falsify 'streak=must-rise' narratives / as a clarity filter, not a standalone buy signal. Half-sample sign agree hit/mean=True/False.",
+    "verdict": "not_a_signal",
+    "verdict_zh": "非訊號（描述子）",
+    "rationale_zh": "外資連買≥3 相對基線 lift 接近零（hit +0.002、mean +0.0016、N=100756）。目前更像描述「資金持續性」的欄位，不是可交易訊號。",
+    "rationale_en": "foreign_buy>=3 lift vs base is near zero (hit +0.002, mean +0.0016, N=100756). Looks like a persistence descriptor, not a tradable signal.",
     "half_sample": {
-      "lift_hit_sign_agree": true,
-      "lift_mean_sign_agree": false,
-      "median_split_date": "2026-07-27"
+      "lift_hit_sign_agree": false,
+      "lift_mean_sign_agree": true,
+      "median_split_date": "2025-05-13"
     },
     "caveats": [
-      "樣本僅約 60 個交易日（短窗），半衰期與 regime 切換未充分覆蓋。",
+      "樣本約 648 個交易日（優於早期 ~60d，但仍遠短於 3–5 年 OOS）；半衰期與 regime 切換覆蓋仍有限。",
       "Heuristic / not investment advice. 不構成投資建議。",
       "Streaks derived from official T86 nets, not Goodinfo."
     ],
-    "n_days": 60,
+    "n_days": 648,
     "material_foreign_ge3": {
-      "n": 2458,
-      "lift_hit_vs_base": -0.014011616785701175,
-      "lift_mean_vs_base": 0.0019688919398964397
+      "n": 22745,
+      "lift_hit_vs_base": 0.008883860908462438,
+      "lift_mean_vs_base": 0.001917729798137112
     }
   },
   "6_panel": {
     "path": "/workspace/tw-moneyflow-viz/data/validation/streak_panel.csv",
-    "n_rows": 134021,
-    "size_mb": 19.25,
-    "sample_note": null
+    "n_rows": 859670,
+    "size_mb": 138.65,
+    "sample_note": "full panel gzipped at streak_panel.csv.gz; csv is sample n=50000"
   }
 }
