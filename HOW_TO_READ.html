@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>怎麼讀「錢往哪流」看板</title>
+<style>
+  :root {
+    --bg:#0b0f14; --panel:#121821; --border:#243041; --text:#e8eef7;
+    --muted:#8b9bb0; --green:#22c55e; --red:#ef4444; --accent:#38bdf8;
+    --amber:#f59e0b; --purple:#a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.65;
+  }
+  .wrap { max-width:820px; margin:0 auto; padding:28px 22px 64px; }
+  a { color:var(--accent); }
+  h1 { font-size:1.45rem; margin:0 0 8px; }
+  h2 { font-size:1.1rem; margin:28px 0 10px; border-left:3px solid var(--accent); padding-left:10px; }
+  h3 { font-size:0.98rem; margin:18px 0 6px; color:#cbd5e1; }
+  .meta { color:var(--muted); font-size:0.88rem; margin-bottom:20px; }
+  .card {
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:12px; padding:14px 16px; margin:12px 0;
+  }
+  .flow {
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center;
+    margin:12px 0; font-weight:600;
+  }
+  .pill {
+    background:#18202b; border:1px solid var(--border); border-radius:999px;
+    padding:8px 14px; font-size:0.9rem;
+  }
+  .arrow { color:var(--muted); }
+  .pos { color:var(--green); } .neg { color:var(--red); } .neu { color:var(--accent); }
+  .amber { color:var(--amber); }
+  table { width:100%; border-collapse:collapse; font-size:0.88rem; margin:8px 0 4px; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:var(--muted); font-weight:500; }
+  ul { padding-left:1.2em; margin:8px 0; }
+  li { margin:4px 0; }
+  .step { counter-increment: s; }
+  .step::before {
+    content: counter(s); display:inline-flex; width:22px; height:22px;
+    border-radius:50%; background:#163044; color:var(--accent);
+    align-items:center; justify-content:center; font-size:0.75rem; font-weight:700;
+    margin-right:8px;
+  }
+  ol.howto { list-style:none; padding:0; counter-reset:s; }
+  ol.howto li { margin:12px 0; padding:12px 14px; background:var(--panel); border:1px solid var(--border); border-radius:10px; }
+  .warn {
+    background:#2a1c0f; border:1px solid #78520f; color:#fbbf24;
+    border-radius:10px; padding:12px 14px; font-size:0.9rem;
+  }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:700px){ .grid2 { grid-template-columns:1fr; } }
+  code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:0.85em;
+    background:#0f141c; padding:1px 5px; border-radius:4px; }
+  .back { display:inline-block; margin-bottom:16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./index.html">← 回看板</a>
+  <h1>怎麼讀「錢往哪流」看板</h1>
+  <p class="meta">用白話把資料變成判斷步驟。例證取自看板日 <strong>2026-09-04</strong>（數字會隨日期切換改變）。</p>
+
+  <div class="warn">
+    <strong>先講清楚上限：</strong>這不是「誰把錢轉給誰」的帳戶流水。
+    你看到的是證交所公開的<strong>市場彙總</strong>——三大法人買賣超、融資融券餘額、當沖佔比，再對上你自己的題材地圖。
+    解讀口訣：<em>流量看方向，存量看水位，槓桿看胆子，當沖看熱錢。</em>
+  </div>
+
+  <h2>1. 一句話心智模型</h2>
+  <div class="flow">
+    <span class="pill">誰在買／賣<br><small style="font-weight:400;color:var(--muted)">外資・投信・自營</small></span>
+    <span class="arrow">→</span>
+    <span class="pill">買進哪些股<br><small style="font-weight:400;color:var(--muted)">T86 個股淨額</small></span>
+    <span class="arrow">→</span>
+    <span class="pill">落在哪題材<br><small style="font-weight:400;color:var(--muted)">你的 topic map</small></span>
+  </div>
+  <div class="card">
+    <p style="margin:0">看板 Sankey 只畫<strong>法人淨額絕對值最大的約 40 檔</strong>（方便看主幹），不是全市場 1300+ 檔。
+    題材地圖約 731 碼；<strong>還沒接櫃買（TPEx）</strong>。ETF／槓桿反向商品也會出現在 Top40，解讀題材時要先過濾它們。</p>
+  </div>
+
+  <h2>2. 四種「錢」不要混</h2>
+  <div class="grid2">
+    <div class="card"><strong class="neu">流量 Flow</strong><br>當天誰多買／多賣多少。<br><code>T86</code>、<code>BFI82U</code><br>→ Sankey、KPI 外資／投信／自營</div>
+    <div class="card"><strong class="amber">存量 Stock</strong><br>外資已經抱了多少（水位）。<br><code>MI_QFIIS</code>（看板尚未接）<br>→ 「還能買多少」底色</div>
+    <div class="card"><strong class="pos">槓桿 Leverage</strong><br>融資變多＝有人加碼借錢做多。<br><code>MI_MARGN</code><br>→ 槓桿散點、融資 Δ</div>
+    <div class="card"><strong class="neg">空壓／熱錢</strong><br>融券借券賣出、當沖佔比。<br><code>TWTASU</code>、<code>TWT93U</code>、<code>TWTB4U</code><br>→ 賣壓條、當沖溫度計</div>
+  </div>
+
+  <h2>3. 建議閱讀順序（每天 2 分鐘）</h2>
+  <ol class="howto">
+    <li class="step">
+      <strong>先看 KPI 大盤法人</strong><br>
+      例 9/4：外資淨買約 <span class="pos">+562 億</span>、投信 <span class="neg">−9 億</span>、自營 <span class="pos">+64 億</span>。
+      <br>→ 問：今天主力是誰？同向還是打架？
+    </li>
+    <li class="step">
+      <strong>再看漲跌家數與成交</strong><br>
+      例：上漲 762／下跌 210，成交約 8582 億；當沖佔比約 <span class="amber">43%</span>。
+      <br>→ 法人買＋多數上漲＝偏多氣氛；當沖高＝短線噪音大，別把每一根都當「機構長線」。
+    </li>
+    <li class="step">
+      <strong>看 Sankey：錢進哪條題材</strong><br>
+      例：AI 伺服器組裝題材法人淨額突出（仁寶等）。
+      <br>→ 解讀：<em>機構今天把籌碼集中往哪個產業故事推</em>。點題材／個股對一下漲跌：同向＝共振；法人買但股價跌＝吸籌或滯後。
+    </li>
+    <li class="step">
+      <strong>對照槓桿散點</strong><br>
+      融資餘額 Δ 上升＋股價大漲＝散戶／融資客在追；法人賣＋融資暴增＝要小心「機構走、槓桿留」。
+    </li>
+    <li class="step">
+      <strong>最後看 alerts</strong><br>
+      空單使用率極高、融資逼近限額＝擠壓／風控旗標，不是「一定漲」。
+    </li>
+  </ol>
+
+  <h2>4. 單位怎麼讀（超容易搞混）</h2>
+  <table>
+    <tr><th>區塊</th><th>單位</th><th>怎麼想</th></tr>
+    <tr><td>大盤法人 KPI</td><td><strong>億元</strong></td><td>整市場買超／賣超金額級距</td></tr>
+    <tr><td>個股法人淨額（Sankey）</td><td><strong>千張</strong></td><td>1 千張 = 100 萬股；比「誰相對被掃貨」</td></tr>
+    <tr><td>融資／融券餘額</td><td>多為<strong>張</strong>或市場合計億</td><td>看 Δ（今天比昨天多寡）比看絕對值更有意義</td></tr>
+    <tr><td>當沖佔比</td><td>%</td><td>當天成交裡有多少是當沖熱錢</td></tr>
+  </table>
+
+  <h2>5. Top 40 怎麼解讀才不會被騙</h2>
+  <div class="card">
+    <ul>
+      <li>Top40 是「今天法人淨額绝对值最大」——包含<strong>大買與大賣</strong>。</li>
+      <li>常混進 <code>00631L</code>、<code>00673R</code> 等槓桿／反向 ETF：這是商品供需，<strong>不是產業題材</strong>。看產業故事時忽略「未對應」或 ETF。</li>
+      <li>沒進 Top40 不代表沒動；只是今天相對安靜。要找冷門題材，需開全市場搜尋（尚未做）或直接查該碼 T86。</li>
+    </ul>
+  </div>
+
+  <h2>6. 你可能漏掉、加上會更好懂的資料</h2>
+  <table>
+    <tr><th>資料</th><th>哪裡</th><th>加上之後多懂什麼</th></tr>
+    <tr><td>櫃買三大法人／融資</td><td>TPEx 公開資訊</td><td>補上中小型／上櫃鏈，否則「全台股」不成立</td></tr>
+    <tr><td>外資持股比率 <code>MI_QFIIS</code></td><td>證交所</td><td>流量（今天買）＋存量（已經抱多少、離上限多近）</td></tr>
+    <tr><td>類股成交 <code>BFIAMU</code></td><td>證交所</td><td>官方產業輪動（可與你的自訂題材對照）</td></tr>
+    <tr><td>濾掉 ETF／槓桿商品</td><td>規則層</td><td>Sankey 只留普通股，題材故事立刻乾淨</td></tr>
+    <tr><td>注意／處置股</td><td>證交所／櫃買</td><td>解釋「為什麼量價怪異」——常是規則不是題材</td></tr>
+    <tr><td>借券可賣額度 <code>TWT96U</code></td><td>證交所</td><td>空方還有多少彈藥</td></tr>
+    <tr><td>券商分點（選配）</td><td>非官方主幹</td><td>更接近「誰在敲」；噪音大、維護成本高</td></tr>
+  </table>
+
+
+  <h2>7. 體制怎麼用（資金體制 Regime）</h2>
+  <div class="card">
+    <p style="margin:0 0 8px">看板頂部的<strong>資金體制</strong>是把當日法人／融資／當沖／監管＋題材集中度，壓成可讀的啟發式標籤（不是機器學習、也不是漲跌預測）。</p>
+    <ul>
+      <li><strong>單日＝快照</strong>：例如 9/4「機構推動」＋次標「監管摩擦」＝外資大買且題材集中（如 AI 伺服器），但注意／處置檔數仍高——故事在，風險旗標也在。</li>
+      <li><strong>同一 primary 連續 ≥3 日＝體制</strong>：連續「機構推動」較像資金主線延續；連續「風險規避」較像外資撤退節奏；中間穿插「熱錢噪音」＝短線雜訊放大。</li>
+      <li><strong>怎麼行動（敘事 vs 風控）</strong>：
+        <ul>
+          <li>用 primary 講「今天錢的故事」（誰在推、題材在哪）。</li>
+          <li>用 secondary／監管摩擦／當沖偏高當<strong>風險旗標</strong>——追高打折、處置股勿當普通動能。</li>
+          <li>槓桿接力：外資弱＋融資升 → 散戶／融資在扛，別誤讀成機構回補。</li>
+        </ul>
+      </li>
+    </ul>
+    <p style="margin:8px 0 0;color:var(--muted);font-size:0.88rem">七類：機構推動｜槓桿接力｜熱錢噪音｜風險規避｜監管摩擦｜法人打架｜平淡。時間軸可點歷史日看當日證據。</p>
+  </div>
+
+  <h2>8. 一句話決策模板</h2>
+
+  <div class="card">
+    <p style="margin:0 0 8px">「今天 <span class="neu">〔外資／投信〕</span> 主導，錢往 <span class="pos">〔題材〕</span> 集中；
+    融資 Δ <span class="amber">〔升／降〕</span>，當沖 <span class="amber">〔高／低〕</span>，
+    所以我把它讀成 <strong>〔機構布局／短線熱錢／軋空風險／分歧〕</strong>。」</p>
+    <p style="margin:0;color:var(--muted);font-size:0.88rem">例：外資大買＋AI 組裝題材進榜＋當沖 43% → 機構故事在，但短線噪音也大，追高要打折。</p>
+  </div>
+
+  <p class="meta" style="margin-top:28px">
+    看板：<a href="./index.html">index.html</a>　·　設計底稿在 <code>twse-trading/</code>　·　這頁不構成投資建議
+  </p>
+</div>
+</body>
+</html>

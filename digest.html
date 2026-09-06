@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>今日制式日報 · 錢往哪流</title>
+  <style>
+    :root {
+      --bg:#0b0f14; --panel:#121821; --border:#243041; --text:#e8eef7;
+      --muted:#8b9bb0; --accent:#38bdf8; --green:#22c55e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.65;
+    }
+    .wrap { max-width:860px; margin:0 auto; padding:24px 18px 64px; }
+    a { color:var(--accent); }
+    h1 { font-size:1.35rem; margin:0 0 6px; }
+    .meta { color:var(--muted); font-size:0.85rem; margin-bottom:14px; }
+    .toolbar {
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+      margin:12px 0 18px; position:sticky; top:0; z-index:5;
+      background:rgba(11,15,20,0.92); padding:10px 0; border-bottom:1px solid var(--border);
+    }
+    button {
+      background:#18202b; color:var(--text); border:1px solid var(--border);
+      border-radius:8px; padding:8px 14px; cursor:pointer; font-size:0.88rem;
+    }
+    button.primary { background:#0c2a3a; border-color:#1e5a75; color:var(--accent); }
+    button:hover { border-color:var(--accent); }
+    #status { color:var(--muted); font-size:0.8rem; }
+    #status.ok { color:var(--green); }
+    pre#mdView {
+      white-space:pre-wrap; word-break:break-word;
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:12px; padding:18px 16px; font-size:0.88rem;
+      font-family:"Noto Sans TC","PingFang TC",ui-monospace,monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>今日制式日報</h1>
+    <div class="meta">純函數組裝 · 非 LLM · 來自 regime_brief + screens + 00981A · <a href="./">← 回看板</a></div>
+    <div class="toolbar">
+      <button type="button" class="primary" id="btnCopyMd">複製 Markdown</button>
+      <button type="button" id="btnCopyJson">複製 JSON 摘要</button>
+      <a href="data/digest_latest.md" download="digest_latest.md" style="font-size:0.85rem">下載 .md</a>
+      <span id="status">載入中…</span>
+    </div>
+    <pre id="mdView">載入 data/digest_latest.md …</pre>
+  </div>
+  <script>
+    let digestDoc = null;
+    async function boot() {
+      const view = document.getElementById("mdView");
+      const status = document.getElementById("status");
+      try {
+        const [mdRes, jsonRes] = await Promise.all([
+          fetch("data/digest_latest.md", { cache: "no-store" }),
+          fetch("data/digest_latest.json", { cache: "no-store" })
+        ]);
+        if (!mdRes.ok) throw new Error("digest_latest.md HTTP " + mdRes.status);
+        const md = await mdRes.text();
+        view.textContent = md;
+        if (jsonRes.ok) digestDoc = await jsonRes.json();
+        status.textContent = (digestDoc && digestDoc.date ? ("資料日 " + digestDoc.date + " · ") : "") +
+          "engine " + ((digestDoc && digestDoc.engine) || "—") + " · llm=false";
+        status.className = "ok";
+        document.title = "制式日報 " + ((digestDoc && digestDoc.date) || "") + " · 錢往哪流";
+      } catch (e) {
+        view.textContent = "載入失敗：" + (e && e.message ? e.message : String(e)) +
+          "\n請先跑 python3 build_daily_digest.py";
+        status.textContent = "失敗";
+      }
+    }
+    async function copyText(text, okMsg) {
+      const status = document.getElementById("status");
+      try {
+        await navigator.clipboard.writeText(text);
+        status.textContent = okMsg;
+        status.className = "ok";
+      } catch (e) {
+        status.textContent = "無法寫入剪貼簿";
+        status.className = "";
+      }
+    }
+    document.getElementById("btnCopyMd").addEventListener("click", function () {
+      const md = document.getElementById("mdView").textContent || "";
+      copyText(md, "已複製 Markdown");
+    });
+    document.getElementById("btnCopyJson").addEventListener("click", function () {
+      if (!digestDoc) { copyText("", "尚無 JSON"); return; }
+      const slim = {
+        date: digestDoc.date,
+        headline: digestDoc.headline,
+        one_liner: digestDoc.one_liner,
+        engine: digestDoc.engine,
+        llm: digestDoc.llm,
+        sources: digestDoc.sources
+      };
+      copyText(JSON.stringify(slim, null, 2), "已複製 JSON 摘要");
+    });
+    boot();
+  </script>
+</body>
+</html>
