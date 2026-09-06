@@ -171,6 +171,11 @@
       <div class="kpis" id="c2kpis"></div>
       <p class="lede" id="c2lede">—</p>
       <ul class="lines" id="c2lines"></ul>
+      <div class="card-mini" id="c2streaks" style="margin-top:12px">
+        <div class="t">連買／連賣（啟發式）</div>
+        <div class="d" id="c2streakBody">載入中…</div>
+        <div class="fail">淨額連續日數；0／空值中斷 · 非投資建議</div>
+      </div>
       <div class="deep">
         <a href="./board.html">打開資金流看板（圖表）→</a>
       </div>
@@ -245,11 +250,18 @@
 
     function stockRows(rows, kind, limit) {
       if (!rows || !rows.length) return '<div class="lede">（無）</div>';
-      return rows.slice(0, limit).map((r) => `
-        <div class="stock">
+      return rows.slice(0, limit).map((r) => {
+        const streakBits = [];
+        if (r.foreign_buy_streak > 0) streakBits.push("外連買" + r.foreign_buy_streak);
+        if (r.foreign_sell_streak > 0) streakBits.push("外連賣" + r.foreign_sell_streak);
+        if (r.trust_buy_streak > 0) streakBits.push("投連買" + r.trust_buy_streak);
+        if (r.inst_buy_streak > 0) streakBits.push("法連買" + r.inst_buy_streak);
+        const streakTxt = streakBits.length ? (" · " + streakBits.join("／")) : "";
+        return `<div class="stock">
           <div><span class="code">${esc(r.code)}</span> <span class="name">${esc(r.name||"")}</span></div>
-          <div class="act">${esc((r.suggested_action||r.topic||"").slice(0,48))}</div>
-        </div>`).join("");
+          <div class="act">${esc((r.suggested_action||r.topic||"").slice(0,40))}${esc(streakTxt)}</div>
+        </div>`;
+      }).join("");
     }
 
     function stateClass(label) {
@@ -270,9 +282,10 @@
           "data/theme_rotation/latest.json",
           "data/scoreboard/latest.json",
           "data/digest_latest.json",
+          "data/flow_streaks_latest.json",
         ];
         const ress = await Promise.all(paths.map((p) => fetch(p, { cache:"no-store" })));
-        const [briefRes, arRes, pbRes, thRes, sbRes, digRes] = ress;
+        const [briefRes, arRes, pbRes, thRes, sbRes, digRes, streakRes] = ress;
         if (!briefRes.ok && !digRes.ok) throw new Error("digest/brief 載入失敗");
 
         const brief = briefRes.ok ? await briefRes.json() : null;
@@ -281,6 +294,7 @@
         const th = thRes.ok ? await thRes.json() : null;
         const sb = sbRes.ok ? await sbRes.json() : null;
         const dig = digRes.ok ? await digRes.json() : null;
+        const streaks = (streakRes && streakRes.ok) ? await streakRes.json() : null;
 
         const date = (brief && brief.date) || (dig && dig.date) || (ar && ar.date) || "—";
         meta.textContent = "資料日 " + date + " · 純函數組裝 · llm=false";
@@ -319,6 +333,22 @@
             ? "量級上以外資為主軸；投信／自營當交叉驗證，不要只看單一法人。"
             : "看三法人誰最大、誰同向；分歧時寧可只觀察。";
         document.getElementById("c2lines").innerHTML = flowLines.slice(0,4).map((l)=>`<li>${esc(l)}</li>`).join("");
+        const sb2 = document.getElementById("c2streakBody");
+        if (sb2) {
+          if (streaks && streaks.top) {
+            const fb = (streaks.top.foreign_buy_streak || []).slice(0,5);
+            const tb = (streaks.top.trust_buy_streak || []).slice(0,3);
+            const fs = (streaks.top.foreign_sell_streak || []).slice(0,3);
+            const st = streaks.stats || {};
+            const fmtRow = (r) => r.code + (r.name ? (" " + r.name) : "") + "x" + r.streak;
+            sb2.innerHTML = "資料日 " + (streaks.date||"") + " · 外資連買>=3：" + (st.foreign_buy_ge3??"—") + " 檔；投信連買>=3：" + (st.trust_buy_ge3??"—") + " 檔<br/>"
+              + "<b>外資連買</b>：" + fb.map(fmtRow).map(esc).join("、") + "<br/>"
+              + "<b>投信連買</b>：" + tb.map(fmtRow).map(esc).join("、") + "<br/>"
+              + "<b>外資連賣</b>：" + fs.map(fmtRow).map(esc).join("、");
+          } else {
+            sb2.textContent = "尚無連買／連賣摘要";
+          }
+        }
 
         // —— Ch3
         const hot = (th && (th.accelerating || [])).slice(0,6);
@@ -354,8 +384,18 @@
           </div>`;
         }).join("") || '<div class="lede">尚無劇本</div>';
         const lists = (ar && ar.lists) || {};
-        document.getElementById("c4focus").innerHTML = stockRows(lists.focus_list, "focus", 5);
-        document.getElementById("c4caution").innerHTML = stockRows(lists.caution_list, "caution", 5);
+        const streakMap = {};
+        if (streaks && streaks.top) {
+          for (const key of Object.keys(streaks.top)) {
+            for (const r of (streaks.top[key] || [])) {
+              const m = streakMap[r.code] || (streakMap[r.code] = {code:r.code, name:r.name});
+              m[key] = r.streak;
+            }
+          }
+        }
+        const withStreak = (rows) => (rows||[]).map((r) => Object.assign({}, r, streakMap[r.code] || {}));
+        document.getElementById("c4focus").innerHTML = stockRows(withStreak(lists.focus_list), "focus", 5);
+        document.getElementById("c4caution").innerHTML = stockRows(withStreak(lists.caution_list), "caution", 5);
 
         // —— Ch5
         const by = (sb && sb.by_type) || {};
