@@ -525,13 +525,29 @@
     if (!el) return;
     const chart = echarts.init(el);
     charts.push(chart);
-    const rows = chartStocks().filter(function (s) { return s.foreign_hold_pct != null; });
+    // Top-N by |inst| often includes OTC/ETF without MI_QFIIS — take QFIIS names from a wider pool
+    const n = Math.max(5, Math.min(80, Number(filterState.topN) || 12));
+    let rows = chartStocks().filter(function (s) { return s.foreign_hold_pct != null; });
+    if (rows.length < Math.min(8, n)) {
+      rows = filteredStocks()
+        .filter(function (s) { return s.foreign_hold_pct != null; })
+        .slice()
+        .sort(function (a, b) { return Math.abs(instNet(b)) - Math.abs(instNet(a)); })
+        .slice(0, n);
+    }
     const points = rows.map(function (s) {
       return {
         name: s.code + " " + s.name,
         value: [Number(s.foreign_hold_pct), instNet(s), s.amount || 0.5, s.change || 0]
       };
     });
+    if (!points.length) {
+      chart.setOption(Object.assign(themeBase(), {
+        title: { text: "無外資持股%可畫（篩選後無 MI_QFIIS）", left: "center", top: "middle", textStyle: { color: MUTED, fontSize: 14 } },
+        xAxis: { show: false }, yAxis: { show: false }, series: []
+      }));
+      return;
+    }
     chart.setOption(Object.assign(themeBase(), {
       tooltip: {
         formatter: function (p) {
@@ -1158,6 +1174,7 @@
     renderTrend();
     renderShort();
     renderLeverage();
+    renderForeignHold();
     renderStocksTable();
     renderBrokers();
     renderAlerts();
@@ -1283,6 +1300,7 @@
         renderTrend();
         renderShort();
         renderLeverage();
+        renderForeignHold();
         renderStocksTable();
         renderBrokers();
         renderAlerts();
