@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>策略研究引擎 · NOW / TRANSITION / EDGE</title>
+  <style>
+    :root {
+      --bg:#0b0f14; --panel:#121821; --panel2:#18202b; --border:#243041; --text:#e8eef7;
+      --muted:#8b9bb0; --accent:#38bdf8; --green:#22c55e; --amber:#fbbf24;
+      --red:#f87171; --violet:#c4b5fd;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.55;
+    }
+    .wrap { max-width:1280px; margin:0 auto; padding:24px 18px 72px; }
+    a { color:var(--accent); }
+    h1 { font-size:1.35rem; margin:0 0 6px; }
+    h2 { font-size:1.0rem; margin:0 0 10px; letter-spacing:0.04em; }
+    h3 { font-size:0.88rem; margin:14px 0 8px; color:var(--muted); font-weight:600; }
+    .meta { color:var(--muted); font-size:0.85rem; margin-bottom:14px; }
+    .disclaimer {
+      background:#1a1520; border:1px solid #4c1d95; color:#ddd6fe;
+      border-radius:10px; padding:10px 12px; font-size:0.82rem; margin:12px 0 18px;
+    }
+    .cols {
+      display:grid; grid-template-columns:1fr 1fr 1.15fr; gap:14px;
+    }
+    @media (max-width:1100px) { .cols { grid-template-columns:1fr; } }
+    .col {
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:12px; padding:14px; min-height:420px;
+    }
+    .col.now { border-top:3px solid var(--accent); }
+    .col.trans { border-top:3px solid var(--amber); }
+    .col.edge { border-top:3px solid var(--green); }
+    .sub { color:var(--muted); font-size:0.75rem; margin-bottom:10px; }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+    .chip {
+      font-size:0.72rem; border:1px solid var(--border); border-radius:999px;
+      padding:3px 10px; background:var(--panel2); color:#cbd5e1;
+    }
+    .chip.acc { border-color:#166534; color:#4ade80; background:#052e16; }
+    .chip.dec { border-color:#9a3412; color:#fdba74; background:#431407; }
+    .chip.frag { border-color:#6b21a8; color:#e9d5ff; background:#2e1065; }
+    table { width:100%; border-collapse:collapse; font-size:0.75rem; }
+    th, td { text-align:left; padding:5px 5px; border-bottom:1px solid var(--border); vertical-align:top; }
+    th { color:var(--muted); font-weight:500; white-space:nowrap; }
+    .pos { color:var(--green); }
+    .neg { color:var(--red); }
+    .muted { color:var(--muted); }
+    .tag {
+      display:inline-block; font-size:0.68rem; border-radius:4px; padding:1px 5px;
+      margin:1px 2px 1px 0; background:#1e293b; color:#94a3b8;
+    }
+    .tag.sw { background:#052e16; color:#4ade80; }
+    .tag.dist { background:#3f1d1d; color:#fca5a5; }
+    .tag.ign { background:#0c2a3a; color:var(--accent); }
+    #status { color:var(--muted); font-size:0.8rem; }
+    #status.ok { color:var(--green); }
+    .empty { color:var(--muted); font-size:0.82rem; padding:8px 0; }
+    .stat-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+    .stat {
+      background:var(--panel2); border:1px solid var(--border); border-radius:8px;
+      padding:8px 10px; min-width:90px;
+    }
+    .stat .l { font-size:0.68rem; color:var(--muted); }
+    .stat .v { font-size:1.05rem; font-weight:700; font-variant-numeric:tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>策略研究引擎 · NOW / TRANSITION / EDGE</h1>
+    <div class="meta">
+      純 Python 啟發式 · 非 LLM · 非投資建議 ·
+      <a href="./">← 回看板</a> ·
+      <a href="./action-radar.html">動作雷達</a> ·
+      <a href="./digest.html">制式日報</a>
+      · <span id="status">載入中…</span>
+    </div>
+    <div class="disclaimer">
+      ⚠️ 短樣本（約 60 日）≠ edge 證明。本頁顯示的勝率／超額／lift 僅供研究 debug，
+      未扣稅／佣／滑價，且未做 3–5 年 OOS。不要把記分板當交易訊號。
+    </div>
+
+    <div class="cols">
+      <!-- NOW -->
+      <section class="col now" aria-label="NOW">
+        <h2>NOW · 錢現在在哪</h2>
+        <div class="sub" id="nowMeta">theme_rotation/latest.json</div>
+        <div class="stat-row" id="nowStats"></div>
+        <h3>加速流入 accelerating</h3>
+        <div id="nowAcc" class="empty">—</div>
+        <h3>減速 decelerating</h3>
+        <div id="nowDec" class="empty">—</div>
+        <h3>脆弱流入 fragile_inflow</h3>
+        <div id="nowFrag" class="empty">—</div>
+      </section>
+
+      <!-- TRANSITION -->
+      <section class="col trans" aria-label="TRANSITION">
+        <h2>TRANSITION · 誰正在換狀態</h2>
+        <div class="sub" id="transMeta">lifecycle transitions + signals</div>
+        <div class="stat-row" id="transStats"></div>
+        <h3>關鍵 transitions</h3>
+        <div id="transList" class="empty">—</div>
+        <h3>今日訊號計數</h3>
+        <div id="sigCounts" class="empty">—</div>
+      </section>
+
+      <!-- EDGE -->
+      <section class="col edge" aria-label="EDGE">
+        <h2>EDGE · 這種事過去怎樣</h2>
+        <div class="sub" id="edgeMeta">scoreboard/latest.json</div>
+        <div class="stat-row" id="edgeStats"></div>
+        <h3>作戰草案 playbook_v0</h3>
+        <div id="edgePlaybooks" class="empty">—</div>
+        <h3>記分板</h3>
+        <div id="edgeTable" class="empty">—</div>
+        <h3>Second Wave vs Chase First Bar</h3>
+        <div id="edgeCmp" class="empty">—</div>
+      </section>
+    </div>
+  </div>
+  <script>
+    const pct = (x, d=2) => (x == null || Number.isNaN(x)) ? "—" : (x * 100).toFixed(d) + "%";
+    const num = (x, d=2) => (x == null || Number.isNaN(x)) ? "—" : Number(x).toFixed(d);
+    const esc = (s) => String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+    function themeTable(rows, limit=8) {
+      if (!rows || !rows.length) return '<div class="empty">無</div>';
+      const slice = rows.slice(0, limit);
+      let html = "<table><thead><tr><th>題材</th><th>net</th><th>vel</th><th>acc</th><th>breadth</th><th>top1</th></tr></thead><tbody>";
+      for (const t of slice) {
+        const vel = t.velocity, acc = t.acceleration;
+        html += `<tr>
+          <td>${esc(t.shortname || t.name || t.id)}</td>
+          <td class="${(t.theme_net||0)>=0?'pos':'neg'}">${num(t.theme_net,1)}</td>
+          <td class="${(vel||0)>=0?'pos':'neg'}">${num(vel,1)}</td>
+          <td class="${(acc||0)>=0?'pos':'neg'}">${num(acc,1)}</td>
+          <td>${num(t.breadth,2)}</td>
+          <td>${num(t.top1_contribution,2)}</td>
+        </tr>`;
+      }
+      html += "</tbody></table>";
+      return html;
+    }
+
+    async function boot() {
+      const status = document.getElementById("status");
+      try {
+        const [trRes, lcRes, sigRes, sbRes, pbRes] = await Promise.all([
+          fetch("data/theme_rotation/latest.json", { cache: "no-store" }),
+          fetch("data/lifecycle/transitions_latest.json", { cache: "no-store" }),
+          fetch("data/signals/events_latest.json", { cache: "no-store" }),
+          fetch("data/scoreboard/latest.json", { cache: "no-store" }),
+          fetch("data/playbooks/playbook_v0.json", { cache: "no-store" }),
+        ]);
+        if (!trRes.ok) throw new Error("theme_rotation HTTP " + trRes.status);
+        if (!lcRes.ok) throw new Error("lifecycle HTTP " + lcRes.status);
+        if (!sigRes.ok) throw new Error("signals HTTP " + sigRes.status);
+        if (!sbRes.ok) throw new Error("scoreboard HTTP " + sbRes.status);
+
+        const tr = await trRes.json();
+        const lc = await lcRes.json();
+        const sig = await sigRes.json();
+        const sb = await sbRes.json();
+        const pb = pbRes.ok ? await pbRes.json() : null;
+
+        const d = (tr.meta && tr.meta.date) || (lc.meta && lc.meta.date) || "—";
+        status.textContent = "資料日 " + d + " · engine=research · llm=false";
+        status.className = "ok";
+        document.title = "策略研究 " + d + " · NOW/TRANSITION/EDGE";
+
+        // NOW
+        document.getElementById("nowMeta").textContent =
+          "date " + ((tr.meta && tr.meta.date) || "—") + " · themes " + ((tr.meta && tr.meta.n_themes) || (tr.themes||[]).length);
+        const fc = tr.flag_counts || {};
+        document.getElementById("nowStats").innerHTML = `
+          <div class="stat"><div class="l">加速</div><div class="v pos">${fc.accelerating||0}</div></div>
+          <div class="stat"><div class="l">減速</div><div class="v" style="color:var(--amber)">${fc.decelerating||0}</div></div>
+          <div class="stat"><div class="l">脆弱</div><div class="v" style="color:var(--violet)">${fc.fragile_inflow||0}</div></div>`;
+        document.getElementById("nowAcc").innerHTML = themeTable(tr.accelerating || []);
+        document.getElementById("nowDec").innerHTML = themeTable(tr.decelerating || []);
+        document.getElementById("nowFrag").innerHTML = themeTable(tr.fragile_inflow || []);
+
+        // TRANSITION
+        const transitions = lc.transitions || [];
+        document.getElementById("transMeta").textContent =
+          "date " + ((lc.meta && lc.meta.date) || "—") + " · transitions " + transitions.length;
+        const tagged = transitions.filter(t => t.transition_tag);
+        const swCand = tagged.filter(t => t.transition_tag === "second_wave_candidate").length;
+        const a2i = tagged.filter(t => t.transition_tag === "accumulation_to_ignition").length;
+        const e2d = tagged.filter(t => t.transition_tag === "expansion_to_distribution").length;
+        const countsLatest = (sig.counts_latest_day) || {};
+        document.getElementById("transStats").innerHTML = `
+          <div class="stat"><div class="l">transitions</div><div class="v">${transitions.length}</div></div>
+          <div class="stat"><div class="l">2nd-wave cand</div><div class="v pos">${swCand}</div></div>
+          <div class="stat"><div class="l">Acc→Ign</div><div class="v">${a2i}</div></div>
+          <div class="stat"><div class="l">Exp→Dist</div><div class="v neg">${e2d}</div></div>
+          <div class="stat"><div class="l">accum 訊號</div><div class="v">${countsLatest.institutional_accumulation||0}</div></div>
+          <div class="stat"><div class="l">dist 訊號</div><div class="v">${countsLatest.distribution_detector||0}</div></div>
+          <div class="stat"><div class="l">2nd wave</div><div class="v">${countsLatest.second_wave||0}</div></div>`;
+
+        const topT = transitions.slice(0, 15);
+        if (!topT.length) {
+          document.getElementById("transList").innerHTML = '<div class="empty">今日無 transition</div>';
+        } else {
+          let html = "<table><thead><tr><th>代碼</th><th>名稱</th><th>transition</th><th>tag</th><th>fz</th></tr></thead><tbody>";
+          for (const t of topT) {
+            const tag = t.transition_tag
+              ? `<span class="tag ${t.transition_tag==='second_wave_candidate'?'sw':(t.transition_tag==='expansion_to_distribution'?'dist':'ign')}">${esc(t.transition_tag)}</span>`
+              : "";
+            html += `<tr>
+              <td>${esc(t.code)}</td>
+              <td>${esc(t.name||"")}</td>
+              <td>${esc(t.transition||"")}</td>
+              <td>${tag}</td>
+              <td class="${(t.foreign_flow_z||0)>=0?'pos':'neg'}">${num(t.foreign_flow_z,2)}</td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          document.getElementById("transList").innerHTML = html;
+        }
+
+        const chips = Object.entries(countsLatest).map(([k,v]) =>
+          `<span class="chip">${esc(k)}: ${v}</span>`).join(" ") || '<span class="muted">無</span>';
+        document.getElementById("sigCounts").innerHTML = `<div class="chips">${chips}</div>
+          <div class="sub">全歷史事件：${esc(JSON.stringify(sig.meta && sig.meta.type_counts_all || {}))}</div>`;
+
+
+        // PLAYBOOKS
+        const pbEl = document.getElementById("edgePlaybooks");
+        if (!pb || !pb.playbooks) {
+          pbEl.innerHTML = '<div class="empty">尚無 playbook_v0.json</div>';
+        } else {
+          let html = `<div class="sub">${esc(pb.disclaimer||"")}</div>`;
+          html += `<div class="sub" style="margin-bottom:10px"><strong>今日劇本：</strong>${esc(pb.daily_script||"")}</div>`;
+          for (const pl of pb.playbooks) {
+            const act = pl.action || "";
+            const cls = act.indexOf("躲开")>=0 ? "neg" : (act.indexOf("可跟")>=0 ? "pos" : "");
+            html += `<div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:0 0 8px;background:var(--panel2)">
+              <div><span class="tag ${act.indexOf("躲開")>=0?"dist":(act.indexOf("可跟")>=0?"sw":"ign")}">${esc(act)}</span>
+              <strong>${esc(pl.name)}</strong></div>
+              <div class="sub" style="margin:4px 0">失效：${esc(pl["失效"]||pl.invalidation||"—")}</div>
+              <div class="sub ${cls}">證據：${esc(JSON.stringify(pl.evidence||{}).slice(0,180))}…</div>
+            </div>`;
+          }
+          pbEl.innerHTML = html;
+        }
+
+        // EDGE
+        document.getElementById("edgeMeta").textContent =
+          "base_rate " + pct(sb.base_rate, 1) + " · joined " + (sb.n_events_joined||0) + "/" + (sb.n_events_raw||0);
+        document.getElementById("edgeStats").innerHTML = `
+          <div class="stat"><div class="l">base rate</div><div class="v">${pct(sb.base_rate,1)}</div></div>
+          <div class="stat"><div class="l">joined</div><div class="v">${sb.n_events_joined||0}</div></div>`;
+
+        const rows = sb.rows || [];
+        if (!rows.length) {
+          document.getElementById("edgeTable").innerHTML = '<div class="empty">無記分板列</div>';
+        } else {
+          let html = "<table><thead><tr><th>訊號</th><th>N</th><th>5d超額</th><th>勝率</th><th>MAE</th><th>Lift</th><th>最佳regime</th></tr></thead><tbody>";
+          for (const row of rows) {
+            const s = row.stats || {};
+            const m5 = s.mean_excess_5d;
+            html += `<tr>
+              <td>${esc(row.signal_type)}</td>
+              <td>${s.N_with_excess_5d != null ? s.N_with_excess_5d : (s.N||0)}</td>
+              <td class="${(m5||0)>=0?'pos':'neg'}">${pct(m5)}</td>
+              <td>${pct(s.hit_rate_excess_5d,1)}</td>
+              <td class="neg">${pct(s.mean_MAE_5d)}</td>
+              <td class="${(s.lift||0)>=0?'pos':'neg'}">${pct(s.lift,1)}</td>
+              <td>${esc(s.best_regime||"—")}</td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          document.getElementById("edgeTable").innerHTML = html;
+        }
+
+        const cmp = sb.second_wave_vs_chase || {};
+        document.getElementById("edgeCmp").innerHTML = `
+          <table><tbody>
+            <tr><td>second_wave</td><td>N=${cmp.second_wave_N||0}</td>
+              <td class="${(cmp.second_wave_mean_excess_5d||0)>=0?'pos':'neg'}">${pct(cmp.second_wave_mean_excess_5d)}</td>
+              <td>hit ${pct(cmp.second_wave_hit,1)}</td></tr>
+            <tr><td>chase_first_bar</td><td>N=${cmp.chase_first_bar_N||0}</td>
+              <td class="${(cmp.chase_first_bar_mean_excess_5d||0)>=0?'pos':'neg'}">${pct(cmp.chase_first_bar_mean_excess_5d)}</td>
+              <td>hit ${pct(cmp.chase_first_bar_hit,1)}</td></tr>
+            <tr><td>差額 (SW−chase)</td><td colspan="2" class="${(cmp.diff_mean_excess_5d||0)>=0?'pos':'neg'}">${pct(cmp.diff_mean_excess_5d)}</td><td></td></tr>
+          </tbody></table>
+          <div class="sub" style="margin-top:8px">⚠️ ${esc(sb.caveat || "短樣本 ≠ edge 證明")}</div>`;
+      } catch (e) {
+        status.textContent = "載入失敗：" + (e && e.message ? e.message : String(e));
+        status.className = "";
+      }
+    }
+    boot();
+  </script>
+</body>
+</html>

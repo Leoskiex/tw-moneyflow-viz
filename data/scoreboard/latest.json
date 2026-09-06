@@ -1,0 +1,580 @@
+{
+  "meta": {
+    "generated_by": "build_strategy_scoreboard.py",
+    "caveat": "短樣本 ≠ edge 證明。~60 日僅供 debug／找 idea，不足證 edge；成本與流動性未扣。",
+    "note": "Join on (signal_date, code) → outcomes; signal at T close, research labels from T."
+  },
+  "signals_date": "2026-09-04",
+  "n_events_raw": 4743,
+  "n_events_joined": 4628,
+  "base_rate": 0.4217045570394536,
+  "rows": [
+    {
+      "signal_type": "second_wave",
+      "stats": {
+        "N": 213,
+        "N_with_excess_5d": 184,
+        "N_with_excess_10d": 160,
+        "mean_excess_5d": -0.005878305786927134,
+        "median_excess_5d": -0.011522450519152683,
+        "mean_excess_10d": -0.008317077803081946,
+        "median_excess_10d": -0.0210936148520377,
+        "hit_rate_excess_5d": 0.40217391304347827,
+        "mean_MAE_5d": -0.029844781437072265,
+        "mean_MFE_5d": 0.03397755225664249,
+        "base_rate_excess_5d": 0.4217045570394536,
+        "lift": -0.019530643995975316,
+        "by_regime_primary": {
+          "regulatory": {
+            "N": 30,
+            "mean_excess_5d": -2.2005830271902097e-05,
+            "hit_rate_excess_5d": 0.4,
+            "lift_vs_base": -0.021704557039453565
+          },
+          "hot_money": {
+            "N": 10,
+            "mean_excess_5d": 0.015097061077753705,
+            "hit_rate_excess_5d": 0.6,
+            "lift_vs_base": 0.1782954429605464
+          },
+          "risk_off": {
+            "N": 44,
+            "mean_excess_5d": -0.03412911983896864,
+            "hit_rate_excess_5d": 0.2857142857142857,
+            "lift_vs_base": -0.1359902713251679
+          },
+          "inst_push": {
+            "N": 102,
+            "mean_excess_5d": -0.012549984690050616,
+            "hit_rate_excess_5d": 0.3541666666666667,
+            "lift_vs_base": -0.0675378903727869
+          },
+          "mixed": {
+            "N": 8,
+            "mean_excess_5d": 0.07570554865666763,
+            "hit_rate_excess_5d": 0.625,
+            "lift_vs_base": 0.2032954429605464
+          },
+          "leverage_relay": {
+            "N": 19,
+            "mean_excess_5d": 0.004418260891888786,
+            "hit_rate_excess_5d": 0.5789473684210527,
+            "lift_vs_base": 0.15724281138159907
+          }
+        },
+        "best_regime": "mixed",
+        "N_events": 218
+      }
+    },
+    {
+      "signal_type": "chase_first_bar",
+      "stats": {
+        "N": 1200,
+        "N_with_excess_5d": 1118,
+        "N_with_excess_10d": 991,
+        "mean_excess_5d": -0.0077511981931815835,
+        "median_excess_5d": -0.012196665235404192,
+        "mean_excess_10d": -0.005503059783478768,
+        "median_excess_10d": -0.012382068498847598,
+        "hit_rate_excess_5d": 0.4069767441860465,
+        "mean_MAE_5d": -0.034857546869257114,
+        "mean_MFE_5d": 0.026386870570603484,
+        "base_rate_excess_5d": 0.4217045570394536,
+        "lift": -0.014727812853407074,
+        "by_regime_primary": {
+          "leverage_relay": {
+            "N": 312,
+            "mean_excess_5d": 0.006027386641216361,
+            "hit_rate_excess_5d": 0.5224358974358975,
+            "lift_vs_base": 0.10073134039644388
+          },
+          "hot_money": {
+            "N": 33,
+            "mean_excess_5d": -0.026877799617337477,
+            "hit_rate_excess_5d": 0.18181818181818182,
+            "lift_vs_base": -0.23988637522127176
+          },
+          "inst_push": {
+            "N": 397,
+            "mean_excess_5d": -0.009059570983996542,
+            "hit_rate_excess_5d": 0.3726027397260274,
+            "lift_vs_base": -0.049101817313426166
+          },
+          "regulatory": {
+            "N": 237,
+            "mean_excess_5d": -0.018480375603250863,
+            "hit_rate_excess_5d": 0.3305084745762712,
+            "lift_vs_base": -0.09119608246318239
+          },
+          "risk_off": {
+            "N": 192,
+            "mean_excess_5d": -0.021750722691563515,
+            "hit_rate_excess_5d": 0.35664335664335667,
+            "lift_vs_base": -0.06506120039609692
+          },
+          "mixed": {
+            "N": 29,
+            "mean_excess_5d": 0.038587881784660195,
+            "hit_rate_excess_5d": 0.7241379310344828,
+            "lift_vs_base": 0.3024333739950292
+          }
+        },
+        "best_regime": "mixed",
+        "N_events": 1234
+      }
+    },
+    {
+      "signal_type": "institutional_accumulation",
+      "stats": {
+        "N": 2068,
+        "N_with_excess_5d": 1857,
+        "N_with_excess_10d": 1570,
+        "mean_excess_5d": -0.012056026989207618,
+        "median_excess_5d": -0.01374999689791101,
+        "mean_excess_10d": -0.020214120906648973,
+        "median_excess_10d": -0.023520778722946334,
+        "hit_rate_excess_5d": 0.3667205169628433,
+        "mean_MAE_5d": -0.016671999246348875,
+        "mean_MFE_5d": 0.02802518442936537,
+        "base_rate_excess_5d": 0.4217045570394536,
+        "lift": -0.054984040076610285,
+        "by_regime_primary": {
+          "regulatory": {
+            "N": 359,
+            "mean_excess_5d": -0.03009804352030821,
+            "hit_rate_excess_5d": 0.276536312849162,
+            "lift_vs_base": -0.14516824419029156
+          },
+          "leverage_relay": {
+            "N": 350,
+            "mean_excess_5d": 0.006530638322031083,
+            "hit_rate_excess_5d": 0.49714285714285716,
+            "lift_vs_base": 0.07543830010340358
+          },
+          "risk_off": {
+            "N": 675,
+            "mean_excess_5d": -0.021886575266210295,
+            "hit_rate_excess_5d": 0.33147113594040967,
+            "lift_vs_base": -0.09023342109904392
+          },
+          "hot_money": {
+            "N": 102,
+            "mean_excess_5d": -0.014890895064582469,
+            "hit_rate_excess_5d": 0.24509803921568626,
+            "lift_vs_base": -0.17660651782376732
+          },
+          "mixed": {
+            "N": 68,
+            "mean_excess_5d": 0.024991684960607982,
+            "hit_rate_excess_5d": 0.7647058823529411,
+            "lift_vs_base": 0.34300132531348754
+          },
+          "inst_push": {
+            "N": 514,
+            "mean_excess_5d": -0.005262756366918751,
+            "hit_rate_excess_5d": 0.34615384615384615,
+            "lift_vs_base": -0.07555071088560744
+          }
+        },
+        "best_regime": "mixed",
+        "N_events": 2140
+      }
+    },
+    {
+      "signal_type": "fake_thrust",
+      "stats": {
+        "N": 585,
+        "N_with_excess_5d": 532,
+        "N_with_excess_10d": 466,
+        "mean_excess_5d": -0.032905332772240344,
+        "median_excess_5d": -0.03603019919258499,
+        "mean_excess_10d": -0.03941176219289288,
+        "median_excess_10d": -0.044124656004270624,
+        "hit_rate_excess_5d": 0.24812030075187969,
+        "mean_MAE_5d": -0.06516220825203835,
+        "mean_MFE_5d": 0.013191381679190754,
+        "base_rate_excess_5d": 0.4217045570394536,
+        "lift": -0.1735842562875739,
+        "by_regime_primary": {
+          "risk_off": {
+            "N": 114,
+            "mean_excess_5d": -0.04391528407638479,
+            "hit_rate_excess_5d": 0.20454545454545456,
+            "lift_vs_base": -0.21715910249399903
+          },
+          "inst_push": {
+            "N": 191,
+            "mean_excess_5d": -0.029120245710722643,
+            "hit_rate_excess_5d": 0.24848484848484848,
+            "lift_vs_base": -0.1732197085546051
+          },
+          "leverage_relay": {
+            "N": 122,
+            "mean_excess_5d": -0.01966137891330788,
+            "hit_rate_excess_5d": 0.2892561983471074,
+            "lift_vs_base": -0.13244835869234617
+          },
+          "regulatory": {
+            "N": 127,
+            "mean_excess_5d": -0.04734525459200548,
+            "hit_rate_excess_5d": 0.2047244094488189,
+            "lift_vs_base": -0.2169801475906347
+          },
+          "mixed": {
+            "N": 19,
+            "mean_excess_5d": 0.014836810806405741,
+            "hit_rate_excess_5d": 0.5789473684210527,
+            "lift_vs_base": 0.15724281138159907
+          },
+          "hot_money": {
+            "N": 12,
+            "mean_excess_5d": -0.060523059788960464,
+            "hit_rate_excess_5d": 0.08333333333333333,
+            "lift_vs_base": -0.33837122370612027
+          }
+        },
+        "best_regime": "mixed",
+        "N_events": 585
+      }
+    },
+    {
+      "signal_type": "distribution_detector",
+      "stats": {
+        "N": 562,
+        "N_with_excess_5d": 466,
+        "N_with_excess_10d": 410,
+        "mean_excess_5d": -0.004847879265369497,
+        "median_excess_5d": -0.0047079260848783555,
+        "mean_excess_10d": -0.008658509670057692,
+        "median_excess_10d": -0.00734313837052325,
+        "hit_rate_excess_5d": 0.4699570815450644,
+        "mean_MAE_5d": -0.028830098378651543,
+        "mean_MFE_5d": 0.014531489174418634,
+        "base_rate_excess_5d": 0.4217045570394536,
+        "lift": 0.048252524505610794,
+        "by_regime_primary": {
+          "risk_off": {
+            "N": 223,
+            "mean_excess_5d": -0.022760415274898554,
+            "hit_rate_excess_5d": 0.41044776119402987,
+            "lift_vs_base": -0.011256795845423717
+          },
+          "regulatory": {
+            "N": 182,
+            "mean_excess_5d": 0.008482632614951363,
+            "hit_rate_excess_5d": 0.5494505494505495,
+            "lift_vs_base": 0.1277459924110959
+          },
+          "inst_push": {
+            "N": 100,
+            "mean_excess_5d": -0.006072474950309324,
+            "hit_rate_excess_5d": 0.45161290322580644,
+            "lift_vs_base": 0.029908346186352852
+          },
+          "leverage_relay": {
+            "N": 53,
+            "mean_excess_5d": -0.010011246059316721,
+            "hit_rate_excess_5d": 0.33962264150943394,
+            "lift_vs_base": -0.08208191553001964
+          },
+          "hot_money": {
+            "N": 3,
+            "mean_excess_5d": 0.10260253671911175,
+            "hit_rate_excess_5d": 1.0,
+            "lift_vs_base": 0.5782954429605465
+          },
+          "mixed": {
+            "N": 1,
+            "mean_excess_5d": 0.03447337461829092,
+            "hit_rate_excess_5d": 1.0,
+            "lift_vs_base": 0.5782954429605465
+          }
+        },
+        "best_regime": "hot_money",
+        "N_events": 566
+      }
+    }
+  ],
+  "by_type": {
+    "second_wave": {
+      "N": 213,
+      "N_with_excess_5d": 184,
+      "N_with_excess_10d": 160,
+      "mean_excess_5d": -0.005878305786927134,
+      "median_excess_5d": -0.011522450519152683,
+      "mean_excess_10d": -0.008317077803081946,
+      "median_excess_10d": -0.0210936148520377,
+      "hit_rate_excess_5d": 0.40217391304347827,
+      "mean_MAE_5d": -0.029844781437072265,
+      "mean_MFE_5d": 0.03397755225664249,
+      "base_rate_excess_5d": 0.4217045570394536,
+      "lift": -0.019530643995975316,
+      "by_regime_primary": {
+        "regulatory": {
+          "N": 30,
+          "mean_excess_5d": -2.2005830271902097e-05,
+          "hit_rate_excess_5d": 0.4,
+          "lift_vs_base": -0.021704557039453565
+        },
+        "hot_money": {
+          "N": 10,
+          "mean_excess_5d": 0.015097061077753705,
+          "hit_rate_excess_5d": 0.6,
+          "lift_vs_base": 0.1782954429605464
+        },
+        "risk_off": {
+          "N": 44,
+          "mean_excess_5d": -0.03412911983896864,
+          "hit_rate_excess_5d": 0.2857142857142857,
+          "lift_vs_base": -0.1359902713251679
+        },
+        "inst_push": {
+          "N": 102,
+          "mean_excess_5d": -0.012549984690050616,
+          "hit_rate_excess_5d": 0.3541666666666667,
+          "lift_vs_base": -0.0675378903727869
+        },
+        "mixed": {
+          "N": 8,
+          "mean_excess_5d": 0.07570554865666763,
+          "hit_rate_excess_5d": 0.625,
+          "lift_vs_base": 0.2032954429605464
+        },
+        "leverage_relay": {
+          "N": 19,
+          "mean_excess_5d": 0.004418260891888786,
+          "hit_rate_excess_5d": 0.5789473684210527,
+          "lift_vs_base": 0.15724281138159907
+        }
+      },
+      "best_regime": "mixed",
+      "N_events": 218
+    },
+    "chase_first_bar": {
+      "N": 1200,
+      "N_with_excess_5d": 1118,
+      "N_with_excess_10d": 991,
+      "mean_excess_5d": -0.0077511981931815835,
+      "median_excess_5d": -0.012196665235404192,
+      "mean_excess_10d": -0.005503059783478768,
+      "median_excess_10d": -0.012382068498847598,
+      "hit_rate_excess_5d": 0.4069767441860465,
+      "mean_MAE_5d": -0.034857546869257114,
+      "mean_MFE_5d": 0.026386870570603484,
+      "base_rate_excess_5d": 0.4217045570394536,
+      "lift": -0.014727812853407074,
+      "by_regime_primary": {
+        "leverage_relay": {
+          "N": 312,
+          "mean_excess_5d": 0.006027386641216361,
+          "hit_rate_excess_5d": 0.5224358974358975,
+          "lift_vs_base": 0.10073134039644388
+        },
+        "hot_money": {
+          "N": 33,
+          "mean_excess_5d": -0.026877799617337477,
+          "hit_rate_excess_5d": 0.18181818181818182,
+          "lift_vs_base": -0.23988637522127176
+        },
+        "inst_push": {
+          "N": 397,
+          "mean_excess_5d": -0.009059570983996542,
+          "hit_rate_excess_5d": 0.3726027397260274,
+          "lift_vs_base": -0.049101817313426166
+        },
+        "regulatory": {
+          "N": 237,
+          "mean_excess_5d": -0.018480375603250863,
+          "hit_rate_excess_5d": 0.3305084745762712,
+          "lift_vs_base": -0.09119608246318239
+        },
+        "risk_off": {
+          "N": 192,
+          "mean_excess_5d": -0.021750722691563515,
+          "hit_rate_excess_5d": 0.35664335664335667,
+          "lift_vs_base": -0.06506120039609692
+        },
+        "mixed": {
+          "N": 29,
+          "mean_excess_5d": 0.038587881784660195,
+          "hit_rate_excess_5d": 0.7241379310344828,
+          "lift_vs_base": 0.3024333739950292
+        }
+      },
+      "best_regime": "mixed",
+      "N_events": 1234
+    },
+    "institutional_accumulation": {
+      "N": 2068,
+      "N_with_excess_5d": 1857,
+      "N_with_excess_10d": 1570,
+      "mean_excess_5d": -0.012056026989207618,
+      "median_excess_5d": -0.01374999689791101,
+      "mean_excess_10d": -0.020214120906648973,
+      "median_excess_10d": -0.023520778722946334,
+      "hit_rate_excess_5d": 0.3667205169628433,
+      "mean_MAE_5d": -0.016671999246348875,
+      "mean_MFE_5d": 0.02802518442936537,
+      "base_rate_excess_5d": 0.4217045570394536,
+      "lift": -0.054984040076610285,
+      "by_regime_primary": {
+        "regulatory": {
+          "N": 359,
+          "mean_excess_5d": -0.03009804352030821,
+          "hit_rate_excess_5d": 0.276536312849162,
+          "lift_vs_base": -0.14516824419029156
+        },
+        "leverage_relay": {
+          "N": 350,
+          "mean_excess_5d": 0.006530638322031083,
+          "hit_rate_excess_5d": 0.49714285714285716,
+          "lift_vs_base": 0.07543830010340358
+        },
+        "risk_off": {
+          "N": 675,
+          "mean_excess_5d": -0.021886575266210295,
+          "hit_rate_excess_5d": 0.33147113594040967,
+          "lift_vs_base": -0.09023342109904392
+        },
+        "hot_money": {
+          "N": 102,
+          "mean_excess_5d": -0.014890895064582469,
+          "hit_rate_excess_5d": 0.24509803921568626,
+          "lift_vs_base": -0.17660651782376732
+        },
+        "mixed": {
+          "N": 68,
+          "mean_excess_5d": 0.024991684960607982,
+          "hit_rate_excess_5d": 0.7647058823529411,
+          "lift_vs_base": 0.34300132531348754
+        },
+        "inst_push": {
+          "N": 514,
+          "mean_excess_5d": -0.005262756366918751,
+          "hit_rate_excess_5d": 0.34615384615384615,
+          "lift_vs_base": -0.07555071088560744
+        }
+      },
+      "best_regime": "mixed",
+      "N_events": 2140
+    },
+    "fake_thrust": {
+      "N": 585,
+      "N_with_excess_5d": 532,
+      "N_with_excess_10d": 466,
+      "mean_excess_5d": -0.032905332772240344,
+      "median_excess_5d": -0.03603019919258499,
+      "mean_excess_10d": -0.03941176219289288,
+      "median_excess_10d": -0.044124656004270624,
+      "hit_rate_excess_5d": 0.24812030075187969,
+      "mean_MAE_5d": -0.06516220825203835,
+      "mean_MFE_5d": 0.013191381679190754,
+      "base_rate_excess_5d": 0.4217045570394536,
+      "lift": -0.1735842562875739,
+      "by_regime_primary": {
+        "risk_off": {
+          "N": 114,
+          "mean_excess_5d": -0.04391528407638479,
+          "hit_rate_excess_5d": 0.20454545454545456,
+          "lift_vs_base": -0.21715910249399903
+        },
+        "inst_push": {
+          "N": 191,
+          "mean_excess_5d": -0.029120245710722643,
+          "hit_rate_excess_5d": 0.24848484848484848,
+          "lift_vs_base": -0.1732197085546051
+        },
+        "leverage_relay": {
+          "N": 122,
+          "mean_excess_5d": -0.01966137891330788,
+          "hit_rate_excess_5d": 0.2892561983471074,
+          "lift_vs_base": -0.13244835869234617
+        },
+        "regulatory": {
+          "N": 127,
+          "mean_excess_5d": -0.04734525459200548,
+          "hit_rate_excess_5d": 0.2047244094488189,
+          "lift_vs_base": -0.2169801475906347
+        },
+        "mixed": {
+          "N": 19,
+          "mean_excess_5d": 0.014836810806405741,
+          "hit_rate_excess_5d": 0.5789473684210527,
+          "lift_vs_base": 0.15724281138159907
+        },
+        "hot_money": {
+          "N": 12,
+          "mean_excess_5d": -0.060523059788960464,
+          "hit_rate_excess_5d": 0.08333333333333333,
+          "lift_vs_base": -0.33837122370612027
+        }
+      },
+      "best_regime": "mixed",
+      "N_events": 585
+    },
+    "distribution_detector": {
+      "N": 562,
+      "N_with_excess_5d": 466,
+      "N_with_excess_10d": 410,
+      "mean_excess_5d": -0.004847879265369497,
+      "median_excess_5d": -0.0047079260848783555,
+      "mean_excess_10d": -0.008658509670057692,
+      "median_excess_10d": -0.00734313837052325,
+      "hit_rate_excess_5d": 0.4699570815450644,
+      "mean_MAE_5d": -0.028830098378651543,
+      "mean_MFE_5d": 0.014531489174418634,
+      "base_rate_excess_5d": 0.4217045570394536,
+      "lift": 0.048252524505610794,
+      "by_regime_primary": {
+        "risk_off": {
+          "N": 223,
+          "mean_excess_5d": -0.022760415274898554,
+          "hit_rate_excess_5d": 0.41044776119402987,
+          "lift_vs_base": -0.011256795845423717
+        },
+        "regulatory": {
+          "N": 182,
+          "mean_excess_5d": 0.008482632614951363,
+          "hit_rate_excess_5d": 0.5494505494505495,
+          "lift_vs_base": 0.1277459924110959
+        },
+        "inst_push": {
+          "N": 100,
+          "mean_excess_5d": -0.006072474950309324,
+          "hit_rate_excess_5d": 0.45161290322580644,
+          "lift_vs_base": 0.029908346186352852
+        },
+        "leverage_relay": {
+          "N": 53,
+          "mean_excess_5d": -0.010011246059316721,
+          "hit_rate_excess_5d": 0.33962264150943394,
+          "lift_vs_base": -0.08208191553001964
+        },
+        "hot_money": {
+          "N": 3,
+          "mean_excess_5d": 0.10260253671911175,
+          "hit_rate_excess_5d": 1.0,
+          "lift_vs_base": 0.5782954429605465
+        },
+        "mixed": {
+          "N": 1,
+          "mean_excess_5d": 0.03447337461829092,
+          "hit_rate_excess_5d": 1.0,
+          "lift_vs_base": 0.5782954429605465
+        }
+      },
+      "best_regime": "hot_money",
+      "N_events": 566
+    }
+  },
+  "second_wave_vs_chase": {
+    "second_wave_N": 184,
+    "chase_first_bar_N": 1118,
+    "second_wave_mean_excess_5d": -0.005878305786927134,
+    "chase_first_bar_mean_excess_5d": -0.0077511981931815835,
+    "diff_mean_excess_5d": 0.0018728924062544495,
+    "second_wave_hit": 0.40217391304347827,
+    "chase_first_bar_hit": 0.4069767441860465
+  },
+  "caveat": "短樣本 ≠ edge 證明。~60 日僅供 debug／找 idea，不足證 edge；成本與流動性未扣。"
+}

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>動作雷達 · 錢往哪流</title>
+  <style>
+    :root {
+      --bg:#0b0f14; --panel:#121821; --border:#243041; --text:#e8eef7;
+      --muted:#8b9bb0; --accent:#38bdf8; --green:#22c55e; --amber:#fbbf24;
+      --red:#f87171; --violet:#c4b5fd;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.55;
+    }
+    .wrap { max-width:1100px; margin:0 auto; padding:24px 18px 72px; }
+    a { color:var(--accent); }
+    h1 { font-size:1.35rem; margin:0 0 6px; }
+    h2 { font-size:1.05rem; margin:22px 0 10px; }
+    .meta { color:var(--muted); font-size:0.85rem; margin-bottom:14px; }
+    .disclaimer {
+      background:#1a1520; border:1px solid #4c1d95; color:#ddd6fe;
+      border-radius:10px; padding:10px 12px; font-size:0.82rem; margin:12px 0 18px;
+    }
+    .toolbar {
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+      margin:8px 0 16px; position:sticky; top:0; z-index:5;
+      background:rgba(11,15,20,0.92); padding:10px 0; border-bottom:1px solid var(--border);
+    }
+    button {
+      background:#18202b; color:var(--text); border:1px solid var(--border);
+      border-radius:8px; padding:8px 14px; cursor:pointer; font-size:0.88rem;
+    }
+    button.primary { background:#0c2a3a; border-color:#1e5a75; color:var(--accent); }
+    button:hover { border-color:var(--accent); }
+    #status { color:var(--muted); font-size:0.8rem; }
+    #status.ok { color:var(--green); }
+    .macro-card {
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:12px; padding:16px;
+    }
+    .state {
+      display:inline-block; font-size:1.25rem; font-weight:700; margin:4px 0 10px;
+    }
+    .state.defend { color:#94a3b8; }
+    .state.stress { color:var(--violet); }
+    .state.repair { color:var(--amber); }
+    .state.push { color:var(--green); }
+    .state.mixed { color:var(--accent); }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+    .chip {
+      font-size:0.75rem; border:1px solid var(--border); border-radius:999px;
+      padding:3px 10px; background:#18202b; color:#cbd5e1;
+    }
+    .actions { list-style:none; margin:0; padding:0; }
+    .actions li {
+      border-left:3px solid var(--border); padding:8px 10px; margin:6px 0;
+      background:#0f141c; border-radius:0 8px 8px 0;
+    }
+    .actions li.high { border-left-color:var(--red); }
+    .actions li.med { border-left-color:var(--amber); }
+    .actions li.low { border-left-color:var(--accent); }
+    .actions .t { font-weight:600; }
+    .actions .d { color:var(--muted); font-size:0.82rem; margin-top:2px; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media (max-width:900px) { .grid2 { grid-template-columns:1fr; } }
+    .card {
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:12px; padding:12px; overflow:auto;
+    }
+    .card h3 { margin:0 0 8px; font-size:0.95rem; }
+    .sub { color:var(--muted); font-size:0.78rem; margin-bottom:8px; }
+    table { width:100%; border-collapse:collapse; font-size:0.78rem; }
+    th, td { text-align:left; padding:6px 6px; border-bottom:1px solid var(--border); vertical-align:top; }
+    th { color:var(--muted); font-weight:500; white-space:nowrap; }
+    .flag {
+      display:inline-block; font-size:0.68rem; border-radius:4px; padding:1px 5px;
+      margin:1px 2px 1px 0; background:#1e293b; color:#94a3b8;
+    }
+    .flag.mild { background:#052e16; color:#4ade80; }
+    .flag.exit { background:#3f1d1d; color:#fca5a5; }
+    .flag.etf { background:#0c2a3a; color:var(--accent); }
+    .action-cell { color:#cbd5e1; max-width:280px; }
+    pre#mdView {
+      white-space:pre-wrap; word-break:break-word;
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:12px; padding:14px; font-size:0.82rem; display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>動作雷達 Action Radar</h1>
+    <div class="meta">
+      純 Python 啟發式 · 非 LLM · 非投資建議 ·
+      <a href="./">← 回看板</a> ·
+      <a href="./digest.html">制式日報</a>
+    </div>
+    <div class="disclaimer" id="disclaimer">載入中…</div>
+    <div class="toolbar">
+      <button type="button" class="primary" id="btnCopyJson">複製 JSON</button>
+      <button type="button" id="btnToggleMd">顯示／隱藏 Markdown</button>
+      <a href="data/action_radar_latest.json" download style="font-size:0.85rem">下載 JSON</a>
+      <a href="data/action_radar_latest.md" download style="font-size:0.85rem">下載 MD</a>
+      <span id="status">載入中…</span>
+    </div>
+
+    <div class="macro-card" id="macroCard">
+      <div class="sub" id="macroMeta">—</div>
+      <div class="state mixed" id="macroState">—</div>
+      <div class="chips" id="macroChips"></div>
+      <ul class="actions" id="macroActions"></ul>
+    </div>
+
+    <h2>焦點／謹慎</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>焦點名單 focus <span class="sub" style="display:inline">止跌／加速 × mild_push · 非 exit</span></h3>
+        <div class="stock-table-wrap"><table id="tblFocus"><thead><tr>
+          <th>代碼</th><th>名稱</th><th>桶</th><th>反彈%</th><th>題材</th><th>旗標</th><th>建議動作</th>
+        </tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <h3>謹慎 caution <span class="sub" style="display:inline">加速／新高 × exit_watch</span></h3>
+        <div class="stock-table-wrap"><table id="tblCaution"><thead><tr>
+          <th>代碼</th><th>名稱</th><th>桶</th><th>反彈%</th><th>題材</th><th>旗標</th><th>建議動作</th>
+        </tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+
+    <h2>分桶偵測</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>新鮮止跌 fresh_stop</h3>
+        <div class="sub">近 5 日止跌、反彈尚淺</div>
+        <table id="tblStop"><thead><tr>
+          <th>代碼</th><th>名稱</th><th>反彈%</th><th>止跌日</th><th>旗標</th><th>建議</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card">
+        <h3>加速修復 accel_now</h3>
+        <div class="sub">近 5 日加速、反彈≥12%</div>
+        <table id="tblAccel"><thead><tr>
+          <th>代碼</th><th>名稱</th><th>反彈%</th><th>加速日</th><th>旗標</th><th>建議</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card">
+        <h3>樣本區間新高 sample_high</h3>
+        <div class="sub">樣本內收盤最高</div>
+        <table id="tblHigh"><thead><tr>
+          <th>代碼</th><th>名稱</th><th>反彈%</th><th>題材</th><th>旗標</th><th>建議</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card">
+        <h3>洗盤止跌 washout_stop</h3>
+        <div class="sub">相對大盤谷底附近止跌</div>
+        <table id="tblWashStop"><thead><tr>
+          <th>代碼</th><th>名稱</th><th>反彈%</th><th>止跌日</th><th>旗標</th><th>建議</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card">
+        <h3>洗盤加速 washout_accel</h3>
+        <div class="sub">谷底後加速修復</div>
+        <table id="tblWashAccel"><thead><tr>
+          <th>代碼</th><th>名稱</th><th>反彈%</th><th>加速日</th><th>旗標</th><th>建議</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card">
+        <h3>規則說明</h3>
+        <pre id="rulesBox" style="margin:0;white-space:pre-wrap;font-size:0.78rem;color:#cbd5e1;font-family:inherit">—</pre>
+      </div>
+    </div>
+
+    <pre id="mdView"></pre>
+  </div>
+  <script>
+    let doc = null;
+    let mdText = "";
+
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function flagsHtml(flags) {
+      const arr = flags || [];
+      return arr.map(function (f) {
+        let cls = "flag";
+        if (f === "mild_push") cls += " mild";
+        else if (f === "exit_watch") cls += " exit";
+        else if (String(f).indexOf("00981") >= 0 || String(f).indexOf("etf") >= 0) cls += " etf";
+        return '<span class="' + cls + '">' + esc(f) + "</span>";
+      }).join("");
+    }
+
+    function fillTable(id, rows, cols) {
+      const tb = document.querySelector("#" + id + " tbody");
+      if (!tb) return;
+      if (!rows || !rows.length) {
+        tb.innerHTML = '<tr><td colspan="8" style="color:var(--muted)">（無）</td></tr>';
+        return;
+      }
+      tb.innerHTML = rows.map(function (r) {
+        return "<tr>" + cols.map(function (c) {
+          if (c === "flags") return "<td>" + flagsHtml(r.flags) + "</td>";
+          if (c === "suggested_action" || c === "action")
+            return '<td class="action-cell">' + esc(r.suggested_action || r.action || "") + "</td>";
+          if (c === "rebound_pct")
+            return "<td>" + (r.rebound_pct != null ? Number(r.rebound_pct).toFixed(1) : "—") + "</td>";
+          if (c === "bucket") return "<td>" + esc(r.bucket || "") + "</td>";
+          return "<td>" + esc(r[c] != null ? r[c] : "") + "</td>";
+        }).join("") + "</tr>";
+      }).join("");
+    }
+
+    function render(doc) {
+      const disclaimer = document.getElementById("disclaimer");
+      disclaimer.textContent = doc.disclaimer || "啟發式動作建議 · 非投資建議";
+
+      const macro = doc.macro || {};
+      const state = macro.macro_state || "mixed";
+      const stEl = document.getElementById("macroState");
+      stEl.textContent = "宏觀狀態 · " + state;
+      stEl.className = "state " + state;
+
+      document.getElementById("macroMeta").textContent =
+        (doc.date || "") + " · " + (doc.engine || "") + " · llm=" + String(!!doc.llm) +
+        " · sample " + ((doc.meta && doc.meta.sample_start) || "?") + "→" + (doc.date || "?");
+
+      const chips = document.getElementById("macroChips");
+      chips.innerHTML = [
+        "risk_off_streak=" + (macro.risk_off_streak != null ? macro.risk_off_streak : "—"),
+        "foreign_lead_sell=" + String(!!macro.foreign_lead_sell),
+        "market_trough=" + (macro.market_trough_date || "—"),
+        "大盤反彈%=" + (macro.market_rebound_pct != null ? macro.market_rebound_pct : "—")
+      ].map(function (t) { return '<span class="chip">' + esc(t) + "</span>"; }).join("");
+
+      const acts = macro.actions_macro || [];
+      document.getElementById("macroActions").innerHTML = acts.map(function (a) {
+        const u = (a.urgency || "low").toLowerCase();
+        return '<li class="' + esc(u) + '"><div class="t">' + esc(a.title || a.id || "") +
+          '</div><div class="d">' + esc(a.detail || "") + "</div></li>";
+      }).join("") || '<li class="low"><div class="d">無宏觀動作</div></li>';
+
+      const lists = doc.lists || {};
+      const fullCols = ["code", "name", "bucket", "rebound_pct", "topic", "flags", "suggested_action"];
+      const shortCols = ["code", "name", "rebound_pct", "stop_fall_date", "flags", "suggested_action"];
+      const accelCols = ["code", "name", "rebound_pct", "accel_date", "flags", "suggested_action"];
+      const highCols = ["code", "name", "rebound_pct", "topic", "flags", "suggested_action"];
+
+      fillTable("tblFocus", lists.focus_list, fullCols);
+      fillTable("tblCaution", lists.caution_list, fullCols);
+      fillTable("tblStop", lists.fresh_stop, shortCols);
+      fillTable("tblAccel", lists.accel_now, accelCols);
+      fillTable("tblWashStop", lists.washout_stop, shortCols);
+      fillTable("tblWashAccel", lists.washout_accel, accelCols);
+      fillTable("tblHigh", lists.sample_high, highCols);
+
+      const rules = (doc.meta && doc.meta.rules) || {};
+      document.getElementById("rulesBox").textContent =
+        typeof rules === "string" ? rules : JSON.stringify(rules, null, 2);
+    }
+
+    async function boot() {
+      const status = document.getElementById("status");
+      try {
+        const [jRes, mdRes] = await Promise.all([
+          fetch("data/action_radar_latest.json", { cache: "no-store" }),
+          fetch("data/action_radar_latest.md", { cache: "no-store" })
+        ]);
+        if (!jRes.ok) throw new Error("action_radar_latest.json HTTP " + jRes.status);
+        doc = await jRes.json();
+        if (mdRes.ok) mdText = await mdRes.text();
+        document.getElementById("mdView").textContent = mdText || "（尚無 MD）";
+        render(doc);
+        status.textContent = "資料日 " + (doc.date || "—") + " · 已載入";
+        status.className = "ok";
+        document.title = "動作雷達 " + (doc.date || "") + " · 錢往哪流";
+      } catch (e) {
+        status.textContent = "失敗";
+        status.className = "";
+        document.getElementById("disclaimer").textContent =
+          "載入失敗：" + (e && e.message ? e.message : String(e)) +
+          " — 請先跑 python3 build_action_radar.py";
+      }
+    }
+
+    document.getElementById("btnCopyJson").addEventListener("click", async function () {
+      const status = document.getElementById("status");
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(doc, null, 2));
+        status.textContent = "已複製 JSON";
+        status.className = "ok";
+      } catch (e) {
+        status.textContent = "無法寫入剪貼簿";
+      }
+    });
+    document.getElementById("btnToggleMd").addEventListener("click", function () {
+      const el = document.getElementById("mdView");
+      const on = getComputedStyle(el).display !== "none";
+      el.style.display = on ? "none" : "block";
+    });
+    boot();
+  </script>
+</body>
+</html>

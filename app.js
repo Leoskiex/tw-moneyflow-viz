@@ -25,6 +25,7 @@
   let etf981Doc = null;
   let regimeBriefCache = {};
   let digestDoc = null;
+  let actionRadarDoc = null;
   let digestMarkdown = "";
   let regimeByDate = {};
   let regimeViewDate = null;
@@ -1014,6 +1015,72 @@
     }
   }
 
+
+  async function loadActionRadar() {
+    actionRadarDoc = null;
+    const meta = document.getElementById("actionRadarMeta");
+    const stateEl = document.getElementById("actionRadarState");
+    const hint = document.getElementById("actionRadarStateHint");
+    const acts = document.getElementById("actionRadarActions");
+    function fill(id, rows, cols) {
+      const tb = document.querySelector("#" + id + " tbody");
+      if (!tb) return;
+      if (!rows || !rows.length) {
+        tb.innerHTML = '<tr><td colspan="6" style="color:var(--muted)">（無）</td></tr>';
+        return;
+      }
+      tb.innerHTML = rows.slice(0, 15).map(function (r) {
+        return "<tr>" + cols.map(function (c) {
+          if (c === "rebound_pct")
+            return "<td>" + (r.rebound_pct != null ? Number(r.rebound_pct).toFixed(1) : "—") + "</td>";
+          if (c === "suggested_action")
+            return "<td style=\"max-width:220px;font-size:0.75rem\">" +
+              String(r.suggested_action || "").replace(/</g, "&lt;") + "</td>";
+          return "<td>" + String(r[c] != null ? r[c] : "").replace(/</g, "&lt;") + "</td>";
+        }).join("") + "</tr>";
+      }).join("");
+    }
+    try {
+      const r = await fetch("data/action_radar_latest.json", { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      actionRadarDoc = await r.json();
+      const macro = actionRadarDoc.macro || {};
+      const st = macro.macro_state || "mixed";
+      if (stateEl) stateEl.textContent = "宏觀 · " + st;
+      if (hint) {
+        hint.textContent = (actionRadarDoc.date || "") + " · risk_off_streak=" +
+          (macro.risk_off_streak != null ? macro.risk_off_streak : "—") +
+          " · foreign_lead_sell=" + String(!!macro.foreign_lead_sell) +
+          " · 谷底 " + (macro.market_trough_date || "—") +
+          " · 大盤反彈% " + (macro.market_rebound_pct != null ? macro.market_rebound_pct : "—");
+      }
+      if (acts) {
+        const list = macro.actions_macro || [];
+        acts.innerHTML = list.map(function (a) {
+          return "<li><strong>" + String(a.title || a.id || "").replace(/</g, "&lt;") +
+            "</strong> — " + String(a.detail || "").replace(/</g, "&lt;") + "</li>";
+        }).join("") || "<li>無宏觀動作</li>";
+      }
+      if (meta) {
+        meta.textContent = (actionRadarDoc.date || "") + " · " + (actionRadarDoc.engine || "") +
+          " · llm=" + String(!!actionRadarDoc.llm) + " · " + (actionRadarDoc.disclaimer || "");
+      }
+      const lists = actionRadarDoc.lists || {};
+      fill("actionFocusTable", lists.focus_list, ["code","name","bucket","rebound_pct","topic","suggested_action"]);
+      fill("actionCautionTable", lists.caution_list, ["code","name","bucket","rebound_pct","topic","suggested_action"]);
+      fill("actionStopTable", lists.fresh_stop, ["code","name","rebound_pct","stop_fall_date","suggested_action"]);
+      fill("actionAccelTable", lists.accel_now, ["code","name","rebound_pct","accel_date","suggested_action"]);
+    } catch (e) {
+      if (meta) meta.textContent = "尚無 action_radar_latest.json（請跑 build_action_radar.py）";
+      if (stateEl) stateEl.textContent = "—";
+      if (acts) acts.innerHTML = "";
+      fill("actionFocusTable", [], []);
+      fill("actionCautionTable", [], []);
+      fill("actionStopTable", [], []);
+      fill("actionAccelTable", [], []);
+    }
+  }
+
   async function loadRegimeBrief(date) {
     if (!date) return;
     if (regimeBriefCache[date] && regimeBriefCache[date].paragraphs) {
@@ -1398,6 +1465,8 @@
       }).join("");
       dateIdx = dates.length - 1;
       await loadDate(dates[dateIdx]);
+      try { await loadDigest(); } catch (e) { console.warn(e); }
+      try { await loadActionRadar(); } catch (e) { console.warn(e); }
     } catch (err) {
       console.error(err);
       setError("無法載入 curated index：" + (err && err.message ? err.message : String(err)));
@@ -1410,6 +1479,8 @@
         const sel = document.getElementById("dateSelect");
         if (sel) sel.innerHTML = "<option value=\"" + dates[0] + "\">" + dates[0] + "</option>";
         renderAll();
+        try { await loadDigest(); } catch (e) {}
+        try { await loadActionRadar(); } catch (e) {}
         setError("curated 載入失敗，已退回 MF_SAMPLE 範例資料");
       }
     }
