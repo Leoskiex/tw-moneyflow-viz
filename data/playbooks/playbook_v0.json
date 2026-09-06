@@ -3,30 +3,30 @@
   "version": "0.1",
   "generated_at": "2026-09-06T11:33:00+08:00",
   "status": "draft_short_sample",
-  "disclaimer": "短樣本（約60日）作戰草案 · 非經驗證 edge · 非投資建議。未扣稅佣滑價；需 3–5 年 OOS 後才可升級。",
-  "philosophy": "小資金吃肉喝湯：跟大戶動作，不追第一根高潮；可跟湯／只觀察／躲开 + 寫死失效。",
+  "disclaimer": "这是草稿小抄，资料还不够长，不能当成稳赚秘诀，也不是投资建议。",
+  "philosophy": "钱少的人：跟着大钱走，喝一点汤就好；不要追第一下冲很高的地方。",
   "sample_evidence_asof": "2026-09-04",
   "base_rate_excess_5d_gt0": 0.4217,
   "playbooks": [
     {
       "id": "avoid_fake_thrust",
-      "name": "躲開 · 假動作",
+      "name": "躲开：假动作",
       "action": "躲开",
       "priority": 1,
       "gate": {
         "signal": "fake_thrust",
-        "description": "Day0 ret_1d 大＋foreign_flow_z 很高；1–3 日內外資翻空或價格回吐"
+        "description": "今天涨很多、外国钱冲很凶，但一两天后又把钱抽走或价钱掉回来"
       },
       "do": [
-        "禁止追高／從觀察名單剔除",
-        "已持有則降倉位假設，勿加碼",
-        "優先對照 exit_watch／處置旗標"
+        "不要追高",
+        "手上有就先当会变少，不要再加",
+        "顺便看看有没有被点名注意或处置"
       ],
       "dont": [
-        "不要把假動作當短空系統（尚未驗證）",
-        "不要在 N 極小的 mixed 格子找例外當依據"
+        "不要因为假动作就去做放空（还没证明有用）",
+        "不要在样本很少的时候硬找例外"
       ],
-      "失效": "若確認為洗盤後第二波（second_wave confirmation）且 regime 非 risk_off，改列只觀察——仍不追 Day0",
+      "失效": "如果后来证明是先吓跑人、再慢慢往上的第二波，而且市场不是「大家都很怕」的气氛，就改成只看、仍不要追当天那一下",
       "evidence": {
         "N_with_excess_5d": 532,
         "mean_excess_5d": -0.0329,
@@ -38,26 +38,22 @@
     },
     {
       "id": "mild_soup_leverage_relay",
-      "name": "可跟湯 · 輕推×槓桿接力",
-      "action": "可跟湯",
+      "name": "可以跟汤：轻轻推 + 借钱接力",
+      "action": "可以跟汤",
       "priority": 2,
       "gate": {
-        "feature_or_screen": "mild_push_like 或 screens.mild_push",
-        "regime_primary_in": ["leverage_relay"],
-        "regime_watch": ["repair"],
-        "exclude_regime": ["risk_off"],
-        "exclude_if": ["fake_thrust", "exit_watch"]
+        "description": "轻轻被推上去，而且市场正在「借钱一起买、气氛还在接力」"
       },
       "do": [
-        "僅在 leverage_relay（及後續驗證的 repair）喝湯",
-        "倉位偏小；持有偏 3–5 日",
-        "與 00981A share_delta／題材加速交叉驗證"
+        "只有在「借钱接力」这种气氛才喝一小口汤",
+        "仓位要小，大概拿三到五天",
+        "再跟成长型基金有没有加码、题材有没有变热交叉看"
       ],
       "dont": [
-        "不要在 risk_off 或多數 inst_push 高潮日加仓",
-        "不要無 regime 門控裸追 mild_push"
+        "大家都很怕的时候不要加",
+        "气氛不对就不要只因为「轻轻推」就追"
       ],
-      "失效": "跌破訊號日前低；或出現 fake_thrust／exit_watch／regime 轉 risk_off",
+      "失效": "价钱跌破发出信号那天的低点；或出现假动作／要退出的警报；或气氛变成大家都很怕",
       "evidence": {
         "filter": "label_mild_push_like ∧ regime=leverage_relay",
         "N": 518,
@@ -68,34 +64,39 @@
     },
     {
       "id": "second_wave_filter",
-      "name": "只觀察→可跟湯 · 第二波過濾",
-      "action": "只觀察／條件可跟湯",
+      "name": "先只看：等第二波",
+      "action": "先只看，条件够再跟汤",
       "priority": 3,
       "gate": {
-        "signal": "second_wave",
-        "exclude_regime": ["risk_off"],
-        "prefer_regime": ["leverage_relay", "hot_money"],
-        "process": "Ignition 第一根不買 → 1–5 日整理 → Confirmation 日再評估"
+        "description": "第一下冲很高不要买；等整理几天后，真的再往上才考虑"
       },
       "do": [
-        "第一根高潮棒預設不進場",
-        "Confirmation 日若非 risk_off，可升為小倉可跟湯",
-        "與 mild_push／題材 breadth 同向加分"
+        "第一根很吵的大涨，预设不进场",
+        "整理后再往上、而且不是「大家都很怕」的气氛，才可以小小跟",
+        "题材很多人一起热，加分"
       ],
       "dont": [
-        "不要把 second_wave 當聖杯 alpha",
-        "risk_off 下的第二波直接跳過"
+        "不要把第二波当成保证赚钱",
+        "大家都很怕的时候，第二波也跳过"
       ],
-      "失效": "跌回止跌／整理區間下沿；或 Confirmation 後出現 fake_thrust",
+      "失效": "价钱跌回整理区下面；或第二波确认后又出现假动作",
       "evidence": {
         "second_wave_mean_excess_5d": -0.0059,
         "chase_first_bar_mean_excess_5d": -0.0078,
         "diff_pp": 0.19,
-        "second_wave_in_risk_off": {"N": 44, "mean_excess_5d": -0.0341, "hit": 0.286},
-        "second_wave_in_leverage_relay": {"N": 19, "mean_excess_5d": 0.0044, "hit": 0.579},
+        "second_wave_in_risk_off": {
+          "N": 44,
+          "mean_excess_5d": -0.0341,
+          "hit": 0.286
+        },
+        "second_wave_in_leverage_relay": {
+          "N": 19,
+          "mean_excess_5d": 0.0044,
+          "hit": 0.579
+        },
         "note": "整體仍略低于 base；價值在執行紀律與避開 risk_off，非保證超額。"
       }
     }
   ],
-  "daily_script": "看 regime → 只在 leverage_relay（及驗證中的 repair）從 mild／第二波喝湯 → 任何 fake_thrust 立刻躲開 → 倉位小、寫死失效。"
+  "daily_script": "先看今天市场气氛。气氛还在接力、有人借钱一起买的时候，才可以小小跟一下。看起来很强其实是假动作的，马上躲开。仓位要小，坏掉条件要先写好。"
 }

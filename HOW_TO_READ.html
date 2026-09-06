@@ -170,24 +170,22 @@
   </div>
 
 
-  <h2>7b. 連買／連賣怎麼讀</h2>
+  <h2>7b. 「连续买了好几天」怎么读</h2>
   <div class="card">
-    <p style="margin:0 0 8px">個股上的<strong>外資／投信／法人連買・連賣天數</strong>，是看板 curated 後處理從官方 <code>T86</code> 淨額推得的（不是 Goodinfo）。同一方向淨額連續日數；遇到 0 或空值就中斷。</p>
-    <ul>
-      <li><strong>用途：</strong>清晰度工具——看資金「有沒有持續」，方便對照題材與體制，不是單獨下單條件。</li>
-      <li><strong>驗證結論（約 60 交易日）：</strong><code>useful_as_falsifier</code>／有用作為否證器／濾鏡。外資連買 ≥3 的 5 日命中率相對基線約 <strong>−3.4pp</strong>、平均報酬略負；長連買（6+）更弱。適合否證「連買＝必漲」，<strong>在驗證改口前不要當獨立買訊</strong>。</li>
-      <li>詳見故事首頁 <a href="./index.html#c2">第二章 · Money flow</a> 連買卡，以及 <code>data/validation/STREAK_VALIDATION.md</code>。</li>
+    <p style="margin:0 0 8px">这是在问：外国钱或基金老师，有没有<strong>连续好几天都在买（或卖）</strong>？数字来自官方买卖表算出来的，不是外面网站抄的。</p>
+    <ul style="margin:0;padding-left:1.2rem">
+      <li>它可以让故事更清楚：「谁一直买」。像看谁连续好多天把积木往上叠。</li>
+      <li><strong>它不是买进按钮。</strong>我们查过大约两个月资料：连续买满三天以上，后面五天并不比较会涨，有时还差一点。所以比较像「别以为连买就一定会赚」的提醒。</li>
+      <li>细节报告在 <code>data/validation/STREAK_VALIDATION.md</code>；故事首页第 2 段也有白话版。</li>
     </ul>
     <table>
-      <tr><th>檢查</th><th>約略數字（common∩outcomes）</th></tr>
-      <tr><td>基線 P(5d&gt;0)</td><td>~44.3%</td></tr>
-      <tr><td>外資連買≥3 · hit / lift</td><td>~40.9% / −3.4pp（N≈10.1k）</td></tr>
-      <tr><td>半樣本 hit 符號</td><td>一致（mean 不完全一致）</td></tr>
+      <tr><th>你看到的</th><th>人话</th></tr>
+      <tr><td>外国钱连买很多天</td><td>外国叔叔连续买，但明天仍可能不涨</td></tr>
+      <tr><td>连买 ≥3 的命中比较基线差约 3 个百分点</td><td>整体没有比较会赚钱</td></tr>
     </table>
-    <p style="margin:8px 0 0;color:var(--muted);font-size:0.88rem">Heuristic · 短窗樣本 · 不構成投資建議。</p>
   </div>
 
-  <h2>8. 一句話決策模板</h2>
+<h2>8. 一句話決策模板</h2>
 
   <div class="card">
     <p style="margin:0 0 8px">「今天 <span class="neu">〔外資／投信〕</span> 主導，錢往 <span class="pos">〔題材〕</span> 集中；
