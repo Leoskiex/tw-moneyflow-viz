@@ -2,561 +2,394 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>台股籌碼資金流視覺化</title>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>今日故事 · 錢往哪流</title>
   <style>
     :root {
-      --bg: #0b0f14;
-      --panel: #121821;
-      --panel2: #18202b;
-      --border: #243041;
-      --text: #e8eef7;
-      --muted: #8b9bb0;
-      --green: #22c55e;
-      --red: #ef4444;
-      --accent: #38bdf8;
-      --amber: #f59e0b;
-      --purple: #a78bfa;
+      --bg:#0b0f14; --panel:#121821; --panel2:#18202b; --border:#243041;
+      --text:#e8eef7; --muted:#8b9bb0; --accent:#38bdf8; --green:#22c55e;
+      --amber:#fbbf24; --red:#f87171; --violet:#c4b5fd; --line:#1e293b;
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+      margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.55;
     }
-    header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, #101722, #0b0f14);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+    a { color:var(--accent); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .top {
+      position:sticky; top:0; z-index:30;
+      background:rgba(11,15,20,.94); backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);
+      padding:12px 20px;
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
     }
-    header h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; }
-    .badge {
-      display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem;
-      background: #3b2a12; color: #fbbf24; border: 1px solid #78520f; margin-left: 8px; vertical-align: middle;
+    .top h1 { margin:0; font-size:1.1rem; }
+    .top .meta { color:var(--muted); font-size:.78rem; }
+    .navlinks { display:flex; flex-wrap:wrap; gap:8px; }
+    .navlinks a {
+      font-size:.78rem; color:var(--muted); border:1px solid var(--border);
+      border-radius:8px; padding:5px 10px; background:var(--panel2); text-decoration:none;
     }
-    .meta { color: var(--muted); font-size: 0.85rem; }
-    .layers { display: flex; flex-wrap: wrap; gap: 8px; }
-    .layers button {
-      background: var(--panel2); color: var(--muted); border: 1px solid var(--border);
-      border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem;
+    .navlinks a:hover { color:var(--text); border-color:var(--accent); }
+    .wrap { max-width:820px; margin:0 auto; padding:16px 18px 64px; }
+    .disc {
+      margin:0 0 16px; padding:10px 12px; border-radius:10px;
+      background:#1a1520; border:1px solid #4c1d95; color:#ddd6fe; font-size:.75rem;
     }
-    .layers button.active {
-      color: var(--text); border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.25); background: #163044;
+    .toc {
+      display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:22px;
     }
-    main { padding: 20px 24px 40px; max-width: 1400px; margin: 0 auto; }
-    .kpi-row {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px; margin-bottom: 20px;
+    @media (max-width:720px) { .toc { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:420px) { .toc { grid-template-columns:repeat(2,1fr); } }
+    .toc a {
+      display:block; text-align:center; padding:10px 6px; border-radius:12px;
+      background:var(--panel); border:1px solid var(--border); color:var(--muted);
+      font-size:.72rem; text-decoration:none;
     }
+    .toc a .n { display:block; color:var(--accent); font-weight:700; font-size:.95rem; margin-bottom:2px; }
+    .toc a:hover { border-color:var(--accent); color:var(--text); }
+    .chapter {
+      background:var(--panel); border:1px solid var(--border); border-radius:16px;
+      padding:18px 18px 16px; margin-bottom:16px;
+    }
+    .chapter .eyebrow {
+      font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);
+      margin-bottom:4px;
+    }
+    .chapter h2 { margin:0 0 8px; font-size:1.2rem; }
+    .how {
+      background:var(--panel2); border-left:3px solid var(--accent);
+      padding:8px 10px; border-radius:0 8px 8px 0; color:#cbd5e1;
+      font-size:.82rem; margin:0 0 14px;
+    }
+    .hero-state {
+      font-size:1.55rem; font-weight:800; margin:4px 0 8px; line-height:1.25;
+    }
+    .hero-state.good { color:var(--green); }
+    .hero-state.warn { color:var(--amber); }
+    .hero-state.bad { color:var(--red); }
+    .hero-state.neu { color:var(--accent); }
+    .lede { color:#cbd5e1; font-size:.95rem; margin:0 0 12px; }
+    .kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0; }
+    @media (max-width:520px) { .kpis { grid-template-columns:repeat(2,1fr); } }
     .kpi {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 12px; padding: 14px 16px;
+      background:var(--panel2); border:1px solid var(--border); border-radius:10px;
+      padding:10px; text-align:center;
     }
-    .kpi .label { color: var(--muted); font-size: 0.78rem; }
-    .kpi .value { font-size: 1.35rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
-    .pos { color: var(--green); }
-    .neg { color: var(--red); }
-    .neu { color: var(--accent); }
-    .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 16px; }
-    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
-    .card {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 12px; padding: 14px 16px 8px; min-height: 360px;
+    .kpi .l { font-size:.65rem; color:var(--muted); }
+    .kpi .v { font-size:1.15rem; font-weight:700; font-variant-numeric:tabular-nums; margin-top:2px; }
+    .pos { color:var(--green); } .neg { color:var(--red); }
+    .lines { margin:0; padding-left:1.1rem; color:#cbd5e1; font-size:.88rem; }
+    .lines li { margin:4px 0; }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+    .chip {
+      font-size:.75rem; padding:4px 9px; border-radius:999px;
+      background:#0f172a; border:1px solid var(--border); color:#cbd5e1;
     }
-    .card h2 { margin: 0 0 8px; font-size: 0.95rem; font-weight: 600; color: var(--text); }
-    .card .sub { color: var(--muted); font-size: 0.75rem; margin-bottom: 6px; }
-    .chart { width: 100%; height: 320px; }
-    .chart.tall { height: 380px; }
-    .full { grid-column: 1 / -1; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th, td { padding: 10px 8px; border-bottom: 1px solid var(--border); text-align: left; }
-    th { color: var(--muted); font-weight: 500; }
-    .lvl { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
-    .lvl-高 { background: rgba(239,68,68,0.15); color: var(--red); }
-    .lvl-中 { background: rgba(245,158,11,0.15); color: var(--amber); }
-    .lvl-低 { background: rgba(56,189,248,0.12); color: var(--accent); }
-    footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 8px 24px 24px; }
-
-    .badge.live { background: #0f3d2e; color: #4ade80; border-color: #166534; }
-    .header-right { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-    .date-nav {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 4px 8px;
+    .chip.hot { border-color:#166534; color:#86efac; background:#052e16; }
+    .chip.cold { border-color:#7f1d1d; color:#fca5a5; background:#3f1d1d; }
+    .chip.fragile { border-color:#854d0e; color:#fde68a; background:#422006; }
+    .card-mini {
+      background:var(--panel2); border:1px solid var(--border); border-radius:12px;
+      padding:12px; margin-top:8px;
     }
-    .date-nav button {
-      background: #163044; color: var(--text); border: 1px solid var(--border);
-      border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 1rem; line-height: 1;
+    .card-mini.good { border-color:#166534; }
+    .card-mini.bad { border-color:#7f1d1d; }
+    .card-mini .t { font-weight:700; margin-bottom:4px; }
+    .card-mini .d { font-size:.82rem; color:#cbd5e1; }
+    .card-mini .fail { font-size:.75rem; color:var(--muted); margin-top:6px; }
+    .stock {
+      display:flex; justify-content:space-between; gap:8px; align-items:baseline;
+      padding:8px 0; border-bottom:1px solid var(--line); font-size:.88rem;
     }
-    .date-nav button:disabled { opacity: 0.35; cursor: not-allowed; }
-    .date-nav #dateLabel { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 6.5rem; text-align: center; }
-    #btnPlay { width: auto; padding: 0 10px; font-size: 0.8rem; }
-    #btnPlay.on { border-color: var(--accent); color: var(--accent); background: #0c2a3a; }
-    .date-nav #playSpeed { max-width: 6.5rem; }
-    .date-nav select {
-      background: var(--panel); color: var(--text); border: 1px solid var(--border);
-      border-radius: 6px; padding: 4px 6px; font-size: 0.85rem;
+    .stock:last-child { border-bottom:0; }
+    .stock .code { font-weight:700; }
+    .stock .name { color:var(--muted); font-size:.8rem; }
+    .stock .act { color:#cbd5e1; font-size:.78rem; max-width:55%; text-align:right; }
+    .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media (max-width:640px) { .two { grid-template-columns:1fr; } }
+    .deep {
+      display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; padding-top:12px;
+      border-top:1px solid var(--border);
     }
-    #errorBanner {
-      margin: 12px 24px 0; padding: 10px 14px; border-radius: 8px;
-      background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5;
-      font-size: 0.9rem;
+    .deep a {
+      font-size:.8rem; padding:8px 12px; border-radius:10px;
+      background:#0f172a; border:1px solid var(--border); color:var(--text);
+      text-decoration:none;
     }
-
-    .filters {
-      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-      background:var(--panel); border:1px solid var(--border);
-      border-radius:12px; padding:10px 14px; margin-bottom:16px;
+    .deep a:hover { border-color:var(--accent); color:var(--accent); }
+    .foot {
+      margin-top:28px; color:var(--muted); font-size:.75rem; text-align:center;
     }
-    .filters label { font-size:0.8rem; color:var(--muted); display:flex; align-items:center; gap:6px; }
-    .filters input[type="search"], .filters select, .filters input[type="number"] {
-      background:#0f141c; border:1px solid var(--border); color:var(--text);
-      border-radius:8px; padding:6px 10px; font-size:0.85rem;
-    }
-    .filters input[type="search"] { min-width:160px; }
-    .filters .stat { margin-left:auto; font-size:0.78rem; color:var(--muted); }
-    .stock-table-wrap { max-height:360px; overflow:auto; }
-      .hidden { display: none !important; }
-
-    /* Regime dashboard */
-    .regime-section {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px 18px; margin-bottom: 16px;
-    }
-    .regime-section h2 {
-      margin: 0 0 12px; font-size: 0.95rem; font-weight: 600;
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    }
-    .regime-section h2 .hint { color: var(--muted); font-size: 0.75rem; font-weight: 400; }
-    .regime-layout {
-      display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px;
-    }
-    @media (max-width: 980px) { .regime-layout { grid-template-columns: 1fr; } }
-    .regime-card {
-      background: var(--panel2); border: 1px solid var(--border);
-      border-radius: 12px; padding: 14px 16px;
-    }
-    .regime-primary {
-      font-size: 1.65rem; font-weight: 800; letter-spacing: 0.02em;
-      margin: 4px 0 8px; line-height: 1.2;
-    }
-    .regime-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; }
-    .regime-chip {
-      display: inline-block; padding: 2px 10px; border-radius: 999px;
-      font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border);
-    }
-    .regime-chip.secondary { background: #1e293b; color: #cbd5e1; }
-    .regime-chip.conf { background: #0c2a3a; color: var(--accent); border-color: #1e5a75; }
-    .regime-evidence { margin: 0; padding-left: 1.1em; color: #cbd5e1; font-size: 0.86rem; }
-    .regime-evidence li { margin: 4px 0; }
-    .regime-timeline-wrap { margin-top: 12px; }
-    .regime-timeline-label { color: var(--muted); font-size: 0.75rem; margin-bottom: 6px; }
-    .regime-timeline {
-      display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
-    }
-    .regime-pill {
-      border: 1px solid var(--border); border-radius: 8px;
-      padding: 4px 8px; font-size: 0.72rem; cursor: pointer;
-      background: #0f141c; color: var(--muted); line-height: 1.3;
-      font-variant-numeric: tabular-nums;
-    }
-    .regime-pill:hover { border-color: var(--accent); color: var(--text); }
-    .regime-pill.active {
-      box-shadow: 0 0 0 1px rgba(56,189,248,0.35);
-      border-color: var(--accent); color: var(--text); font-weight: 700;
-    }
-    .regime-pill .pdate { display: block; opacity: 0.75; font-size: 0.65rem; }
-    .regime-pill.r-inst_push { background: rgba(34,197,94,0.12); color: #4ade80; border-color: #166534; }
-    .regime-pill.r-leverage_relay { background: rgba(245,158,11,0.12); color: #fbbf24; border-color: #78520f; }
-    .regime-pill.r-hot_money { background: rgba(239,68,68,0.12); color: #fca5a5; border-color: #7f1d1d; }
-    .regime-pill.r-risk_off { background: rgba(148,163,184,0.12); color: #94a3b8; border-color: #475569; }
-    .regime-pill.r-regulatory { background: rgba(167,139,250,0.14); color: #c4b5fd; border-color: #5b21b6; }
-    .regime-pill.r-mixed { background: rgba(56,189,248,0.12); color: #7dd3fc; border-color: #0369a1; }
-    .regime-pill.r-quiet { background: #18202b; color: #8b9bb0; }
-    .regime-mini { overflow-x: auto; }
-    .regime-mini table { font-size: 0.78rem; }
-    .regime-mini th, .regime-mini td { padding: 6px 6px; white-space: nowrap; }
-    .regime-legend {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 6px 12px; margin-top: 12px; padding-top: 10px;
-      border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--muted);
-    }
-    .regime-legend span.tag {
-      display: inline-block; min-width: 4.5rem; font-weight: 600; color: var(--text);
-    }
+    .err { color:var(--red); padding:20px; }
   </style>
 </head>
 <body>
-  <header>
+  <div class="top">
     <div>
-      <h1>台股籌碼資金流視覺化 <span class="badge live" id="dataBadge">CURATED</span></h1>
-      <div class="meta" id="metaLine">載入中…</div>
+      <h1>今日故事</h1>
+      <div class="meta" id="meta">載入中…</div>
     </div>
-    <div class="header-right">
-      <div class="date-nav" aria-label="日期切換">
-        <button type="button" id="btnPrev" title="前一日">&#8249;</button>
-        <span id="dateLabel">—</span>
-        <select id="dateSelect" aria-label="選擇日期"></select>
-        <button type="button" id="btnNext" title="後一日">&#8250;</button>
-        <a href="./action-radar.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--panel2)">動作雷達</a>
-        <a href="./m.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--panel2)">手機版</a>
-        <a href="./research.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--panel2)">策略研究</a>
-        <a href="./HOW_TO_READ.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--panel2)">怎麼讀</a>
-        <button type="button" id="btnPlay" title="幻燈片播放">▶ 播放</button>
-        <select id="playSpeed" aria-label="播放速度" title="每幀秒數">
-          <option value="1500">快 1.5s</option>
-          <option value="2500" selected>中 2.5s</option>
-          <option value="4000">慢 4s</option>
-        </select>
-      </div>
-      <div class="layers" id="layerToggles" role="group" aria-label="圖層切換">
-        <button type="button" data-layer="flow" class="active">資金流 Flow</button>
-        <button type="button" data-layer="heat" class="active">熱度 Heat</button>
-        <button type="button" data-layer="short" class="active">空單 Short</button>
-        <button type="button" data-layer="leverage" class="active">槓桿 Leverage</button>
-      </div>
+    <div class="navlinks">
+      <a href="./m.html">手機版</a>
+      <a href="./board.html">完整看板</a>
+      <a href="./digest.html">原文日報</a>
+      <a href="./research.html">策略研究</a>
     </div>
-  </header>
-  <div id="errorBanner" class="hidden"></div>
-  <main>
-    <section class="kpi-row" id="kpiRow"></section>
+  </div>
 
+  <div class="wrap">
+    <div class="disc">啟發式草案 · 短樣本校準中 · 吃肉喝湯不是追漲 · 非投資建議</div>
 
-    <section class="regime-section" id="regimeSection" aria-label="資金體制">
-      <h2>資金體制 Regime <span class="hint">啟發式標籤 · 制式講解純函數 · 非預測 · 非 LLM</span></h2>
-      <div class="regime-layout">
-        <div class="regime-card" id="regimeCard">
-          <div class="label" style="color:var(--muted);font-size:0.78rem" id="regimeDateHint">載入中…</div>
-          <div class="regime-primary" id="regimePrimary">—</div>
-          <div class="regime-chips" id="regimeChips"></div>
-          <ul class="regime-evidence" id="regimeEvidence"></ul>
-          <div id="regimeBriefBox" class="regime-brief" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:0.82rem;color:#cbd5e1;line-height:1.55;white-space:pre-wrap"></div>
-        </div>
-        <div class="regime-card">
-          <div class="regime-timeline-label">近 20 日體制時間軸（點選查看當日證據）</div>
-          <div class="regime-timeline" id="regimeTimeline"></div>
-          <div class="regime-mini" style="margin-top:12px">
-            <table id="regimeMiniTable">
-              <thead>
-                <tr>
-                  <th>日期</th><th>外資</th><th>投信</th><th>自營</th><th>當沖%</th><th>融資Δ</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div class="regime-legend" id="regimeLegend">
-        <div><span class="tag">機構推動</span> 外資明顯淨買且本土未強力對沖，題材集中</div>
-        <div><span class="tag">槓桿接力</span> 外資偏弱／平但融資增加（上漲家數偏多更像）</div>
-        <div><span class="tag">熱錢噪音</span> 當沖偏高＋題材分散或多題材對打</div>
-        <div><span class="tag">風險規避</span> 外資明顯淨賣且下跌家數居多</div>
-        <div><span class="tag">監管摩擦</span> 注意／處置／逼近處置檔數偏高</div>
-        <div><span class="tag">法人打架</span> 外資與投信／自營異號且量級不小</div>
-        <div><span class="tag">平淡</span> 其餘／淨額偏小</div>
+    <nav class="toc" aria-label="章節">
+      <a href="#c1"><span class="n">1</span>今天怎麼了</a>
+      <a href="#c2"><span class="n">2</span>錢怎麼走</a>
+      <a href="#c3"><span class="n">3</span>題材風向</a>
+      <a href="#c4"><span class="n">4</span>我該怎麼做</a>
+      <a href="#c5"><span class="n">5</span>別追的</a>
+    </nav>
+
+    <section class="chapter" id="c1">
+      <div class="eyebrow">第一章 · Digest</div>
+      <h2>今天怎麼了</h2>
+      <p class="how">先看市場「體制」標籤——今天大資金比較像在推、在修、還是在躲。這是情境，不是隔日漲跌保證。</p>
+      <div class="hero-state neu" id="c1state">—</div>
+      <p class="lede" id="c1lede">—</p>
+      <ul class="lines" id="c1lines"></ul>
+      <div class="deep">
+        <a href="./digest.html">打開完整日報原文 →</a>
+        <a href="./HOW_TO_READ.html">體制怎麼讀 →</a>
       </div>
     </section>
 
-
-
-    <section class="regime-section" id="digestSection" aria-label="今日制式日報">
-      <h2>今日制式日報 <span class="hint">純函數組裝 · 非 LLM · 可複製 MD</span></h2>
-      <div class="sub" id="digestMeta" style="margin-bottom:10px;color:var(--muted);font-size:0.82rem">載入中…</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center">
-        <button type="button" id="btnCopyDigestMd" style="background:#0c2a3a;color:var(--accent);border:1px solid #1e5a75;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:0.85rem">複製 Markdown</button>
-        <a id="linkDigestPage" href="./digest.html" style="color:var(--accent);font-size:0.85rem">開整頁日報 →</a>
-        <a id="linkDigestMd" href="data/digest_latest.md" download="digest_latest.md" style="color:var(--accent);font-size:0.85rem">下載 .md</a>
-      </div>
-      <div class="regime-card" style="max-height:420px;overflow:auto">
-        <pre id="digestPreview" style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:0.8rem;color:#cbd5e1;font-family:inherit;line-height:1.55">—</pre>
+    <section class="chapter" id="c2">
+      <div class="eyebrow">第二章 · Money flow</div>
+      <h2>錢怎麼走</h2>
+      <p class="how">看外資／投信／自營誰在動、量級誰最大。小資金要跟的是「誰在買」，不是盤面上誰最吵。</p>
+      <div class="kpis" id="c2kpis"></div>
+      <p class="lede" id="c2lede">—</p>
+      <ul class="lines" id="c2lines"></ul>
+      <div class="deep">
+        <a href="./board.html">打開資金流看板（圖表）→</a>
       </div>
     </section>
 
-
-    <section class="regime-section" id="actionRadarSection" aria-label="動作雷達">
-      <h2>動作雷達 Action Radar <span class="hint">純 Python · 止跌／加速／樣本新高 · 非投資建議</span></h2>
-      <div class="sub" id="actionRadarMeta" style="margin-bottom:10px;color:var(--muted);font-size:0.82rem">載入中…</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center">
-        <a id="linkActionRadarPage" href="./action-radar.html" style="color:var(--accent);font-size:0.85rem">開整頁雷達 →</a>
-        <a href="data/action_radar_latest.json" download style="color:var(--accent);font-size:0.85rem">下載 JSON</a>
-      </div>
-      <div class="regime-card" id="actionRadarMacro" style="margin-bottom:12px">
-        <div class="label" style="color:var(--muted);font-size:0.78rem" id="actionRadarStateHint">宏觀</div>
-        <div class="regime-primary" id="actionRadarState" style="font-size:1.15rem">—</div>
-        <ul class="regime-evidence" id="actionRadarActions"></ul>
-      </div>
-      <div class="regime-layout">
-        <div class="card">
-          <h2 style="font-size:1rem;margin:0 0 8px">焦點 focus</h2>
-          <div class="sub">止跌／加速 × mild_push · 非 exit_watch</div>
-          <div class="stock-table-wrap"><table id="actionFocusTable"><thead><tr>
-            <th>代碼</th><th>名稱</th><th>桶</th><th>反彈%</th><th>題材</th><th>建議</th>
-          </tr></thead><tbody></tbody></table></div>
+    <section class="chapter" id="c3">
+      <div class="eyebrow">第三章 · 題材輪動</div>
+      <h2>風向在哪裡轉</h2>
+      <p class="how">哪個產業在加速、哪個在減速、哪個流入很脆（集中在一兩檔）。龍頭熱不代表龍二還有湯；脆流入要小心假熱度。</p>
+      <div class="two">
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px">加速 · 熱度上升</div>
+          <div class="chips" id="c3hot"></div>
         </div>
-        <div class="card">
-          <h2 style="font-size:1rem;margin:0 0 8px">謹慎 caution</h2>
-          <div class="sub">加速／新高 × exit_watch</div>
-          <div class="stock-table-wrap"><table id="actionCautionTable"><thead><tr>
-            <th>代碼</th><th>名稱</th><th>桶</th><th>反彈%</th><th>題材</th><th>建議</th>
-          </tr></thead><tbody></tbody></table></div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px">減速／脆弱</div>
+          <div class="chips" id="c3cold"></div>
         </div>
       </div>
-      <div class="regime-layout" style="margin-top:12px">
-        <div class="card">
-          <h2 style="font-size:1rem;margin:0 0 8px">新鮮止跌</h2>
-          <div class="stock-table-wrap"><table id="actionStopTable"><thead><tr>
-            <th>代碼</th><th>名稱</th><th>反彈%</th><th>止跌日</th><th>建議</th>
-          </tr></thead><tbody></tbody></table></div>
-        </div>
-        <div class="card">
-          <h2 style="font-size:1rem;margin:0 0 8px">加速修復</h2>
-          <div class="stock-table-wrap"><table id="actionAccelTable"><thead><tr>
-            <th>代碼</th><th>名稱</th><th>反彈%</th><th>加速日</th><th>建議</th>
-          </tr></thead><tbody></tbody></table></div>
-        </div>
+      <p class="lede" id="c3lede" style="margin-top:12px">—</p>
+      <div class="deep">
+        <a href="./research.html">打開 NOW／TRANSITION／EDGE →</a>
+        <a href="./board.html">題材圖表 →</a>
       </div>
     </section>
 
-    <section class="regime-section" id="screenSection" aria-label="篩選名單">
-      <h2>計算篩選 Screens <span class="hint">純函數 · 非 LLM · 非投資建議</span></h2>
-      <div class="sub" id="screenMeta" style="margin-bottom:10px;color:var(--muted);font-size:0.82rem">載入中…</div>
-      <div class="regime-layout">
-        <div class="card">
-          <h2 style="font-size:1rem;margin:0 0 8px">輕推觀察 <span style="color:var(--muted);font-weight:400;font-size:0.78rem">mild_push</span></h2>
-          <div class="sub">流入題材 + 法人淨買溫和 + 無監管旗標（分數由 Python 計算）</div>
-          <div class="stock-table-wrap"><table id="mildPushTable"><thead><tr>
-            <th>分數</th><th>代碼</th><th>名稱</th><th>題材</th><th>法人</th><th>外資</th><th>漲跌%</th><th>融資%</th><th>原因</th>
-          </tr></thead><tbody></tbody></table></div>
+    <section class="chapter" id="c4">
+      <div class="eyebrow">第四章 · Action</div>
+      <h2>我今天該怎麼做</h2>
+      <p class="how">用「可跟湯／只觀察／躲開」讀，不要用「一定要買」。劇本寫死失效條件；名單只是候選，不是下單單。</p>
+      <p class="lede" id="c4script">—</p>
+      <div id="c4playbooks"></div>
+      <div class="two" style="margin-top:12px">
+        <div>
+          <div class="eyebrow">可跟湯 · focus（摘錄）</div>
+          <div id="c4focus"></div>
         </div>
-        <div class="card">
-          <h2 style="font-size:1rem;margin:0 0 8px">退出觀察 <span style="color:var(--muted);font-weight:400;font-size:0.78rem">exit_watch</span></h2>
-          <div class="sub">流出題材大賣／外資走+融資高／處置旗標</div>
-          <div class="stock-table-wrap"><table id="exitWatchTable"><thead><tr>
-            <th>分數</th><th>代碼</th><th>名稱</th><th>題材</th><th>法人</th><th>外資</th><th>漲跌%</th><th>融資%</th><th>原因</th>
-          </tr></thead><tbody></tbody></table></div>
+        <div>
+          <div class="eyebrow">躲開 · caution（摘錄）</div>
+          <div id="c4caution"></div>
         </div>
       </div>
-      <div class="card" style="margin-top:12px">
-        <h2 style="font-size:1rem;margin:0 0 8px">同题材重仓对照 <span style="color:var(--muted);font-weight:400;font-size:0.78rem">heavy_push_contrast</span></h2>
-        <div class="sub">同日流入题材但法人净买很大——对照「已经打满」，不是轻推</div>
-        <div class="stock-table-wrap"><table id="heavyPushTable"><thead><tr>
-          <th>分數</th><th>代碼</th><th>名稱</th><th>題材</th><th>法人</th><th>漲跌%</th><th>原因</th>
-        </tr></thead><tbody></tbody></table></div>
-      </div>
-    
-      <div class="card" style="margin-top:12px">
-        <h2 style="font-size:1rem;margin:0 0 8px">擴展篩選（純函數）</h2>
-        <div class="sub" id="screenExtraMeta" style="margin-bottom:8px"></div>
-        <div class="regime-layout">
-          <div>
-            <div class="sub">外資水位×流量</div>
-            <div class="stock-table-wrap"><table id="accumTable"><thead><tr><th>桶</th><th>分</th><th>代碼</th><th>名稱</th><th>外資</th><th>持股%</th></tr></thead><tbody></tbody></table></div>
-          </div>
-          <div>
-            <div class="sub">槓桿壓力</div>
-            <div class="stock-table-wrap"><table id="levTable"><thead><tr><th>桶</th><th>分</th><th>代碼</th><th>名稱</th><th>外資</th><th>融資%</th></tr></thead><tbody></tbody></table></div>
-          </div>
-        </div>
-        <div class="regime-layout" style="margin-top:10px">
-          <div>
-            <div class="sub">空方彈藥</div>
-            <div class="stock-table-wrap"><table id="shortTable"><thead><tr><th>桶</th><th>分</th><th>代碼</th><th>名稱</th><th>可借</th></tr></thead><tbody></tbody></table></div>
-          </div>
-          <div>
-            <div class="sub">處置倒數</div>
-            <div class="stock-table-wrap"><table id="dispCdTable"><thead><tr><th>CD</th><th>狀態</th><th>代碼</th><th>名稱</th><th>路徑</th></tr></thead><tbody></tbody></table></div>
-          </div>
-        </div>
-        <div class="regime-layout" style="margin-top:10px">
-          <div>
-            <div class="sub">題材加速／褪色</div>
-            <div class="stock-table-wrap"><table id="themeRotTable"><thead><tr><th>向</th><th>題材</th><th>今日</th><th>近均</th><th>Δ</th></tr></thead><tbody></tbody></table></div>
-          </div>
-          <div>
-            <div class="sub">機構共識／打架</div>
-            <div class="stock-table-wrap"><table id="alignTable"><thead><tr><th>桶</th><th>分</th><th>代碼</th><th>名稱</th><th>原因</th></tr></thead><tbody></tbody></table></div>
-          </div>
-        </div>
-        <div class="regime-layout" style="margin-top:10px">
-          <div>
-            <div class="sub">當沖噪音</div>
-            <div class="stock-table-wrap"><table id="noiseTable"><thead><tr><th>分</th><th>代碼</th><th>名稱</th><th>漲跌%</th><th>法人</th></tr></thead><tbody></tbody></table></div>
-          </div>
-          <div>
-            <div class="sub">上市／櫃買分裂</div>
-            <div id="marketSplitBox" style="padding:10px;color:#cbd5e1;font-size:0.9rem">—</div>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <section class="regime-section" id="etf981Section" aria-label="00981A">
-      <h2>00981A 日揭持股 × Screens <span class="hint">統一投信 · ezMoney 49YTW · 非投資建議</span></h2>
-      <div class="sub" id="etf981Meta" style="margin-bottom:10px;color:var(--muted);font-size:0.82rem">載入中…</div>
-      <div class="regime-layout">
-        <div class="card">
-          <h2 style="font-size:1rem;margin:0 0 8px">經理人加減碼 <span style="color:var(--muted);font-weight:400;font-size:0.78rem">manager_flow</span></h2>
-          <div class="sub" id="etf981FlowMeta">股數／權重 Δ</div>
-          <div class="stock-table-wrap"><table id="etf981FlowTable"><thead><tr>
-            <th>向</th><th>代碼</th><th>名稱</th><th>權重%</th><th>Δ權重</th><th>Δ股數</th>
-          </tr></thead><tbody></tbody></table></div>
-        </div>
-        <div class="card">
-          <h2 style="font-size:1rem;margin:0 0 8px">∩ 輕推 / 題材加速 / 退出 / 體制對齊</h2>
-          <div class="sub" id="etf981CrossMeta"></div>
-          <div class="stock-table-wrap"><table id="etf981CrossTable"><thead><tr>
-            <th>桶</th><th>代碼</th><th>名稱</th><th>題材</th><th>權重%</th><th>法人</th><th>Δ權重</th>
-          </tr></thead><tbody></tbody></table></div>
-        </div>
-      </div>
-      <div class="card" style="margin-top:12px">
-        <h2 style="font-size:1rem;margin:0 0 8px">完整持股 Top 30</h2>
-        <div class="stock-table-wrap"><table id="etf981HoldTable"><thead><tr>
-          <th>代碼</th><th>名稱</th><th>題材</th><th>權重%</th><th>股數</th><th>Δ權重</th><th>動作</th>
-        </tr></thead><tbody></tbody></table></div>
+      <div class="deep">
+        <a href="./action-radar.html">打開動作雷達全文 →</a>
+        <a href="./m.html">手機決策版 →</a>
       </div>
     </section>
 
-    <section class="filters" id="filterBar" aria-label="篩選">
-      <label>搜尋 <input type="search" id="fltSearch" placeholder="代碼／名稱" /></label>
-      <label><input type="checkbox" id="fltNoEtf" checked /> 排除 ETF／槓桿反向</label>
-      <label><input type="checkbox" id="fltMappedOnly" /> 只看題材內成分</label>
-      <label><input type="checkbox" id="fltRulesOnly" /> 只看注意／處置／逼近處置</label>
-      <label><input type="checkbox" id="fltDispRisk" /> 只看逼近處置</label>
-      <label><input type="checkbox" id="fltDaytradePause" /> 只看暫停當沖</label>
-      <label>市場
-        <select id="fltMarket">
-          <option value="all">上市＋上櫃</option>
-          <option value="twse">只上市</option>
-          <option value="tpex">只上櫃</option>
-        </select>
-      </label>
-      <label>題材
-        <select id="fltTopic"><option value="">全部題材</option></select>
-      </label>
-      <label>圖 Top N
-        <input type="number" id="fltTopN" min="5" max="80" value="12" style="width:4.5rem" />
-      </label>
-      <button type="button" id="btnCopyPack" style="background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:0.85rem">複製解讀包</button>
-      <a href="./DAILY_READING_PROMPT.md" style="color:var(--accent);font-size:0.8rem">解讀 prompt</a>
-      <span class="stat" id="fltStat">—</span>
-    </section>
-
-    <section class="grid" data-layer-section="flow">
-      <div class="card full">
-        <h2>三大法人 → 個股 → 題材（Sankey）</h2>
-        <div class="sub">依篩選後 |淨額| Top N 畫圖（非全市場）｜右端＝題材｜綠買／紅賣｜千張｜可排除 ETF</div>
-        <div id="sankeyChart" class="chart tall"></div>
-      </div>
-    </section>
-    <section class="grid">
-      <div class="card" data-layer-section="heat">
-        <h2>產業 group 資金 vs 20 日均量</h2>
-        <div class="sub">TW topic map 真實 group（取 |淨流入| 前 12）｜柱＝法人合計（千張）</div>
-        <div id="sectorChart" class="chart"></div>
-      </div>
-      <div class="card" data-layer-section="flow">
-        <h2>三大法人淨額趨勢（全期間）</h2>
-        <div class="sub">外資／投信／自營（億元，BFI82U）｜虛線＝目前選取日</div>
-        <div id="trendChart" class="chart"></div>
-      </div>
-    </section>
-    <section class="grid" data-layer-section="heat">
-      <div class="card full">
-        <h2>產業 group：縱軸漲跌% × 橫軸資金淨流入</h2>
-        <div class="sub">氣泡大小＝amount_vs_20d｜由當日 curated 個股彙總</div>
-        <div id="groupScatterChart" class="chart tall"></div>
-      </div>
-    </section>
-    <section class="grid">
-      <div class="card" data-layer-section="short">
-        <h2>空單壓力（融券＋借券賣出）</h2>
-        <div class="sub">單位：張｜短線壓力越高越需留意</div>
-        <div id="shortChart" class="chart"></div>
-      </div>
-      <div class="card" data-layer-section="leverage">
-        <h2>槓桿散佈：融資使用率 × 漲跌幅</h2>
-        <div class="sub">氣泡大小＝成交金額｜偏右上＝高槓桿＋強勢</div>
-        <div id="leverageChart" class="chart"></div>
-      </div>
-    </section>
-    
-    
-    <section class="grid" data-layer-section="flow">
-      <div class="card full">
-        <h2>存量 × 流量：外資持股% × 法人淨額</h2>
-        <div class="sub">橫軸＝MI_QFIIS 外資持股比率（存量底色）｜縱軸＝當日法人淨額千張（流量）｜氣泡＝成交｜上櫃多數無 QFIIS</div>
-        <div id="foreignHoldChart" class="chart tall"></div>
+    <section class="chapter" id="c5">
+      <div class="eyebrow">第五章 · Research 邊界</div>
+      <h2>別追的 · 研究說什麼</h2>
+      <p class="how">短樣本裡，「假動作／追第一根」長期比較像付錢。這裡只當踩煞車燈，不當賺錢保證；樣本變長再重算。</p>
+      <div id="c5board"></div>
+      <div class="deep">
+        <a href="./research.html">打開策略研究／分數板 →</a>
       </div>
     </section>
 
-    <section class="grid" data-layer-section="flow">
-      <div class="card full">
-        <h2>全市場個股表（篩選後）</h2>
-        <div class="sub">可搜全市場；Sankey／空單／槓桿圖只用上方 Top N。單位：法人千張、成交億、融資使用率%</div>
-        <div class="stock-table-wrap">
-          <table id="stocksTable">
-            <thead><tr>
-              <th>代碼</th><th>名稱</th><th>題材</th><th>漲跌%</th><th>法人淨額</th><th>外資</th><th>投信</th><th>自營</th><th>成交億</th><th>融資利用率</th><th>外資持股%</th><th>借券可賣</th><th>旗標</th><th>市場</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <p class="foot">吃肉喝湯 · T+1 思維 · 先讀故事再下鑽圖表 · 資料日以頁首為準</p>
+  </div>
 
+  <script>
+    const esc = (s) => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const fmt = (n, d=1) => (n==null || Number.isNaN(+n)) ? "—" : Number(n).toFixed(d);
+    const signed = (n, unit="億") => {
+      if (n==null || Number.isNaN(+n)) return "—";
+      const v = Number(n);
+      const s = (v>0?"+":"") + v.toFixed(1) + unit;
+      return s;
+    };
+    const clsNum = (n) => (n>0?"pos":n<0?"neg":"");
 
-    <section class="grid" data-layer-section="heat">
-      <div class="card full">
-        <h2>券商分點／排行</h2>
-        <div class="sub">個股分點需官網驗證碼；此處為櫃買券商成交排行＋查詢入口</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 12px;">
-          <a id="linkTwseBsr" href="https://bsr.twse.com.tw/bshtm/bsMenu.aspx" target="_blank" rel="noopener" style="color:var(--accent);font-size:0.85rem">TWSE 分點查詢 →</a>
-          <a id="linkTpexBroker" href="https://www.tpex.org.tw/www/zh-tw/afterTrading/brokerTrading" target="_blank" rel="noopener" style="color:var(--accent);font-size:0.85rem">TPEx 券商分點 →</a>
-        </div>
-        <div style="overflow-x:auto; padding-bottom: 8px;">
-          <table id="brokersTable">
-            <thead>
-              <tr>
-                <th>排名</th><th>代號</th><th>分點／券商</th><th>成交金額</th><th>市占</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    function stockRows(rows, kind, limit) {
+      if (!rows || !rows.length) return '<div class="lede">（無）</div>';
+      return rows.slice(0, limit).map((r) => `
+        <div class="stock">
+          <div><span class="code">${esc(r.code)}</span> <span class="name">${esc(r.name||"")}</span></div>
+          <div class="act">${esc((r.suggested_action||r.topic||"").slice(0,48))}</div>
+        </div>`).join("");
+    }
 
-    <section class="grid" data-layer-section="heat">
-      <div class="card full">
-        <h2>警示清單 Alerts</h2>
-        <div class="sub">處置／注意／逼近處置／暫停先賣後買／當沖暫停／變更交易／借券彈藥低等</div>
-        <div style="overflow-x:auto; padding-bottom: 8px;">
-          <table id="alertsTable">
-            <thead>
-              <tr>
-                <th>等級</th><th>代號</th><th>名稱</th><th>類型</th><th>說明</th><th>數值</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </main>
-  <footer>
-    靜態原型｜資料來自 TWSE raw curated（本地）｜題材對照 aistockmap TW topic map｜不呼叫即時證交所 API｜ECharts 5.5.1
-  </footer>
-  <script src="app.js"></script>
+    function stateClass(label) {
+      const s = String(label||"");
+      if (/推動|修復|repair|push|偏多/.test(s)) return "good";
+      if (/摩擦|壓力|stress|defend|風險|處置/.test(s)) return "warn";
+      if (/撤退|出貨|崩|崩跌|risk_off/.test(s)) return "bad";
+      return "neu";
+    }
+
+    async function boot() {
+      const meta = document.getElementById("meta");
+      try {
+        const paths = [
+          "data/regime_brief_latest.json",
+          "data/action_radar_latest.json",
+          "data/playbooks/playbook_v0.json",
+          "data/theme_rotation/latest.json",
+          "data/scoreboard/latest.json",
+          "data/digest_latest.json",
+        ];
+        const ress = await Promise.all(paths.map((p) => fetch(p, { cache:"no-store" })));
+        const [briefRes, arRes, pbRes, thRes, sbRes, digRes] = ress;
+        if (!briefRes.ok && !digRes.ok) throw new Error("digest/brief 載入失敗");
+
+        const brief = briefRes.ok ? await briefRes.json() : null;
+        const ar = arRes.ok ? await arRes.json() : null;
+        const pb = pbRes.ok ? await pbRes.json() : null;
+        const th = thRes.ok ? await thRes.json() : null;
+        const sb = sbRes.ok ? await sbRes.json() : null;
+        const dig = digRes.ok ? await digRes.json() : null;
+
+        const date = (brief && brief.date) || (dig && dig.date) || (ar && ar.date) || "—";
+        meta.textContent = "資料日 " + date + " · 純函數組裝 · llm=false";
+
+        // —— Ch1
+        const headline = (brief && brief.headline) || (dig && dig.headline) || "—";
+        const one = (brief && brief.one_liner) || (dig && dig.one_liner) || "";
+        const c1 = document.getElementById("c1state");
+        c1.textContent = headline;
+        c1.className = "hero-state " + stateClass(headline);
+        document.getElementById("c1lede").textContent = one;
+        const sec1 = (brief && brief.sections || []).find((s) => s.id === "verdict")
+          || (brief && brief.sections || [])[0];
+        const lines1 = (sec1 && sec1.lines) || (brief && brief.evidence_raw) || [];
+        document.getElementById("c1lines").innerHTML = lines1.slice(0,5).map((l)=>`<li>${esc(l)}</li>`).join("")
+          || "<li>尚無體制講解</li>";
+
+        // —— Ch2
+        const m = (brief && brief.metrics) || {};
+        document.getElementById("c2kpis").innerHTML = [
+          ["外資", m.foreign, "億"],
+          ["投信", m.trust, "億"],
+          ["自營", m.dealer, "億"],
+          ["當沖%", m.daytrade_pct, "%"],
+          ["融資Δ", m.margin_delta, "億"],
+          ["漲／跌", (m.advance!=null && m.decline!=null) ? (m.advance+"／"+m.decline) : null, ""],
+        ].map(([lab,v,u]) => {
+          const show = (lab==="漲／跌") ? (v||"—") : (u==="%" ? fmt(v,1)+"%" : signed(v,u||"億"));
+          const cls = (typeof v==="number") ? clsNum(v) : "";
+          return `<div class="kpi"><div class="l">${lab}</div><div class="v ${cls}">${show}</div></div>`;
+        }).join("");
+        const flowSec = (brief && brief.sections || []).find((s) => s.id === "flow");
+        const flowLines = (flowSec && flowSec.lines) || (brief && brief.bullets) || [];
+        document.getElementById("c2lede").textContent =
+          (m.foreign!=null && Math.abs(m.foreign) >= Math.abs(m.trust||0) && Math.abs(m.foreign) >= Math.abs(m.dealer||0))
+            ? "量級上以外資為主軸；投信／自營當交叉驗證，不要只看單一法人。"
+            : "看三法人誰最大、誰同向；分歧時寧可只觀察。";
+        document.getElementById("c2lines").innerHTML = flowLines.slice(0,4).map((l)=>`<li>${esc(l)}</li>`).join("");
+
+        // —— Ch3
+        const hot = (th && (th.accelerating || [])).slice(0,6);
+        const cold = [
+          ...((th && th.decelerating) || []).slice(0,4),
+          ...((th && th.fragile_inflow) || []).slice(0,3),
+        ];
+        document.getElementById("c3hot").innerHTML = hot.length
+          ? hot.map((t)=>`<span class="chip hot">${esc(t.shortname||t.name)}</span>`).join("")
+          : '<span class="chip">（無）</span>';
+        document.getElementById("c3cold").innerHTML = cold.length
+          ? cold.map((t)=>{
+              const fragile = t.flags && t.flags.fragile_inflow;
+              return `<span class="chip ${fragile?"fragile":"cold"}">${esc(t.shortname||t.name)}${fragile?" · 脆":""}</span>`;
+            }).join("")
+          : '<span class="chip">（無）</span>';
+        const top = hot[0];
+        document.getElementById("c3lede").textContent = top
+          ? `加速最顯眼：${top.shortname||top.name}。集中度高時，熱度可能只在龍頭，龍二／龍鱷要另外確認是否真有湯。`
+          : "今日題材輪動旗標偏淡，先回頭看體制與三法人。";
+
+        // —— Ch4
+        document.getElementById("c4script").textContent =
+          (pb && pb.daily_script) || "看 regime → 小倉位喝湯 → 假動作立刻躲開。";
+        const pbs = (pb && pb.playbooks) || [];
+        document.getElementById("c4playbooks").innerHTML = pbs.map((p) => {
+          const danger = String(p.action||"").indexOf("躲開")>=0;
+          const do0 = (Array.isArray(p.do) && p.do[0]) || (p.gate && p.gate.description) || "";
+          return `<div class="card-mini ${danger?"bad":"good"}">
+            <div class="t">${esc(p.action)} · ${esc(p.name)}</div>
+            <div class="d">${esc(String(do0).slice(0,140))}</div>
+            <div class="fail">失效：${esc(p["失效"]||"—")}</div>
+          </div>`;
+        }).join("") || '<div class="lede">尚無劇本</div>';
+        const lists = (ar && ar.lists) || {};
+        document.getElementById("c4focus").innerHTML = stockRows(lists.focus_list, "focus", 5);
+        document.getElementById("c4caution").innerHTML = stockRows(lists.caution_list, "caution", 5);
+
+        // —— Ch5
+        const by = (sb && sb.by_type) || {};
+        const order = ["fake_thrust","chase_first_bar","second_wave","distribution_detector","institutional_accumulation"];
+        const labels = {
+          fake_thrust:"假動作 · 優先躲開",
+          chase_first_bar:"追第一根 · 偏付錢",
+          second_wave:"第二波 · 過濾用",
+          distribution_detector:"出貨偵測",
+          institutional_accumulation:"機構累積（短樣本仍弱）",
+        };
+        document.getElementById("c5board").innerHTML = order.filter((k)=>by[k]).map((k) => {
+          const r = by[k];
+          const ex = r.mean_excess_5d;
+          const bad = ex!=null && ex < 0;
+          return `<div class="card-mini ${bad?"bad":"good"}">
+            <div class="t">${esc(labels[k]||k)}</div>
+            <div class="d">N=${r.N||"—"} · 5日超額均值 ${ex==null?"—":(ex*100).toFixed(1)+"pp"}
+              ${bad ? " → 當煞車，不當進場理由" : ""}</div>
+          </div>`;
+        }).join("") || '<div class="lede">尚無分數板</div>';
+        if (sb && sb.caveat) {
+          document.getElementById("c5board").innerHTML +=
+            `<p class="lede" style="margin-top:10px">${esc(sb.caveat)}</p>`;
+        }
+
+        document.title = "今日 " + date + " · " + headline;
+      } catch (e) {
+        meta.textContent = "載入失敗";
+        document.querySelector(".wrap").insertAdjacentHTML("afterbegin",
+          `<div class="err">${esc(e && e.message ? e.message : e)}</div>`);
+      }
+    }
+    boot();
+  </script>
 </body>
 </html>
