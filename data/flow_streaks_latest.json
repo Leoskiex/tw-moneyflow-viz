@@ -2,7 +2,7 @@
   "date": "2026-09-04",
   "disclaimer": "Heuristic consecutive buy/sell days (net>0 or net<0; break on 0/null). Not investment advice.",
   "source": "curated history from T86 / TPEX_3I nets",
-  "n_dates": 60,
+  "n_dates": 648,
   "stats": {
     "stocks_touched": 2229,
     "foreign_buy_ge3": 263,
