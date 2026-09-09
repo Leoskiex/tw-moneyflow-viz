@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-07T19:07:38+08:00",
+  "generated_at": "2026-09-09T17:39:36+08:00",
   "days": [
     {
       "date": "2024-01-02",
@@ -17616,6 +17616,88 @@
         "notice_n": 31,
         "disposition_n": 17,
         "disp_risk_high_n": 18
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "primary": "inst_push",
+      "primary_label": "機構推動",
+      "secondary": "regulatory",
+      "secondary_label": "監管摩擦",
+      "confidence": 0.97,
+      "evidence": [
+        "外資全市場淨買 +895.0 億（投信 +105.4 億／自營 +170.2 億）",
+        "題材集中：面板產業 法人淨額 +227.0 千張（佔比 24%）",
+        "監管摩擦：處置 13 檔、逼近處置(高) 13 檔"
+      ],
+      "metrics": {
+        "foreign": 895.05,
+        "trust": 105.42,
+        "dealer": 170.15,
+        "daytrade_pct": 35.87,
+        "margin_delta": 63.77,
+        "advance": 404,
+        "decline": 573,
+        "top_topic": "面板產業",
+        "top_topic_net": 227.025,
+        "top_share": 0.2435,
+        "notice_n": 15,
+        "disposition_n": 13,
+        "disp_risk_high_n": 13
+      }
+    },
+    {
+      "date": "2026-09-08",
+      "primary": "regulatory",
+      "primary_label": "監管摩擦",
+      "secondary": null,
+      "secondary_label": null,
+      "confidence": 0.8,
+      "evidence": [
+        "監管摩擦：處置 11 檔、逼近處置(高) 11 檔"
+      ],
+      "metrics": {
+        "foreign": 25.35,
+        "trust": 2.58,
+        "dealer": -193.13,
+        "daytrade_pct": 36.15,
+        "margin_delta": -20.05,
+        "advance": 282,
+        "decline": 705,
+        "top_topic": "銀行金融",
+        "top_topic_net": 153.671,
+        "top_share": 0.1882,
+        "notice_n": 15,
+        "disposition_n": 11,
+        "disp_risk_high_n": 11
+      }
+    },
+    {
+      "date": "2026-09-09",
+      "primary": "inst_push",
+      "primary_label": "機構推動",
+      "secondary": null,
+      "secondary_label": null,
+      "confidence": 0.881,
+      "evidence": [
+        "外資全市場淨買 +241.4 億（投信 +34.2 億／自營 -22.5 億）",
+        "題材集中：面板產業 法人淨額 +154.2 千張（佔比 23%）",
+        "漲跌家數偏多：上漲 607／下跌 370"
+      ],
+      "metrics": {
+        "foreign": 241.38,
+        "trust": 34.24,
+        "dealer": -22.52,
+        "daytrade_pct": 0.0,
+        "margin_delta": 0.0,
+        "advance": 607,
+        "decline": 370,
+        "top_topic": "面板產業",
+        "top_topic_net": 154.179,
+        "top_share": 0.2321,
+        "notice_n": 15,
+        "disposition_n": 8,
+        "disp_risk_high_n": 8
       }
     }
   ]
