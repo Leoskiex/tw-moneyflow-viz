@@ -2,7 +2,7 @@
   "date": "2026-09-09",
   "etf": "00981A",
   "name": "統一投信 00981A（日揭持股）",
-  "generated_at": "2026-09-09T17:39:44+08:00",
+  "generated_at": "2026-09-09T18:39:59+08:00",
   "source": "ezmoney",
   "source_url": "https://www.ezmoney.com.tw/ETF/Fund/Info?FundCode=49YTW",
   "meta": {
@@ -16,8 +16,8 @@
   "regime": {
     "primary": "inst_push",
     "primary_label": "機構推動",
-    "secondary": null,
-    "secondary_label": null,
+    "secondary": "regulatory",
+    "secondary_label": "監管摩擦",
     "top_topic": "面板產業"
   },
   "manager_flow": {
