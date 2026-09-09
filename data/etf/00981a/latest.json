@@ -2,7 +2,7 @@
   "date": "2026-09-09",
   "etf": "00981A",
   "name": "統一投信 00981A（日揭持股）",
-  "generated_at": "2026-09-09T18:39:59+08:00",
+  "generated_at": "2026-09-09T21:01:07+08:00",
   "source": "ezmoney",
   "source_url": "https://www.ezmoney.com.tw/ETF/Fund/Info?FundCode=49YTW",
   "meta": {
@@ -16,8 +16,8 @@
   "regime": {
     "primary": "inst_push",
     "primary_label": "機構推動",
-    "secondary": "regulatory",
-    "secondary_label": "監管摩擦",
+    "secondary": "hot_money",
+    "secondary_label": "熱錢噪音",
     "top_topic": "面板產業"
   },
   "manager_flow": {
@@ -228,7 +228,7 @@
         "action": null,
         "topic": "AI 伺服器組裝",
         "inst_net": 2.585,
-        "screen_score": 32.116,
+        "screen_score": 31.806,
         "why": [
           "流入题材「AI 伺服器組裝」",
           "法人净买温和 2.58 千张（区间 0.5–8.0）"
