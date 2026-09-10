@@ -2,7 +2,7 @@
 
 **Audience:** a local agent taking over Leoskie’s Taiwan money-flow stack  
 **Author context:** Grok Bot agent **AISTOCKMAP** (box + Mac mini + GitHub Pages)  
-**Handoff date:** 2026-09-10 (Asia/Taipei)  
+**Handoff date:** 2026-09-10 (Asia/Taipei; auth section updated same day)  
 **Latest trade board as-of:** **2026-09-09** (20:45 margin catch-up included)
 
 This document is the end-to-end brief: what the project is, what was built, what worked / failed, how to operate daily, how GitHub Pages is updated, research/backtest results, and what to do next.
@@ -112,26 +112,43 @@ Full curated tarball often hits CopyFromBox size / flaky Mac link limits.
 
 ### 3.5 Ship to GitHub Pages
 
-Working tree: `/workspace/tw-moneyflow-gh-pages`
+Working tree: `/workspace/tw-moneyflow-gh-pages`  
+Public site: https://leoskiex.github.io/tw-moneyflow-viz/  
+Repo: `Leoskiex/tw-moneyflow-viz` (`main`)
+
+#### Auth & secrets (HARD RULES)
+
+- **Push with `git` + `gh` auth already on the machine.** Prefer `git push origin main` after `gh auth status` shows logged in as **Leoskiex**.
+- **NEVER ask the user (or anyone) to paste a GitHub token (`ghp_…` / `gho_…`) into chat, Discord, Slack, or a handoff message.** Chat transcripts are not a secret store.
+- **NEVER print / echo / commit tokens** from `~/.config/gh/hosts.yml`, env vars, or keychain into logs or replies.
+- If auth is missing: tell the user to run **`gh auth login`** locally (browser / device flow), or store a PAT in the agent’s **secret / env** mechanism — **not** in the conversation.
+- Do **not** use the GitHub Contents API with a pasted PAT as the default path; that pattern tempts agents to request `ghp_` in chat. Stick to `git push` / `gh`.
+- **Do not** `git config --global`. One-shot is OK:  
+  `git -c user.name='Leoskiex' -c user.email='Leoskiex@users.noreply.github.com' commit …`
+
+#### Push recipe
 
 ```bash
-# Selective sync from /workspace/tw-moneyflow-viz (skip *.gz, full curated, features/outcomes bulk)
-# Then:
+# 1) Selective sync from /workspace/tw-moneyflow-viz
+#    include: *_latest.json, regimes.json, digest md, html, etf/00981a latest, last curated day
+#    exclude: *.gz, full curated history, features/outcomes bulk, huge trades
+
+# 2) Commit + push (identity via -c if needed)
 cd /workspace/tw-moneyflow-gh-pages
-git add …  # digest/screens/regimes/etf latest + html
+gh auth status   # must be Leoskiex; if not, stop and ask for `gh auth login` — never ask for ghp_
+git add …        # digest/screens/regimes/etf latest + html + this handoff if changed
 git -c user.name='Leoskiex' -c user.email='Leoskiex@users.noreply.github.com' commit -m "…"
 git push origin main
 ```
 
-**Do not** `git config --global` (policy). One-shot `-c user.name/email` is fine if identity missing.
-
-**CDN lag:** `raw.githubusercontent.com` / jsDelivr update before `leoskiex.github.io` sometimes; hard-refresh Pages.
+**CDN lag:** `raw.githubusercontent.com` / jsDelivr often update before `leoskiex.github.io`; hard-refresh Pages.
 
 **Recent Pages commits (examples):**
 - `4e51d22` — 20:45 margin catch-up 2026-09-09
 - `0bb7f36` — evening ETL 18:53 digest
 - `4f0fb8c` — first 2026-09-09 core pack
 - `c790170` — 2026-09-07 refresh after stuck period
+- `c59de26` — LOCAL_AGENT_HANDOFF.md
 
 Evening ETL routines historically synced **Mac** but sometimes **forgot Pages** — local agent should **always push Pages** after a successful refresh (or add it to the routine prompt).
 
