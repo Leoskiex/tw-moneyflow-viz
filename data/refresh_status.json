@@ -1,25 +1,54 @@
 {
-  "started": "2026-09-09T17:39:48+08:00",
-  "trade_day": "2026-09-09",
+  "started": "2026-09-10T18:33:59+08:00",
+  "trade_day": "2026-09-10",
   "ok": true,
   "steps": {
     "fetch": {
-      "date": "2026-09-09",
-      "note": "09-07/08 full margin catch-up; 09-09 margin still empty",
+      "date": "2026-09-10",
+      "ok": [
+        "T86",
+        "BFI82U",
+        "TWTB4U",
+        "BFIAMU",
+        "FMTQIK",
+        "MI_INDEX"
+      ],
+      "fail": [
+        {
+          "ep": "MI_MARGN_ALL",
+          "detail": "http=200 size=50"
+        },
+        {
+          "ep": "MI_MARGN_MS",
+          "detail": "http=200 size=50"
+        },
+        {
+          "ep": "TWTASU",
+          "detail": "http=200 size=61"
+        }
+      ],
+      "nodata": [
+        "TWT93U"
+      ],
       "core_ok": true
     },
+    "overlays": {
+      "gap4": "ok",
+      "rules": "ok",
+      "tpex_qfiis": "ok"
+    },
     "build": {
-      "build_curated": "ok_incremental",
-      "new_days": [
-        "2026-09-07",
-        "2026-09-08",
-        "2026-09-09"
-      ],
-      "screens_date": "2026-09-09",
-      "etf_date": "2026-09-09",
+      "build_curated": "ok",
+      "regime_brief": "2026-09-09",
       "digest": "2026-09-09",
-      "regime_brief": "2026-09-09"
+      "artifacts": {
+        "screens": true,
+        "regime": true,
+        "etf_00981a": true
+      },
+      "screens_date": "2026-09-09",
+      "etf_date": "2026-09-10"
     }
   },
-  "finished": "2026-09-09T17:39:48+08:00"
+  "finished": "2026-09-10T18:49:08+08:00"
 }
