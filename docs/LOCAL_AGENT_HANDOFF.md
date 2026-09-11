@@ -391,5 +391,7 @@ CMI is a separate Grok Bot agent with Mac SQLite. Share CSVs under `outputs/`; n
 - 首頁連結文案：看錢怎麼流
 
 ## Handoff status (2026-09-11)
+- **日終 FundFlo vs 盤中雷达差距表**：`docs/FUND_FLO_VS_INTRADAY_RADAR.md`
+
 
 **Local agent may take over daily refresh + remaining backlog.** See `docs/FUNDFLO_FULL_HISTORY_HANDBOOK.md` **rev3**. FundFlo UI/active ETF/keep_dates=120 are live; still open: curated index rebuild, screens full-calendar, optional 2023 curate. Always slim-push Pages after a successful refresh.
