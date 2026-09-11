@@ -2,8 +2,8 @@
 
 **Audience:** a local agent taking over Leoskie’s Taiwan money-flow stack  
 **Author context:** Grok Bot agent **AISTOCKMAP** (box + Mac mini + GitHub Pages)  
-**Handoff date:** 2026-09-10 (Asia/Taipei; auth section updated same day)  
-**Latest trade board as-of:** **2026-09-09** (20:45 margin catch-up included)
+**Handoff date:** 2026-09-11 (Asia/Taipei; §3 Mac-owns-daily after box crons paused)  
+**Latest trade board as-of:** **2026-09-09** screens / **2026-09-11** trade_day (20:45 margin catch-up)
 
 This document is the end-to-end brief: what the project is, what was built, what worked / failed, how to operate daily, how GitHub Pages is updated, research/backtest results, and what to do next.
 
@@ -56,111 +56,164 @@ North-star doc: `/workspace/tw-moneyflow-viz/docs/ARCHITECTURE_6LAYER.md`
 
 ---
 
-## 3. Daily operations (what runs every weekday)
+## 3. Daily operations — **local Mac owns this** (box crons PAUSED)
 
-AISTOCKMAP Grok Bot routines (Asia/Taipei):
+> **2026-09-11 user directive:** stop AISTOCKMAP box cron jobs. Daily T86 / FundFlo slim / Pages / 8777 are run by the **local Mac agent**. Do **not** resume box routines unless the user says so.
+>
+> Ownership tracker: `docs/HANDOVER_OWNERSHIP.md`
 
-| Time | Routine folder | Purpose |
-|------|----------------|---------|
-| **18:30** | `tw-money-flow-daily-etl` | Primary refresh after T86 (~18:00 ex-block) |
-| **19:00** | `tw-money-flow-regime-digest` | Paste digest to user |
-| **20:45** | `tw-money-flow-etl-retry-20-45` | Second pass when margin/block tables ready |
-| Sunday 11:00 | `tw-quarter-backfill` | Quarterly backfill (optional) |
+### 3.0 Box routines — PAUSED (do not rely on these)
 
-### 3.1 Core command (box)
+| Was | Routine folder | Status |
+|------|----------------|--------|
+| 18:30 weekdays | `tw-money-flow-daily-etl` | **PAUSED** |
+| 19:00 weekdays | `tw-money-flow-regime-digest` | **PAUSED** |
+| 20:45 weekdays | `tw-money-flow-etl-retry-20-45` | **PAUSED** |
+| Sun 11:00 | `tw-quarter-backfill` | **PAUSED** |
+
+Suggested local cadence (same times, on Mac): **18:30** primary after T86 (~18:00) · **20:45** margin catch-up · digest paste optional.
+
+### 3.1 Exact Mac commands (canonical daily)
 
 ```bash
-cd /workspace/twse-trading && python3 refresh_daily.py
+export TZ=Asia/Taipei
+export TW_VIZ_ROOT=/Users/lin/Downloads/tw-moneyflow-viz
+
+# 1) Primary refresh (after T86 ~18:00)
+cd /Users/lin/Downloads/twse-trading
+python3 refresh_daily.py
+# optional force a date: python3 refresh_daily.py 2026-09-11
+
+# 2) Confirm dates align
+python3 - <<'PY'
+import json
+from pathlib import Path
+V=Path("/Users/lin/Downloads/tw-moneyflow-viz")
+st=json.loads((V/"data/refresh_status.json").read_text())
+print("ok", st.get("ok"), "trade_day", st.get("trade_day"))
+for name in ["screens_latest.json","regime_latest.json","digest_latest.json"]:
+    p=V/"data"/name
+    if p.exists():
+        d=json.loads(p.read_text())
+        print(name, "date", d.get("date") or d.get("asof") or d.get("trade_day"))
+PY
+# Guardrail: raw/manifest.json latest_trade_day == refresh_status.trade_day
+# Prefer screens_latest.date close to trade_day (may lag 1–2d if margin/curated blocked)
+
+# 3) Local UI
+/Users/lin/Downloads/twse-trading/bin/ensure_8777.sh
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8777/
+# expect 200
+
+# 4) Pages push (from a git clone of Leoskiex/tw-moneyflow-viz)
+#    Prefer Mac clone if you keep one; else sync lean files then push.
+#    NEVER paste ghp_ into chat — use existing `gh` / `git` auth.
+gh auth status   # must be Leoskiex
+cd /path/to/tw-moneyflow-viz-git   # e.g. Mac clone OR box /workspace/tw-moneyflow-gh-pages
+# Selective add: *_latest.json, regimes, digest, fundflo/latest(+series_top),
+# last curated day, html/js, etf/00981a latest — NOT full curated/features/raw
+git add …
+git -c user.name='Leoskiex' -c user.email='Leoskiex@users.noreply.github.com' \
+  commit -m "daily: YYYY-MM-DD refresh"
+git push origin main
 ```
 
-Writes `/workspace/tw-moneyflow-viz/data/refresh_status.json`.
+**What `refresh_daily.py` does (order):** fetch trade-day raw (force) → overlays → curated → regimes → screens → 00981A → digest / regime_brief / action_radar → FundFlo slim (`build_fundflo_features`, non-fatal).
 
-Typical pipeline inside / after refresh:
-1. Fetch trade-day raw (T86, MI_INDEX, margins, etc.)
-2. Overlays (gap4, rules, TPEx QFIIs, …)
-3. `build_curated` → regimes → screens → 00981A → digest / regime_brief / action_radar
+Writes: `$TW_VIZ_ROOT/data/refresh_status.json` (`ok`, `trade_day`, per-step status).
 
-### 3.2 CRITICAL BUG FIXED (2026-09-09)
+### 3.2 Secrets / env (server-only — never in browser or chat)
 
-**Symptom:** raw days existed through 09-09 but curated/screens stuck at **2026-09-04**.
+| Name | Where | Used by | Notes |
+|------|--------|---------|--------|
+| *(none required for core T86 ETL)* | — | `refresh_daily.py` | TWSE/TPEx public endpoints |
+| `TW_VIZ_ROOT` | env | refresh / builders | Mac default: `/Users/lin/Downloads/tw-moneyflow-viz` |
+| `FINMIND_TOKEN` | Mac env or local secrets file | `etl/fetch_finmind_candles.py` | **optional / satellite**; not FundFlo daily |
+| `FUGLE_API_KEY` | Mac env or local secrets | `etl/fetch_fugle_candles.py` | **optional**; 5m/15m/60m for `stock.html` |
+| GitHub | `gh auth login` already on Mac | Pages push | **Never** ask for / print `ghp_` |
 
-**Cause:** `refresh_daily.py` did **not** advance `raw/manifest.json` `latest_trade_day`, so `build_curated` stopped early.
+Box historically used `/home/box/sand-data/box-secrets.json` `card.*` — local agent should mirror tokens into **Mac env / Keychain / local secrets**, not chat.
 
-**Fix applied:** patch manifest `latest_trade_day` when fetching newer days; rebuild curated for gap days.  
-**Local agent must verify** on every refresh that:
+### 3.3 CRITICAL BUG FIXED (2026-09-09) — still a daily guardrail
+
+**Symptom:** raw days existed but curated/screens stuck older.
+
+**Cause:** `refresh_daily.py` did not advance `raw/manifest.json` `latest_trade_day`.
+
+**Every refresh verify:**
 
 ```text
-raw/manifest.json latest_trade_day == refresh_status.trade_day == screens_latest.date
+raw/manifest.json latest_trade_day == refresh_status.trade_day
 ```
 
 If mismatch → patch manifest and re-run curated/screens builders.
 
-### 3.3 Margin timing
+### 3.4 Failure modes (expect these)
 
-- **18:30:** often `MI_MARGN_*` / `TWTASU` empty → screens date can still advance on T86, but margin buckets empty; secondary regime may say 监管摩擦.
-- **20:45:** margins usually OK → accumulation / fresh_money / distribution / daytrade_noise etc. fill; secondary may flip (e.g. 热钱噪音 on 2026-09-09).
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| **T86 late / empty** ~18:00–18:20 | TWSE not published yet | Wait; re-run 18:30+; do not invent screens |
+| **18:30: `MI_MARGN_ALL` / `MI_MARGN_MS` / `TWTASU` fail or nodata** | Margin tables publish later | Expected. Re-run **20:45**. Screens may still advance on T86 |
+| **Screens date stuck** (e.g. 09-09 while trade_day 09-11) | Prior day margin `.bad` blocked curated | Fix / re-fetch that day’s MI_MARGN; rebuild curated for gap days; do not fake dates |
+| **HTTP 402 / paywall on optional APIs** | FinMind/Fugle plan | Skip satellite candles; core ETL unaffected |
+| **Empty / missing FundFlo `series_top.json`** | Slim build skipped or `keep_dates` too small | Re-run `etl/build_fundflo_features.py`; need `keep_dates≥120` for water UI |
+| **Copy / sync full pack fails (~2–3GB)** | Size limits | Always **lean** pack: latest overlays + recent curated/screens/etf/fundflo + html/js |
+| **`resource_exhausted` on old box cron** | Box quota | Irrelevant now — Mac owns daily; if Mac OOMs, slim data + one day at a time |
+| **Pages CDN stale** | jsDelivr / Pages lag | Check `raw.githubusercontent.com/.../digest_latest.json` first; hard-refresh site |
 
-### 3.4 Ship to Mac (8777)
-
-Prefer a **lean** pack (latest JSON + html), not full 2–3GB `data/`:
-
-- Copy curated last few days + `*_latest.json` + html/js to  
-  `/Users/lin/Downloads/tw-moneyflow-viz/`
-- Run `ensure_8777.sh` → expect `http://127.0.0.1:8777/` = 200
-
-Full curated tarball often hits CopyFromBox size / flaky Mac link limits.
-
-### 3.5 Ship to GitHub Pages
-
-Working tree: `/workspace/tw-moneyflow-gh-pages`  
-Public site: https://leoskiex.github.io/tw-moneyflow-viz/  
-Repo: `Leoskiex/tw-moneyflow-viz` (`main`)
-
-#### Auth & secrets (HARD RULES)
-
-- **Push with `git` + `gh` auth already on the machine.** Prefer `git push origin main` after `gh auth status` shows logged in as **Leoskiex**.
-- **NEVER ask the user (or anyone) to paste a GitHub token (`ghp_…` / `gho_…`) into chat, Discord, Slack, or a handoff message.** Chat transcripts are not a secret store.
-- **NEVER print / echo / commit tokens** from `~/.config/gh/hosts.yml`, env vars, or keychain into logs or replies.
-- If auth is missing: tell the user to run **`gh auth login`** locally (browser / device flow), or store a PAT in the agent’s **secret / env** mechanism — **not** in the conversation.
-- Do **not** use the GitHub Contents API with a pasted PAT as the default path; that pattern tempts agents to request `ghp_` in chat. Stick to `git push` / `gh`.
-- **Do not** `git config --global`. One-shot is OK:  
-  `git -c user.name='Leoskiex' -c user.email='Leoskiex@users.noreply.github.com' commit …`
-
-#### Push recipe
+### 3.5 Ship to Mac 8777
 
 ```bash
-# 1) Selective sync from /workspace/tw-moneyflow-viz
-#    include: *_latest.json, regimes.json, digest md, html, etf/00981a latest, data/fundflo/latest.json (+ series_top if small), last curated day
-#    exclude: *.gz, full curated history, features/outcomes bulk, huge trades
-
-# 2) Commit + push (identity via -c if needed)
-cd /workspace/tw-moneyflow-gh-pages
-gh auth status   # must be Leoskiex; if not, stop and ask for `gh auth login` — never ask for ghp_
-git add …        # digest/screens/regimes/etf latest + html + this handoff if changed
-git -c user.name='Leoskiex' -c user.email='Leoskiex@users.noreply.github.com' commit -m "…"
-git push origin main
+/Users/lin/Downloads/twse-trading/bin/ensure_8777.sh
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8777/
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8777/data/screens_latest.json
 ```
 
-**CDN lag:** `raw.githubusercontent.com` / jsDelivr often update before `leoskiex.github.io`; hard-refresh Pages.
+`ensure_8777.sh` starts `python3 -m http.server 8777 --bind 127.0.0.1` in the viz folder if port free.
 
-**Recent Pages commits (examples):**
-- `4e51d22` — 20:45 margin catch-up 2026-09-09
-- `0bb7f36` — evening ETL 18:53 digest
-- `4f0fb8c` — first 2026-09-09 core pack
-- `c790170` — 2026-09-07 refresh after stuck period
-- `c59de26` — LOCAL_AGENT_HANDOFF.md
+### 3.6 Ship to GitHub Pages
 
+Repo: **`Leoskiex/tw-moneyflow-viz`** · site: https://leoskiex.github.io/tw-moneyflow-viz/
 
-### 3.6 FundFlo shared layer (merged 2026-09-11)
+#### Auth (HARD RULES)
 
-- Contract: `docs/FUNDFLO_CONTRACT.md`; model: `etl/fundflo_model.py` + `js/fundflo_model.js`
-- Build: `etl/build_fundflo_features.py` hooked in `refresh_daily.py` **after curated** (non-fatal if it fails)
-- Artifacts: `data/fundflo/latest.json` (also `series_top.json`, `by_date/`)
-- Pages + aistockmap-clone consumer read **Pages** `data/fundflo/latest.json`
-- **Daily Pages sync must include `data/fundflo/latest.json`** (and ideally `series_top.json`); full `by_date/` optional/large
+- Push with already-authenticated `git` / `gh` as **Leoskiex**.
+- **NEVER** paste `ghp_` / `gho_` into chat. If missing: user runs `gh auth login` locally.
+- Do **not** `git config --global`. One-shot `-c user.name=…` OK.
+
+#### Slim sync include list
+
+- `data/*_latest.json`, `data/regimes.json`, digest md/json
+- `data/fundflo/latest.json` + `series_top.json` (required for water UI)
+- `data/etf/` / 00981A latest
+- last curated day(s), html/js (`index.html`, `fund-flow.html`, `stock.html`, …)
+- **Exclude:** `*.gz`, full curated history, features/outcomes bulk, raw dumps
+
+### 3.7 FundFlo shared layer
+
+- Contract: `docs/FUNDFLO_CONTRACT.md`; full history: `docs/FUNDFLO_FULL_HISTORY_HANDBOOK.md`
+- Build hooked after curated in `refresh_daily.py` (non-fatal)
+- Daily Pages **must** include `data/fundflo/latest.json` (+ `series_top.json`)
 - Units: curated `foreign_net` = 千張; FundFlo `*_yi` = 億元 via `foreign_net * price / 100`
 
-Evening ETL routines historically synced **Mac** but sometimes **forgot Pages** — local agent should **always push Pages** after a successful refresh (or add it to the routine prompt).
+### 3.8 Research layer — **optional / out of daily slim**
+
+These are **not** required for the weekday FundFlo / screens / Pages board. Run only when researching:
+
+| Job | Script (under `/Users/lin/Downloads/twse-trading` or box twin) | When |
+|-----|----------------------------------------------------------------|------|
+| Regime digest paste | `build_daily_digest.py` → `data/digest_latest.json` | Optional after refresh (UI already has digest.html) |
+| Action radar | `build_action_radar.py` → consumed by `action-radar.html` | Usually already in refresh; re-run if radar empty |
+| Feature Store | `build_feature_store.py` | Research / backfill |
+| Lifecycle | `build_lifecycle.py` | Research |
+| Outcomes | `build_outcome_engine.py` | Research |
+| Theme rotation / fake thrust / signals | `build_theme_rotation.py`, `detect_fake_thrust.py`, `build_strategy_signals.py` | Research |
+| Event study / tournament | `event_study.py`, `backtest_strategy_tournament_v1.py` | Research — T+1, no peeking |
+| Quarter backfill | `backfill_quarter.py` | Sunday / backlog — **not** daily |
+
+Candles (FinMind daily / Fugle 5m): **satellite** — see `docs/FINMIND_*.md`, `docs/FUGLE_CANDLES.md`. Do **not** put candle fetches inside FundFlo slim.
+
+North-star: `docs/ARCHITECTURE_6LAYER.md`.
 
 ---
 
@@ -287,8 +340,8 @@ Reports on Mac under `cmi_system_v1_5/outputs/` (WALKFORWARD / TARIFF_BRIDGE / S
 
 ### Not done / fragile
 
-- Routines can die with **`resource_exhausted`** (seen 2026-09-08) — local agent should be able to run `refresh_daily.py` manually.
-- Pages push not always part of routine — **add it**.
+- Box money-flow crons are **PAUSED** (2026-09-11); local Mac owns daily. Old box `resource_exhausted` is irrelevant unless someone resumes them.
+- Pages push must be part of **every** successful local refresh.
 - Manifest drift bug — **guardrail required**.
 - No proven tradable edge; filters only.
 - Two-stage Accum→second_wave strategy **proposed**, not fully tournament-coded as walk-forward-safe book.
@@ -299,13 +352,13 @@ Reports on Mac under `cmi_system_v1_5/outputs/` (WALKFORWARD / TARIFF_BRIDGE / S
 
 ## 8. Playbook for the local agent (checklist)
 
-### A. Morning / anytime “update everything”
+### A. Weekday “update everything” (Mac — box crons are PAUSED)
 
-1. Box: `python3 /workspace/twse-trading/refresh_daily.py` (or Mac equivalent if you relocate stack).
-2. Confirm `refresh_status.json` `ok=true` and dates align (trade_day / screens / curated / manifest).
+1. Mac: `cd /Users/lin/Downloads/twse-trading && TW_VIZ_ROOT=/Users/lin/Downloads/tw-moneyflow-viz python3 refresh_daily.py`
+2. Confirm `data/refresh_status.json` `ok=true` and dates align (trade_day / screens / curated / manifest).
 3. If gap days: rebuild curated for those dates; rebuild regimes/screens/digest/00981A as needed.
-4. Lean sync → Mac `tw-moneyflow-viz` + `ensure_8777.sh`.
-5. Selective sync → `tw-moneyflow-gh-pages` → commit → `git push origin main`.
+4. `/Users/lin/Downloads/twse-trading/bin/ensure_8777.sh` → `http://127.0.0.1:8777/` = 200.
+5. Selective slim sync → git clone of `Leoskiex/tw-moneyflow-viz` → `git push origin main` (existing `gh` auth; never paste tokens).
 6. Verify:  
    - `https://raw.githubusercontent.com/Leoskiex/tw-moneyflow-viz/main/data/digest_latest.json`  
    - then Pages URL (allow CDN lag).
@@ -394,5 +447,5 @@ CMI is a separate Grok Bot agent with Mac SQLite. Share CSVs under `outputs/`; n
 - **日終 FundFlo vs 盤中雷达差距表**：`docs/FUND_FLO_VS_INTRADAY_RADAR.md`
 
 
-**Local agent may take over daily refresh + remaining backlog.** See `docs/FUNDFLO_FULL_HISTORY_HANDBOOK.md` **rev3**. FundFlo UI/active ETF/keep_dates=120 are live; still open: curated index rebuild, screens full-calendar, optional 2023 curate. Always slim-push Pages after a successful refresh.
+**Local agent owns daily refresh (box crons PAUSED 2026-09-11).** See §3 + `docs/FUNDFLO_FULL_HISTORY_HANDBOOK.md` **rev3** + `docs/HANDOVER_OWNERSHIP.md`. FundFlo UI/active ETF/keep_dates=120 are live; still open: curated index rebuild, screens full-calendar, optional 2023 curate. Always slim-push Pages after a successful refresh.
 - **FinMind 整合邊界**：`docs/FINMIND_INTEGRATION.md`（candle 衛星；勿進 FundFlo slim）
