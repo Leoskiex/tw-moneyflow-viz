@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-09",
+  "etf": "00411A",
+  "fund_code": "64YTW",
+  "source": "ezmoney",
+  "source_url": "https://www.ezmoney.com.tw/ETF/Fund/Info?FundCode=64YTW",
+  "fetched_at": "2026-09-11T11:10:30+08:00",
+  "meta": {
+    "asset_name": "股票",
+    "n_raw_details": 35,
+    "n_equity": 6,
+    "weight_sum_equity": 15.63,
+    "fund_code": "64YTW",
+    "etf_code": "00411A"
+  },
+  "holdings": [
+    {
+      "code": "8996",
+      "name": "高力",
+      "share": 162000.0,
+      "amount": 217890000.0,
+      "weight_pct": 3.69,
+      "money_type": "NTD"
+    },
+    {
+      "code": "3017",
+      "name": "奇鋐",
+      "share": 59000.0,
+      "amount": 199420000.0,
+      "weight_pct": 3.38,
+      "money_type": "NTD"
+    },
+    {
+      "code": "3443",
+      "name": "創意",
+      "share": 33000.0,
+      "amount": 195525000.0,
+      "weight_pct": 3.31,
+      "money_type": "NTD"
+    },
+    {
+      "code": "6669",
+      "name": "緯穎",
+      "share": 64518.0,
+      "amount": 150004350.0,
+      "weight_pct": 2.54,
+      "money_type": "NTD"
+    },
+    {
+      "code": "4979",
+      "name": "華星光",
+      "share": 239000.0,
+      "amount": 145790000.0,
+      "weight_pct": 2.47,
+      "money_type": "NTD"
+    },
+    {
+      "code": "3037",
+      "name": "欣興",
+      "share": 14000.0,
+      "amount": 13902000.0,
+      "weight_pct": 0.24,
+      "money_type": "NTD"
+    }
+  ]
+}

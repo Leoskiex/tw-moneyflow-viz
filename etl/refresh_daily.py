@@ -143,6 +143,20 @@ def build_all() -> dict:
         out["digest"] = dig.get("date")
     except Exception as e:
         out["digest"] = f"err:{e}"
+    # Active ETF holdings batch (00981A + peers) — failures non-blocking
+    try:
+        import fetch_active_etf_holdings as faeh
+        summary = faeh.run_batch()
+        out["active_etf_holdings"] = {
+            "n_ok": summary.get("n_ok"),
+            "n_fail": summary.get("n_fail"),
+            "ok_codes": [x.get("code") for x in summary.get("ok") or []],
+            "fail_codes": [x.get("code") for x in summary.get("fail") or []],
+        }
+    except Exception as e:
+        out["active_etf_holdings"] = f"err:{e}"
+        print("active_etf_holdings", e)
+
     # FundFlo shared layer (WINDOW=5 億元) — same day as curated; see docs/FUNDFLO_CONTRACT.md
     try:
         etl_dir = VIZ / "etl"
