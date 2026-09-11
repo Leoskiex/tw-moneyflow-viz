@@ -1,5 +1,5 @@
 {
-  "started": "2026-09-11T20:56:26+08:00",
+  "started": "2026-09-11T22:43:05+08:00",
   "trade_day": "2026-09-11",
   "ok": true,
   "steps": {
@@ -28,36 +28,16 @@
     },
     "build": {
       "build_curated": "ok",
-      "regime_brief": "2026-09-09",
-      "digest": "2026-09-09",
-      "active_etf_holdings": {
-        "n_ok": 10,
-        "n_fail": 0,
-        "ok_codes": [
-          "00981A",
-          "00403A",
-          "00980A",
-          "00982A",
-          "00985A",
-          "00987A",
-          "00992A",
-          "00999A",
-          "00988A",
-          "00411A"
-        ],
-        "fail_codes": []
-      },
-      "fundflo": "2026-09-09",
-      "fundflo_stocks": 1887,
+      "regime_brief": "2026-09-11",
+      "digest": "2026-09-11",
       "artifacts": {
         "screens": true,
         "regime": true,
-        "etf_00981a": true,
-        "fundflo": true
+        "etf_00981a": true
       },
-      "screens_date": "2026-09-09",
+      "screens_date": "2026-09-11",
       "etf_date": "2026-09-11"
     }
   },
-  "finished": "2026-09-11T21:14:13+08:00"
+  "finished": "2026-09-11T22:43:34+08:00"
 }

@@ -4,14 +4,14 @@
   "fund_code": "49YTW",
   "source": "ezmoney",
   "source_url": "https://www.ezmoney.com.tw/ETF/Fund/Info?FundCode=49YTW",
-  "fetched_at": "2026-09-11T21:13:19+08:00",
+  "fetched_at": "2026-09-11T22:43:34+08:00",
   "meta": {
+    "fund_code": "49YTW",
+    "etf_code": "00981A",
     "asset_name": "股票",
     "n_raw_details": 50,
     "n_equity": 50,
-    "weight_sum_equity": 97.11,
-    "fund_code": "49YTW",
-    "etf_code": "00981A"
+    "weight_sum_equity": 97.11
   },
   "holdings": [
     {
