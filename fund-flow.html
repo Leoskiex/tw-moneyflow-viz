@@ -192,11 +192,7 @@
   </div>
 
   <div class="wrap">
-    <div class="disc" id="disc">
-      <strong>把每天的錢想成水。</strong>
-      泡泡愈大＝近幾天流進來（或流出去）愈多；往右＝水進來，往上＝水流比前一段更快。
-      按「讓水流動」就能看日子一天天變。顏色：<span class="up">紅＝股價這幾天上漲</span>／<span class="down">綠＝下跌</span>。
-    </div>
+    <div class="disc" id="disc"><strong>四個頁籤怎麼讀：</strong>外資＝法人買賣超估成錢；主動式 ETF＝經理人調倉水流；綜合＝兩者相加；成交熱度＝成交金額熱不熱（跟誰在買無關）。切換頁籤會更新這段說明。</div>
     <div class="snap-warn" id="snapWarn">現在只有「今天一張快照」，還沒有多天水流資料，所以泡泡幾乎不會動。等日更產出系列後再開播放。</div>
 
     <div class="river-bar" id="riverBar">
@@ -356,7 +352,9 @@
         $('axisN').textContent = '當日股價上漲 ↑';
         $('axisW').textContent = '← 成交降溫';
         $('axisE').textContent = '成交增溫 →';
-        $('disc').innerHTML = '<strong>成交熱度。</strong>橫軸＝成交金額相對前5日平均的增溫／降溫；縱軸＝當日股價漲跌；泡泡愈大＝當日成交金額愈大。顏色：<span class="up">紅＝近5日股價上漲</span>／<span class="down">綠＝下跌</span>。';
+        $('disc').innerHTML = '<strong>成交熱度＝錢有多「熱鬧」。</strong>不管外資有沒有買，先看這檔今天成交金額大不大、比平常熱不熱。'
+          + '<br>橫軸：今天成交金額 ÷ 前5日平均（往右＝比平常更熱）。縱軸：今天股價漲跌。泡泡愈大＝今天成交金額愈大。'
+          + '<br>顏色：<span class="up">紅＝近5日股價上漲</span>／<span class="down">綠＝下跌</span>。排行可切「成交金額／增溫／市場占比」。';
         $('riverNetK').textContent = '畫面成交合計';
         $('riverMomK').textContent = '平均增溫';
         $('riverMomHint').textContent = '成交相對前5日平均';
@@ -365,119 +363,38 @@
         $('kMom').textContent = '成交增溫';
         $('kRet').textContent = '近5日股價';
         $('rankTitle').textContent = '成交熱度排行';
+        return;
+      }
+      const tag = mode === 'etf' ? '主動式 ETF' : mode === 'combined' ? '外資＋主動式 ETF' : '外資';
+      $('q1').textContent = '流出收斂';
+      $('q2').textContent = '流入增強';
+      $('q3').textContent = '流出擴大';
+      $('q4').textContent = '流入放緩';
+      $('axisN').textContent = '近5日淨額較前日增加 ↑';
+      $('axisW').textContent = '← 近5日淨流出';
+      $('axisE').textContent = '近5日淨流入 →';
+      if (mode === 'etf') {
+        $('disc').innerHTML = '<strong>主動式 ETF＝經理人每天調倉的水。</strong>用各檔主動 ETF 日揭持股的「股數變化 × 股價」估算流進／流出個股的金額（億）。'
+          + '<br>橫軸：近5日累計淨額。縱軸：這個5日窗比「再往前一個5日窗」多／少了多少（動能）。泡泡愈大＝近5日淨額絕對值愈大。'
+          + '<br><em>注意：多數新接的 ETF 現在只有 1 天持股快照，要連續兩天才能算差分；目前有效歷史主要來自 00981A（瑤姐）。日更後會慢慢變厚。</em>'
+          + '<br>顏色：<span class="up">紅＝近5日股價上漲</span>／<span class="down">綠＝下跌</span>。';
+      } else if (mode === 'combined') {
+        $('disc').innerHTML = '<strong>綜合＝外資水 ＋ 主動式 ETF 水。</strong>同一天把兩種估算淨額加在一起，看「大戶＋主動基金」一起把錢往哪推。'
+          + '<br>橫軸／縱軸／泡泡算法同資金頁（近5日累計與動能）。主動 ETF 端若還缺歷史，綜合會暫時幾乎等於外資。'
+          + '<br>顏色：<span class="up">紅＝近5日股價上漲</span>／<span class="down">綠＝下跌</span>。';
       } else {
-        $('q1').textContent = '水出去變少';
-        $('q2').textContent = '水進來變急';
-        $('q3').textContent = '水出去變急';
-        $('q4').textContent = '水進來變緩';
-        $('axisN').textContent = '水流變急 ↑';
-        $('axisW').textContent = '← 水往外流';
-        $('axisE').textContent = '水往裡流 →';
-        const tag = mode === 'etf' ? '主動式 ETF' : mode === 'combined' ? '外資＋主動式 ETF' : '外資';
-        $('disc').innerHTML = '<strong>把每天的錢想成水。</strong>泡泡愈大＝近幾天' + tag + '流進來（或出去）愈多；往右＝水進來，往上＝水流比前一段更快。顏色：<span class="up">紅＝股價這幾天上漲</span>／<span class="down">綠＝下跌</span>。';
-        $('riverNetK').textContent = '畫面上的水（排行合計）';
-        $('riverMomK').textContent = '今天比前一段';
-        $('riverMomHint').textContent = '水變大／變小（動能）';
-        $('kDaily').textContent = '這一天的水';
-        $('kRoll').textContent = '近5日累計';
-        $('kMom').textContent = '比前一段多／少';
-        $('kRet').textContent = '近5日股價';
-        $('rankTitle').textContent =
-          mode === 'etf' ? '主動式ETF排行' : mode === 'combined' ? '綜合水流排行' : '外資水流排行';
+        $('disc').innerHTML = '<strong>外資＝官方買賣超換成「錢」。</strong>用買賣超股數 × 股價估成億元，再看近5日滾動。'
+          + '<br>橫軸：近5日外資累計淨額（右＝淨買超）。縱軸：這個5日窗比前一個5日窗更強／更弱。泡泡愈大＝近5日淨額愈大。'
+          + '<br>顏色：<span class="up">紅＝近5日股價上漲</span>／<span class="down">綠＝下跌</span>。時間軸預設回放最近約30個交易日。';
       }
-    }
-
-    async function loadData() {
-      const tries = [
-        'data/fundflo/series_top.json',
-        'data/fundflo/fixture.json',
-        'data/fundflo/latest.json',
-      ];
-      let doc = null, src = '';
-      for (const url of tries) {
-        try {
-          const r = await fetch(url);
-          if (!r.ok) continue;
-          doc = await r.json();
-          src = url;
-          break;
-        } catch (_) {}
-      }
-      if (!doc) throw new Error('無法載入資金流資料');
-
-      if (Array.isArray(doc.series) && doc.series.length) {
-        stocks = doc.series.map((s) => ({
-          id: s.code,
-          code: s.code,
-          name: s.name,
-          days: s.days,
-        }));
-        const allDates = [...new Set(stocks.flatMap((s) => s.days.map((d) => d.date)))].sort();
-        dates = allDates;
-        const uniqPerStock = Math.min(...stocks.map((s) => new Set((s.days || []).map((d) => d.date)).size));
-        snapshotOnly = uniqPerStock < (M.WINDOW + 2);
-      } else if (Array.isArray(doc.stocks)) {
-        snapshotOnly = true;
-        dates = [doc.meta?.date || 'latest'];
-        stocks = doc.stocks.slice(0, 80).map((s) => {
-          const foreign = s.foreign_flow_yi;
-          const etf = s.etf_flow_yi || 0;
-          const dailyF = (s.rolling_foreign_5d_yi != null) ? s.rolling_foreign_5d_yi / 5 : foreign;
-          const dailyE = (s.rolling_etf_5d_yi != null) ? s.rolling_etf_5d_yi / 5 : etf;
-          const days = [];
-          for (let i = 0; i < 6; i++) {
-            days.push({
-              date: dates[0],
-              foreign_flow_yi: dailyF,
-              etf_flow_yi: dailyE,
-              close: s.close || 100,
-              adjustedClose: s.close || 100,
-              shares: s.shares,
-              amount: s.amount,
-              average5: s.average5,
-              change_pct: s.change_pct ?? s.turnover_change,
-              turnover_change: s.turnover_change ?? s.change_pct,
-              market_share: s.market_share,
-              change: s.daily_ret ?? s.change,
-              cumulative_return: s.cumulative_return ?? s.rolling_ret_5d,
-            });
-          }
-          days[5] = {
-            ...days[5],
-            foreign_flow_yi: foreign,
-            etf_flow_yi: etf,
-            shares: s.shares,
-            close: s.close,
-            adjustedClose: s.close,
-            amount: s.amount,
-            average5: s.average5,
-            change_pct: s.change_pct ?? s.turnover_change,
-            turnover_change: s.turnover_change ?? s.change_pct,
-            market_share: s.market_share,
-            change: s.daily_ret,
-            cumulative_return: s.cumulative_return ?? s.rolling_ret_5d,
-          };
-          return { id: s.code, code: s.code, name: s.name, days, _pre: s };
-        });
-      } else {
-        throw new Error('資料格式不符');
-      }
-
-      const minLen = Math.min(...stocks.map((s) => s.days.length));
-      const fullMax = Math.max(0, minLen - 1 - M.WINDOW);
-      // Last PLAYBACK_DAYS frames only (needs WINDOW history days before frame 0).
-      const want = Math.min(Math.max(PLAYBACK_DAYS - 1, 0), fullMax);
-      frameOffset = Math.max(0, fullMax - want);
-      frameMax = want;
-      $('timeline').max = String(frameMax);
-      $('timeline').value = String(frameMax);
-      frame = frameMax;
-
-      const nDays = dates.length || minLen;
-      const etfs = (doc.meta?.active_etfs_used || []).join('、') || '—';
-      $('meta').textContent = `${doc.meta?.date || dates[dates.length - 1] || ''} · ${stocks.length} 檔 · ${nDays} 日可回放 · ETF:${etfs} · ${src.replace('data/fundflo/','')}`;
-      if (snapshotOnly) $('snapWarn').classList.add('show');
-      return { frameMax, src, meta: doc.meta };
+      $('riverNetK').textContent = '畫面淨額合計';
+      $('riverMomK').textContent = '平均動能';
+      $('riverMomHint').textContent = '近5日窗相對前一窗';
+      $('kDaily').textContent = '當日' + tag + '淨額';
+      $('kRoll').textContent = '近5日累計';
+      $('kMom').textContent = '較前一窗';
+      $('kRet').textContent = '近5日股價';
+      $('rankTitle').textContent = tag + '排行';
     }
 
     function frameIndex() {
