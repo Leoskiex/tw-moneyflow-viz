@@ -29,7 +29,7 @@ data/etf/<lowercase_code>/holdings_latest.json
 - **主線**：`00981A` 主動統一台股增長（經理人陳釧瑤／社群稱瑤池金母）
 - 來源：ezMoney `FundCode=49YTW`，既有 `fetch_00981a.py`；batch CLI 亦走同一 ezMoney adapter
 - jojoradar `stock_trend` 僅旁路，**非**持股來源
-- 統一投信可日揭姊妹檔（非瑤池主線，僅補強 `etf_flow_yi`）：
+- 統一投信可日揭姊妹檔（瑤姐相關統一檔「全加入」；仍次於 00981A 主線，補強 `etf_flow_yi`）：
   - `00403A` → `63YTW`（enabled）
   - `00988A` → `61YTW`（enabled；全球股，ST 可能含海外代碼）
   - `00411A` → `64YTW`（enabled）
