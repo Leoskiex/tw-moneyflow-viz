@@ -9,7 +9,8 @@ Steps:
   1) Fetch latest trade-day TWSE/TPEx raw (force overwrite)
   2) Shared overlays: gap4, rules, qfiis for that day
   3) build_curated → regimes → screens → 00981A
-  4) Write status JSON for LaunchAgent / digest
+  4) build_fundflo_features → data/fundflo (same trade day; shared FundFlo contract)
+  5) Write status JSON for LaunchAgent / digest
 
 Paths default to /workspace; override with TWSE_ROOT / TW_VIZ_ROOT.
 """
@@ -142,14 +143,29 @@ def build_all() -> dict:
         out["digest"] = dig.get("date")
     except Exception as e:
         out["digest"] = f"err:{e}"
+    # FundFlo shared layer (WINDOW=5 億元) — same day as curated; see docs/FUNDFLO_CONTRACT.md
+    try:
+        etl_dir = VIZ / "etl"
+        if etl_dir.is_dir() and str(etl_dir) not in sys.path:
+            sys.path.insert(0, str(etl_dir))
+        import build_fundflo_features as bff
+        raw = bff.discover_raw_dir(str(ROOT / "raw"))
+        latest, dates = bff.build(raw)
+        bff.write_outputs(latest, dates)
+        out["fundflo"] = (latest.get("meta") or {}).get("date")
+        out["fundflo_stocks"] = (latest.get("meta") or {}).get("n_stocks")
+    except Exception as e:
+        out["fundflo"] = f"err:{e}"
     # verify artifacts
     latest_screen = VIZ / "data" / "screens_latest.json"
     latest_regime = VIZ / "data" / "regime_latest.json"
     latest_981 = VIZ / "data" / "etf" / "00981a" / "latest.json"
+    latest_fundflo = VIZ / "data" / "fundflo" / "latest.json"
     out["artifacts"] = {
         "screens": latest_screen.exists(),
         "regime": latest_regime.exists(),
         "etf_00981a": latest_981.exists(),
+        "fundflo": latest_fundflo.exists(),
     }
     if latest_screen.exists():
         j = json.loads(latest_screen.read_text(encoding="utf-8"))
@@ -195,6 +211,7 @@ def main() -> int:
             "trade_day": status["trade_day"],
             "screens_date": status["steps"]["build"].get("screens_date"),
             "etf_date": status["steps"]["build"].get("etf_date"),
+            "fundflo": status["steps"]["build"].get("fundflo"),
         }, ensure_ascii=False))
         return 0
     except Exception as e:
