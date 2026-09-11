@@ -1,13 +1,22 @@
 {
-  "code": "2330",
-  "path": "data/candles/2330.json",
-  "daily_n": 125,
-  "tfs": {
-    "1D": {
+  "generated_at": "2026-09-11T14:49:27+08:00",
+  "auth": "token",
+  "n": 1,
+  "ok_n": 1,
+  "results": [
+    {
+      "code": "2330",
       "ok": true,
-      "n": 125
+      "daily_n": 125,
+      "path": "data/candles/2330.json",
+      "tfs": {
+        "1D": {
+          "ok": true,
+          "n": 125
+        }
+      },
+      "tier_notes": {}
     }
-  },
-  "tier_notes": {},
-  "generated_at": "2026-09-11T14:15:26+08:00"
+  ],
+  "note": "Separate from FundFlo slim; never put FINMIND_TOKEN in browser."
 }

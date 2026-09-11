@@ -193,24 +193,41 @@ def resample(minutes: list[dict], bucket_min: int) -> list[dict]:
     return out
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--code", default="2330")
-    ap.add_argument("--days", type=int, default=120, help="daily lookback calendar days")
-    ap.add_argument("--with-intraday", action="store_true")
-    ap.add_argument("--intraday-days", type=int, default=5)
-    args = ap.parse_args()
+def resolve_codes(args: argparse.Namespace) -> list[str]:
+    codes: list[str] = []
+    if args.watchlist:
+        wp = Path(args.watchlist)
+        if not wp.exists():
+            raise SystemExit(f"watchlist not found: {wp}")
+        for line in wp.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            # allow "2330" or "2330,台積電"
+            codes.append(line.split(",")[0].split()[0].strip().upper())
+    if args.codes:
+        for part in args.codes.replace(";", ",").split(","):
+            part = part.strip().upper()
+            if part:
+                codes.append(part)
+    if not codes:
+        codes = [args.code.strip().upper()]
+    # dedupe preserve order
+    seen = set()
+    out = []
+    for c in codes:
+        if c and c not in seen:
+            seen.add(c)
+            out.append(c)
+    return out
 
-    token = load_token()
-    print(f"auth={'token' if token else 'anon'}")
-    code = args.code.strip().upper()
+
+def fetch_one(token: Optional[str], code: str, days: int, with_intraday: bool, intraday_days: int) -> dict[str, Any]:
     end = date.today()
-    start = end - timedelta(days=args.days)
-
+    start = end - timedelta(days=days)
     daily, dmeta = fetch_daily(token, code, start.isoformat(), end.isoformat())
-    print(f"daily status={dmeta.get('status')} msg={dmeta.get('msg')!r} n={len(daily)}")
+    print(f"{code} daily status={dmeta.get('status')} msg={dmeta.get('msg')!r} n={len(daily)}")
 
-    OUT.mkdir(parents=True, exist_ok=True)
     doc: dict[str, Any] = {
         "meta": {
             "code": code,
@@ -228,38 +245,24 @@ def main() -> int:
         "tier_notes": {},
     }
 
-    if args.with_intraday:
-        # last N trading days from daily tail
-        days = [r["time"] for r in daily[-args.intraday_days :]] if daily else []
-        if not days:
-            # fallback calendar
-            days = [(end - timedelta(days=i)).isoformat() for i in range(args.intraday_days)]
-            days = list(reversed(days))
+    if with_intraday:
+        days_list = [r["time"] for r in daily[-intraday_days:]] if daily else []
+        if not days_list:
+            days_list = [(end - timedelta(days=i)).isoformat() for i in range(intraday_days)]
+            days_list = list(reversed(days_list))
         all_m: list[dict] = []
         kbar_meta = []
-        for day in days:
+        for day in days_list:
             rows, meta = fetch_kbar_day(token, code, day)
             kbar_meta.append(meta)
-            print(f"kbar {day} status={meta.get('status')} msg={meta.get('msg')!r} n={len(rows)}")
+            print(f"{code} kbar {day} status={meta.get('status')} msg={meta.get('msg')!r} n={len(rows)}")
             all_m.extend(rows)
         doc["meta"]["kbar_attempts"] = kbar_meta
-        sponsor_blocked = any(
-            (m.get("status") not in (200, None))
-            and (
-                "sponsor" in str(m.get("msg") or "").lower()
-                or "permission" in str(m.get("msg") or "").lower()
-                or "權限" in str(m.get("msg") or "")
-                or m.get("status") in (402, 403, 401)
-            )
-            for m in kbar_meta
-        )
-        any_ok = any(m.get("status") == 200 and True for m in kbar_meta)
-        # refine: ok if we got rows
         any_ok = len(all_m) > 0
         doc["tier_notes"]["TaiwanStockKBar"] = {
             "docs_tier": "Sponsor",
             "got_rows": len(all_m),
-            "blocked_hint": sponsor_blocked or (not any_ok),
+            "blocked_hint": not any_ok,
         }
         if all_m:
             doc["timeframes"]["1m"] = {"ok": True, "n": len(all_m), "bars": all_m}
@@ -276,21 +279,76 @@ def main() -> int:
                     "reason": (kbar_meta[-1].get("msg") if kbar_meta else "no kbar"),
                 }
 
-    # slim latest pointer + per-code file (full bars for prototype)
+    OUT.mkdir(parents=True, exist_ok=True)
     out_path = OUT / f"{code}.json"
     out_path.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    latest = {
+    print(f"wrote {out_path} bytes={out_path.stat().st_size}")
+    return {
         "code": code,
-        "path": f"data/candles/{code}.json",
+        "ok": bool(daily),
         "daily_n": len(daily),
+        "path": f"data/candles/{code}.json",
         "tfs": {k: {"ok": v.get("ok"), "n": v.get("n")} for k, v in doc["timeframes"].items()},
         "tier_notes": doc.get("tier_notes"),
-        "generated_at": doc["meta"]["generated_at"],
+    }
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description="FinMind candle cache (NOT FundFlo / refresh_daily). Token stays server-side."
+    )
+    ap.add_argument("--code", default="2330", help="single code if no watchlist/codes")
+    ap.add_argument(
+        "--codes",
+        default="",
+        help="comma-separated codes, e.g. 2330,2317,2454",
+    )
+    ap.add_argument(
+        "--watchlist",
+        default="",
+        help="path to watchlist file (one code per line; # comments ok)",
+    )
+    ap.add_argument("--days", type=int, default=120, help="daily lookback calendar days")
+    ap.add_argument("--with-intraday", action="store_true", help="try KBar (Sponsor; usually blocked on Free)")
+    ap.add_argument("--intraday-days", type=int, default=5)
+    ap.add_argument(
+        "--sleep",
+        type=float,
+        default=1.0,
+        help="seconds between codes (rate budget ~600/hr with token)",
+    )
+    args = ap.parse_args()
+
+    token = load_token()
+    print(f"auth={'token' if token else 'anon'}")
+    codes = resolve_codes(args)
+    print(f"codes n={len(codes)}: {', '.join(codes[:12])}{'…' if len(codes) > 12 else ''}")
+
+    import time
+
+    results = []
+    for i, code in enumerate(codes):
+        try:
+            results.append(
+                fetch_one(token, code, args.days, args.with_intraday, args.intraday_days)
+            )
+        except Exception as e:
+            print(f"{code} ERR {type(e).__name__}: {e}")
+            results.append({"code": code, "ok": False, "error": str(e)})
+        if i + 1 < len(codes) and args.sleep > 0:
+            time.sleep(args.sleep)
+
+    latest = {
+        "generated_at": datetime.now(TZ8).isoformat(timespec="seconds"),
+        "auth": "token" if token else "anon",
+        "n": len(results),
+        "ok_n": sum(1 for r in results if r.get("ok")),
+        "results": results,
+        "note": "Separate from FundFlo slim; never put FINMIND_TOKEN in browser.",
     }
     (OUT / "latest.json").write_text(json.dumps(latest, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"wrote {out_path} bytes={out_path.stat().st_size}")
-    print(f"wrote {OUT / 'latest.json'}")
-    return 0 if daily else 1
+    print(f"wrote {OUT / 'latest.json'} ok={latest['ok_n']}/{latest['n']}")
+    return 0 if latest["ok_n"] else 1
 
 
 if __name__ == "__main__":

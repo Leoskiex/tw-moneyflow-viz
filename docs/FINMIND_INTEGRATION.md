@@ -41,3 +41,15 @@
 ## 本地日更
 
 日更主責仍是本地 agent（`FUNDFLO_FULL_HISTORY_HANDBOOK` rev3）。FinMind candle 批次是**另軌**，失敗不擋 T86 refresh。
+
+## Watchlist batch (manual / later schedule)
+
+```bash
+# comma list
+python3 etl/fetch_finmind_candles.py --codes 2330,2317,2454 --days 120 --sleep 1
+
+# or file (see data/candles/watchlist.example.txt)
+python3 etl/fetch_finmind_candles.py --watchlist data/candles/watchlist.example.txt --days 120
+```
+
+Writes each `data/candles/<code>.json` + summary `data/candles/latest.json`. **Do not** add to FundFlo `refresh_daily` slim.
