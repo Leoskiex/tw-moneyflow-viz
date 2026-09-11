@@ -1,0 +1,13 @@
+{
+  "code": "2330",
+  "path": "data/candles/2330.json",
+  "daily_n": 124,
+  "tfs": {
+    "1D": {
+      "ok": true,
+      "n": 124
+    }
+  },
+  "tier_notes": {},
+  "generated_at": "2026-09-11T14:13:51+08:00"
+}

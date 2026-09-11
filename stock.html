@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>個股K線 · FinMind</title>
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    :root { --bg:#0b0f14; --panel:#121821; --border:#243041; --text:#e8eef7; --muted:#8b9bb0; --accent:#38bdf8; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); }
+    .top { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+      padding:12px 16px; border-bottom:1px solid var(--border); background:rgba(11,15,20,.94); position:sticky; top:0; z-index:10; }
+    .top h1 { margin:0; font-size:1.05rem; }
+    .meta { color:var(--muted); font-size:.78rem; }
+    .nav a { color:var(--muted); border:1px solid var(--border); border-radius:8px; padding:5px 10px; text-decoration:none; font-size:.78rem; margin-left:6px; }
+    .wrap { max-width:1100px; margin:0 auto; padding:14px 16px 40px; }
+    .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; }
+    .toolbar input, .toolbar button, .toolbar select {
+      background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:7px 10px; font-size:.85rem;
+    }
+    .toolbar button.active { border-color:var(--accent); color:var(--accent); }
+    .toolbar button:disabled { opacity:.4; cursor:not-allowed; }
+    #chart { height:min(70vh, 560px); border:1px solid var(--border); border-radius:12px; background:#0e1620; }
+    .note { margin-top:12px; color:var(--muted); font-size:.82rem; line-height:1.5; }
+    .err { color:#f87171; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <h1>個股K線 <span id="titleCode">—</span></h1>
+      <div class="meta" id="meta">載入中…</div>
+    </div>
+    <div class="nav">
+      <a href="./">今日故事</a>
+      <a href="./fund-flow.html">錢怎麼流</a>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="toolbar">
+      <label>代號 <input id="code" value="2330" size="6" /></label>
+      <button type="button" id="go">打開</button>
+      <span class="meta">週期</span>
+      <button type="button" class="tf active" data-tf="1D">日線</button>
+      <button type="button" class="tf" data-tf="5m" disabled title="需 FinMind Sponsor（TaiwanStockKBar）">5分</button>
+      <button type="button" class="tf" data-tf="15m" disabled title="需 FinMind Sponsor">15分</button>
+      <button type="button" class="tf" data-tf="1h" disabled title="需 FinMind Sponsor">1小時</button>
+      <button type="button" class="tf" data-tf="4h" disabled title="需 FinMind Sponsor">4小時</button>
+    </div>
+    <div id="chart"></div>
+    <p class="err" id="err" hidden></p>
+    <p class="note">
+      資料：FinMind <code>TaiwanStockPrice</code>（日線；免費／可匿名）。K 線圖：TradingView Lightweight Charts。<br />
+      分K（5m／15m／1h／4h）需 <code>TaiwanStockKBar</code>（Sponsor），免費方案未開放——按鈕已禁用。<br />
+      本頁與 FundFlo／日更 slim <strong>分開</strong>；勿把此資料寫進 <code>refresh_daily</code>。
+    </p>
+  </div>
+  <script>
+  (async function () {
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const initial = (params.get('code') || params.get('c') || '2330').toUpperCase();
+    $('code').value = initial;
+
+    const el = $('chart');
+    const chart = LightweightCharts.createChart(el, {
+      layout: { background: { color: '#0e1620' }, textColor: '#8b9bb0' },
+      grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
+      rightPriceScale: { borderColor: '#243041' },
+      timeScale: { borderColor: '#243041', timeVisible: false },
+    });
+    const series = chart.addCandlestickSeries({
+      upColor: '#f87171', downColor: '#22c55e',
+      borderUpColor: '#f87171', borderDownColor: '#22c55e',
+      wickUpColor: '#f87171', wickDownColor: '#22c55e',
+    });
+    const vol = chart.addHistogramSeries({
+      priceFormat: { type: 'volume' },
+      priceScaleId: '',
+      color: '#334155',
+    });
+    vol.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+
+    new ResizeObserver(() => {
+      chart.applyOptions({ width: el.clientWidth, height: el.clientHeight });
+    }).observe(el);
+
+    let doc = null;
+    let tf = '1D';
+
+    function paint() {
+      if (!doc) return;
+      const block = doc.timeframes?.[tf] || (tf === '1D' ? { ok: true, bars: doc.daily } : null);
+      if (!block || !block.ok || !(block.bars || []).length) {
+        $('err').hidden = false;
+        $('err').textContent = (block && block.reason) || '此週期無資料（多半是分K未授權）';
+        series.setData([]);
+        vol.setData([]);
+        return;
+      }
+      $('err').hidden = true;
+      const bars = block.bars;
+      series.setData(bars.map(b => ({ time: b.time, open: b.open, high: b.high, low: b.low, close: b.close })));
+      vol.setData(bars.map(b => ({
+        time: b.time,
+        value: b.volume || 0,
+        color: b.close >= b.open ? 'rgba(248,113,113,.35)' : 'rgba(34,197,94,.35)',
+      })));
+      chart.timeScale().fitContent();
+      const last = bars[bars.length - 1];
+      $('meta').textContent = `${doc.meta?.source || 'FinMind'} · ${tf} · ${bars.length} 根 · 最後 ${last.time} 收 ${last.close}`;
+    }
+
+    async function load(code) {
+      code = String(code || '').trim().toUpperCase();
+      $('titleCode').textContent = code;
+      history.replaceState(null, '', `?code=${encodeURIComponent(code)}`);
+      $('meta').textContent = '載入中…';
+      try {
+        let r = await fetch(`./data/candles/${code}.json`);
+        if (!r.ok) throw new Error(`尚無快取 data/candles/${code}.json — 請先跑 etl/fetch_finmind_candles.py --code ${code}`);
+        doc = await r.json();
+        // enable TFs that have bars
+        document.querySelectorAll('.tf').forEach(btn => {
+          const k = btn.dataset.tf;
+          const b = doc.timeframes?.[k];
+          const ok = k === '1D' ? (doc.daily || []).length > 0 : !!(b && b.ok && b.n);
+          btn.disabled = !ok;
+          if (k !== '1D' && !ok) btn.title = '需 FinMind Sponsor（TaiwanStockKBar）或尚未抓取';
+        });
+        paint();
+      } catch (e) {
+        $('err').hidden = false;
+        $('err').textContent = String(e.message || e);
+        $('meta').textContent = '失敗';
+      }
+    }
+
+    document.querySelectorAll('.tf').forEach(btn => {
+      btn.onclick = () => {
+        if (btn.disabled) return;
+        document.querySelectorAll('.tf').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        tf = btn.dataset.tf;
+        chart.applyOptions({ timeScale: { timeVisible: tf !== '1D' } });
+        paint();
+      };
+    });
+    $('go').onclick = () => load($('code').value);
+    $('code').addEventListener('keydown', (e) => { if (e.key === 'Enter') load($('code').value); });
+    load(initial);
+  })();
+  </script>
+</body>
+</html>
