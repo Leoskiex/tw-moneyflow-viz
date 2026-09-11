@@ -380,3 +380,10 @@ CMI is a separate Grok Bot agent with Mac SQLite. Share CSVs under `outputs/`; n
 ---
 
 *End of handoff. If relocating off the Grok box, copy `twse-trading` + `tw-moneyflow-viz` data + this doc, preserve Mac 8777 layout, and keep GitHub `Leoskiex/tw-moneyflow-viz` as the public mirror.*
+
+## 錢怎麼流（2026-09-11）
+
+- 頁面：`fund-flow.html`（白話「讓水流動」＋泡泡軌跡＋河道摘要）
+- 日更 slim 仍須寫 `data/fundflo/series_top.json`，`keep_dates=40`、`top_n=50`（`etl/build_fundflo_features.py`）
+- 只有 `latest.json` 時頁面會警告「無法看水流」
+- 首頁連結文案：看錢怎麼流
