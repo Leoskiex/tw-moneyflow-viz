@@ -1,18 +1,18 @@
 {
-  "date": "2026-09-11",
+  "date": "2026-09-14",
   "etf": "00992A",
   "fund_code": null,
   "source": "capital_api",
   "source_url": "https://www.capitalfund.com.tw/etf/product/detail/500/portfolio",
-  "fetched_at": "2026-09-11T11:08:31+08:00",
+  "fetched_at": "2026-09-11T21:13:29+08:00",
   "meta": {
     "product_id": 500,
-    "pcf_date1": "2026-09-11",
-    "pcf_date2": "2026-09-10",
-    "aum": 41382975225.0,
+    "pcf_date1": "2026-09-14",
+    "pcf_date2": "2026-09-11",
+    "aum": 40635770753.0,
     "tot_unit": 2267455000.0,
     "n_equity": 41,
-    "weight_sum_equity": 97.8532,
+    "weight_sum_equity": 97.8167,
     "amount_estimated_from_nav_weight": true,
     "fund_name": "群益台灣科技創新主動式ETF基金",
     "etf_code": "00992A"
@@ -22,328 +22,328 @@
       "code": "3017",
       "name": "奇鋐",
       "share": 1001000.0,
-      "amount": 3463423962.53,
-      "weight_pct": 8.3692,
+      "amount": 3373337873.29,
+      "weight_pct": 8.3014,
       "money_type": "NTD"
     },
     {
       "code": "2330",
       "name": "台積電",
       "share": 1116000.0,
-      "amount": 2734173173.12,
-      "weight_pct": 6.607,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2059",
-      "name": "川湖",
-      "share": 205000.0,
-      "amount": 2582959781.64,
-      "weight_pct": 6.2416,
+      "amount": 2689559758.83,
+      "weight_pct": 6.6187,
       "money_type": "NTD"
     },
     {
       "code": "2383",
       "name": "台光電",
       "share": 465000.0,
-      "amount": 2499366171.69,
-      "weight_pct": 6.0396,
+      "amount": 2494711238.07,
+      "weight_pct": 6.1392,
+      "money_type": "NTD"
+    },
+    {
+      "code": "2059",
+      "name": "川湖",
+      "share": 205000.0,
+      "amount": 2476384505.46,
+      "weight_pct": 6.0941,
       "money_type": "NTD"
     },
     {
       "code": "3037",
       "name": "欣興",
       "share": 2482000.0,
-      "amount": 2467087451.01,
-      "weight_pct": 5.9616,
+      "amount": 2424898983.91,
+      "weight_pct": 5.9674,
       "money_type": "NTD"
     },
     {
       "code": "3665",
       "name": "貿聯-KY",
       "share": 1161000.0,
-      "amount": 2240722576.53,
-      "weight_pct": 5.4146,
+      "amount": 2176858239.24,
+      "weight_pct": 5.357,
       "money_type": "NTD"
     },
     {
       "code": "8996",
       "name": "高力",
       "share": 1630000.0,
-      "amount": 2118973863.42,
-      "weight_pct": 5.1204,
+      "amount": 2167877733.9,
+      "weight_pct": 5.3349,
       "money_type": "NTD"
     },
     {
       "code": "2345",
       "name": "智邦",
       "share": 1074000.0,
-      "amount": 2110407587.55,
-      "weight_pct": 5.0997,
+      "amount": 2024474098.91,
+      "weight_pct": 4.982,
       "money_type": "NTD"
     },
     {
       "code": "3008",
       "name": "大立光",
       "share": 293000.0,
-      "amount": 1968919195.26,
-      "weight_pct": 4.7578,
+      "amount": 1951370347.33,
+      "weight_pct": 4.8021,
       "money_type": "NTD"
     },
     {
       "code": "6223",
       "name": "旺矽",
       "share": 268000.0,
-      "amount": 1506133383.31,
-      "weight_pct": 3.6395,
+      "amount": 1506124207.19,
+      "weight_pct": 3.7064,
       "money_type": "NTD"
     },
     {
       "code": "1815",
       "name": "富喬",
       "share": 11420868.0,
-      "amount": 1439010197.5,
-      "weight_pct": 3.4773,
+      "amount": 1456142209.16,
+      "weight_pct": 3.5834,
       "money_type": "NTD"
     },
     {
       "code": "3231",
       "name": "緯創",
       "share": 7245000.0,
-      "amount": 1340311801.59,
-      "weight_pct": 3.2388,
+      "amount": 1343946846.11,
+      "weight_pct": 3.3073,
       "money_type": "NTD"
     },
     {
       "code": "1303",
       "name": "南亞",
       "share": 5445000.0,
-      "amount": 1328559036.62,
-      "weight_pct": 3.2104,
+      "amount": 1276816552.83,
+      "weight_pct": 3.1421,
       "money_type": "NTD"
     },
     {
       "code": "6584",
       "name": "南俊國際",
       "share": 2231000.0,
-      "amount": 1235943938.07,
-      "weight_pct": 2.9866,
+      "amount": 1264950907.77,
+      "weight_pct": 3.1129,
       "money_type": "NTD"
     },
     {
       "code": "8021",
       "name": "尖點",
       "share": 2682000.0,
-      "amount": 1174697134.74,
-      "weight_pct": 2.8386,
+      "amount": 1122400623.97,
+      "weight_pct": 2.7621,
       "money_type": "NTD"
     },
     {
       "code": "2455",
       "name": "全新",
       "share": 2150000.0,
-      "amount": 1143784052.24,
-      "weight_pct": 2.7639,
+      "amount": 1107243481.48,
+      "weight_pct": 2.7248,
       "money_type": "NTD"
     },
     {
       "code": "8046",
       "name": "南電",
       "share": 968000.0,
-      "amount": 1035733103.93,
-      "weight_pct": 2.5028,
+      "amount": 1045436474.16,
+      "weight_pct": 2.5727,
       "money_type": "NTD"
     },
     {
       "code": "3443",
       "name": "創意",
       "share": 164000.0,
-      "amount": 1020876615.83,
-      "weight_pct": 2.4669,
+      "amount": 1003662901.83,
+      "weight_pct": 2.4699,
       "money_type": "NTD"
     },
     {
       "code": "6669",
       "name": "緯穎",
       "share": 429675.0,
-      "amount": 1007551297.8,
-      "weight_pct": 2.4347,
+      "amount": 992528700.64,
+      "weight_pct": 2.4425,
       "money_type": "NTD"
     },
     {
       "code": "3661",
       "name": "世芯-KY",
       "share": 215000.0,
-      "amount": 871815139.07,
-      "weight_pct": 2.1067,
+      "amount": 784717369.01,
+      "weight_pct": 1.9311,
       "money_type": "NTD"
     },
     {
       "code": "3189",
       "name": "景碩",
       "share": 844013.0,
-      "amount": 697965260.14,
-      "weight_pct": 1.6866,
+      "amount": 693774514.07,
+      "weight_pct": 1.7073,
       "money_type": "NTD"
     },
     {
       "code": "2454",
       "name": "聯發科",
       "share": 145000.0,
-      "amount": 684391644.27,
-      "weight_pct": 1.6538,
+      "amount": 664801209.52,
+      "weight_pct": 1.636,
       "money_type": "NTD"
     },
     {
       "code": "4958",
       "name": "臻鼎-KY",
       "share": 1000000.0,
-      "amount": 494485170.96,
-      "weight_pct": 1.1949,
+      "amount": 494984323.54,
+      "weight_pct": 1.2181,
       "money_type": "NTD"
     },
     {
       "code": "6515",
       "name": "穎崴",
       "share": 51000.0,
-      "amount": 366942841.32,
-      "weight_pct": 0.8867,
-      "money_type": "NTD"
-    },
-    {
-      "code": "3026",
-      "name": "禾伸堂",
-      "share": 261000.0,
-      "amount": 209563386.54,
-      "weight_pct": 0.5064,
+      "amount": 351377509.7,
+      "weight_pct": 0.8647,
       "money_type": "NTD"
     },
     {
       "code": "5274",
       "name": "信驊",
       "share": 11000.0,
-      "amount": 205673386.87,
-      "weight_pct": 0.497,
+      "amount": 196717766.22,
+      "weight_pct": 0.4841,
       "money_type": "NTD"
     },
     {
-      "code": "2357",
-      "name": "華碩",
-      "share": 196000.0,
-      "amount": 193837855.95,
-      "weight_pct": 0.4684,
-      "money_type": "NTD"
-    },
-    {
-      "code": "6213",
-      "name": "聯茂",
-      "share": 373000.0,
-      "amount": 193548175.13,
-      "weight_pct": 0.4677,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2301",
-      "name": "光寶科",
-      "share": 659000.0,
-      "amount": 191768707.19,
-      "weight_pct": 0.4634,
+      "code": "3026",
+      "name": "禾伸堂",
+      "share": 261000.0,
+      "amount": 194157712.66,
+      "weight_pct": 0.4778,
       "money_type": "NTD"
     },
     {
       "code": "3653",
       "name": "健策",
       "share": 33000.0,
-      "amount": 191065196.61,
-      "weight_pct": 0.4617,
+      "amount": 190216042.89,
+      "weight_pct": 0.4681,
       "money_type": "NTD"
     },
     {
-      "code": "6139",
-      "name": "亞翔",
-      "share": 250000.0,
-      "amount": 188209771.32,
-      "weight_pct": 0.4548,
+      "code": "6213",
+      "name": "聯茂",
+      "share": 373000.0,
+      "amount": 189850320.96,
+      "weight_pct": 0.4672,
+      "money_type": "NTD"
+    },
+    {
+      "code": "2301",
+      "name": "光寶科",
+      "share": 659000.0,
+      "amount": 182535882.22,
+      "weight_pct": 0.4492,
+      "money_type": "NTD"
+    },
+    {
+      "code": "2357",
+      "name": "華碩",
+      "share": 196000.0,
+      "amount": 181072994.48,
+      "weight_pct": 0.4456,
       "money_type": "NTD"
     },
     {
       "code": "2376",
       "name": "技嘉",
       "share": 508000.0,
-      "amount": 178526155.12,
-      "weight_pct": 0.4314,
+      "amount": 177253232.02,
+      "weight_pct": 0.4362,
+      "money_type": "NTD"
+    },
+    {
+      "code": "6139",
+      "name": "亞翔",
+      "share": 250000.0,
+      "amount": 177212596.25,
+      "weight_pct": 0.4361,
       "money_type": "NTD"
     },
     {
       "code": "3081",
       "name": "聯亞",
       "share": 63000.0,
-      "amount": 178277857.27,
-      "weight_pct": 0.4308,
+      "amount": 177009417.4,
+      "weight_pct": 0.4356,
       "money_type": "NTD"
     },
     {
       "code": "8150",
       "name": "南茂",
       "share": 1957000.0,
-      "amount": 177864027.52,
-      "weight_pct": 0.4298,
+      "amount": 169654342.89,
+      "weight_pct": 0.4175,
       "money_type": "NTD"
     },
     {
       "code": "6187",
       "name": "萬潤",
       "share": 134000.0,
-      "amount": 171491049.33,
-      "weight_pct": 0.4144,
+      "amount": 167460011.27,
+      "weight_pct": 0.4121,
       "money_type": "NTD"
     },
     {
       "code": "2360",
       "name": "致茂",
       "share": 76000.0,
-      "amount": 165656049.83,
-      "weight_pct": 0.4003,
+      "amount": 164127878.07,
+      "weight_pct": 0.4039,
       "money_type": "NTD"
     },
     {
       "code": "2404",
       "name": "漢唐",
       "share": 155000.0,
-      "amount": 164290411.64,
-      "weight_pct": 0.397,
+      "amount": 155756909.3,
+      "weight_pct": 0.3833,
       "money_type": "NTD"
     },
     {
       "code": "3711",
       "name": "日月光投控",
       "share": 250000.0,
-      "amount": 162469560.73,
-      "weight_pct": 0.3926,
+      "amount": 154497200.4,
+      "weight_pct": 0.3802,
       "money_type": "NTD"
     },
     {
       "code": "6274",
       "name": "台燿",
       "share": 113000.0,
-      "amount": 157627752.63,
-      "weight_pct": 0.3809,
+      "amount": 154212750.01,
+      "weight_pct": 0.3795,
       "money_type": "NTD"
     },
     {
       "code": "5289",
       "name": "宜鼎",
       "share": 99952.0,
-      "amount": 128907967.83,
-      "weight_pct": 0.3115,
+      "amount": 129424929.85,
+      "weight_pct": 0.3185,
       "money_type": "NTD"
     },
     {
       "code": "5347",
       "name": "世界",
       "share": 629000.0,
-      "amount": 101553821.2,
-      "weight_pct": 0.2454,
+      "amount": 99029373.33,
+      "weight_pct": 0.2437,
       "money_type": "NTD"
     }
   ]

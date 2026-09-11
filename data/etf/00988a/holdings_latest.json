@@ -1,15 +1,15 @@
 {
-  "date": "2026-09-09",
+  "date": "2026-09-10",
   "etf": "00988A",
   "fund_code": "61YTW",
   "source": "ezmoney",
   "source_url": "https://www.ezmoney.com.tw/ETF/Fund/Info?FundCode=61YTW",
-  "fetched_at": "2026-09-11T11:10:32+08:00",
+  "fetched_at": "2026-09-11T21:13:33+08:00",
   "meta": {
     "asset_name": "股票",
-    "n_raw_details": 43,
-    "n_equity": 9,
-    "weight_sum_equity": 22.34,
+    "n_raw_details": 42,
+    "n_equity": 8,
+    "weight_sum_equity": 21.18,
     "fund_code": "61YTW",
     "etf_code": "00988A"
   },
@@ -18,8 +18,8 @@
       "code": "3037",
       "name": "欣興",
       "share": 2600000.0,
-      "amount": 2581800000.0,
-      "weight_pct": 4.91,
+      "amount": 2584400000.0,
+      "weight_pct": 4.98,
       "money_type": "NTD"
     },
     {
@@ -27,63 +27,55 @@
       "name": "台光電",
       "share": 400000.0,
       "amount": 2150000000.0,
-      "weight_pct": 4.09,
+      "weight_pct": 4.14,
       "money_type": "NTD"
     },
     {
       "code": "3017",
       "name": "奇鋐",
       "share": 440000.0,
-      "amount": 1487200000.0,
-      "weight_pct": 2.83,
+      "amount": 1522400000.0,
+      "weight_pct": 2.93,
       "money_type": "NTD"
     },
     {
       "code": "2454",
       "name": "聯發科",
       "share": 250000.0,
-      "amount": 1156250000.0,
-      "weight_pct": 2.2,
+      "amount": 1180000000.0,
+      "weight_pct": 2.27,
       "money_type": "NTD"
     },
     {
-      "code": "2308",
-      "name": "台達電",
-      "share": 570000.0,
-      "amount": 1023150000.0,
-      "weight_pct": 1.95,
+      "code": "2303",
+      "name": "聯電",
+      "share": 7000000.0,
+      "amount": 997500000.0,
+      "weight_pct": 1.92,
       "money_type": "NTD"
     },
     {
       "code": "2330",
       "name": "台積電",
       "share": 400000.0,
-      "amount": 986000000.0,
-      "weight_pct": 1.88,
+      "amount": 980000000.0,
+      "weight_pct": 1.89,
       "money_type": "NTD"
     },
     {
       "code": "4979",
       "name": "華星光",
       "share": 1510000.0,
-      "amount": 921100000.0,
-      "weight_pct": 1.75,
+      "amount": 862210000.0,
+      "weight_pct": 1.66,
       "money_type": "NTD"
     },
     {
       "code": "6515",
       "name": "穎崴",
       "share": 100000.0,
-      "amount": 728000000.0,
-      "weight_pct": 1.38,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2303",
-      "name": "聯電",
-      "share": 5000000.0,
-      "amount": 707500000.0,
-      "weight_pct": 1.35,
+      "amount": 719500000.0,
+      "weight_pct": 1.39,
       "money_type": "NTD"
     }
   ]
