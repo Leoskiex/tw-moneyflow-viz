@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>FundFlo 資金流向 · 錢往哪流</title>
+  <style>
+    :root {
+      --bg:#0b0f14; --panel:#121821; --panel2:#18202b; --border:#243041;
+      --text:#e8eef7; --muted:#8b9bb0; --accent:#38bdf8;
+      --up:#f87171; --down:#22c55e; --line:#1e293b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.55;
+    }
+    a { color:var(--accent); text-decoration:none; }
+    .top {
+      position:sticky; top:0; z-index:30;
+      background:rgba(11,15,20,.94); backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);
+      padding:12px 20px;
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+    }
+    .top h1 { margin:0; font-size:1.1rem; }
+    .top .meta { color:var(--muted); font-size:.78rem; }
+    .navlinks { display:flex; flex-wrap:wrap; gap:8px; }
+    .navlinks a {
+      font-size:.78rem; color:var(--muted); border:1px solid var(--border);
+      border-radius:8px; padding:5px 10px; background:var(--panel2);
+    }
+    .wrap { max-width:1180px; margin:0 auto; padding:14px 16px 48px; }
+    .disc {
+      margin:0 0 12px; padding:10px 12px; border-radius:12px;
+      background:#1a1520; border:1px solid #4c1d95; color:#ddd6fe; font-size:.85rem;
+    }
+    .toolbar {
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px;
+    }
+    .mode-tabs { display:flex; gap:6px; }
+    .mode-tabs button, .toolbar select, .toolbar button.play {
+      background:var(--panel2); color:var(--text); border:1px solid var(--border);
+      border-radius:8px; padding:7px 12px; font-size:.85rem; cursor:pointer;
+    }
+    .mode-tabs button.active { border-color:var(--accent); color:var(--accent); }
+    .workspace {
+      display:grid; grid-template-columns:300px 1fr; gap:12px;
+    }
+    @media (max-width:900px) { .workspace { grid-template-columns:1fr; } }
+    .panel {
+      background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:12px;
+    }
+    .panel h3 { margin:0 0 8px; font-size:1rem; }
+    .rank-list { max-height:560px; overflow:auto; }
+    .rank-item {
+      display:grid; grid-template-columns:1.2fr 1fr; gap:4px;
+      padding:8px 6px; border-bottom:1px solid var(--line); cursor:pointer; font-size:.85rem;
+    }
+    .rank-item:hover, .rank-item.active { background:var(--panel2); }
+    .rank-item .code { font-weight:700; }
+    .rank-item .name { color:var(--muted); font-size:.75rem; }
+    .rank-item .vals { text-align:right; font-variant-numeric:tabular-nums; }
+    .up { color:var(--up); } .down { color:var(--down); }
+    .chart-wrap { position:relative; }
+    .legend { display:flex; gap:14px; color:var(--muted); font-size:.78rem; margin-bottom:6px; }
+    .legend i { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; }
+    .legend i.red { background:var(--up); } .legend i.green { background:var(--down); }
+    .chart {
+      position:relative; height:min(62vh, 520px); background:var(--panel2);
+      border:1px solid var(--border); border-radius:12px; overflow:hidden;
+    }
+    .chart .grid {
+      position:absolute; inset:0;
+      background:
+        linear-gradient(to right, transparent 49.6%, #334155 49.6%, #334155 50.4%, transparent 50.4%),
+        linear-gradient(to bottom, transparent 49.6%, #334155 49.6%, #334155 50.4%, transparent 50.4%);
+      opacity:.7;
+    }
+    .quadrant {
+      position:absolute; font-size:.72rem; color:#64748b; pointer-events:none;
+    }
+    .q1 { top:10%; left:8%; } .q2 { top:10%; right:8%; }
+    .q3 { bottom:12%; left:8%; } .q4 { bottom:12%; right:8%; }
+    .axis-label {
+      position:absolute; font-size:.7rem; color:#64748b; pointer-events:none;
+    }
+    .axis-label.north { top:6px; left:50%; transform:translateX(-50%); }
+    .axis-label.east { right:8px; top:50%; writing-mode:vertical-rl; }
+    .axis-label.west { left:8px; top:50%; writing-mode:vertical-rl; transform:rotate(180deg); }
+    .bubble {
+      position:absolute; transform:translate(-50%,-50%);
+      border-radius:999px; border:2px solid rgba(255,255,255,.25);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      color:#fff; cursor:pointer; min-width:44px; min-height:44px;
+      box-shadow:0 4px 16px rgba(0,0,0,.35);
+      transition: left .35s ease, top .35s ease, width .2s, height .2s;
+    }
+    .bubble strong { font-size:.72rem; line-height:1.1; }
+    .bubble .bubble-return { font-size:.65rem; opacity:.95; }
+    .bubble .bubble-value { font-size:.6rem; opacity:.8; }
+    .bubble.active { outline:2px solid var(--accent); z-index:5; }
+    .playback { margin-top:10px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .playback input[type=range] { flex:1; min-width:160px; }
+    .detail { margin-top:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    @media (max-width:700px) { .detail { grid-template-columns:repeat(2,1fr); } }
+    .stat {
+      background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:10px;
+    }
+    .stat .k { font-size:.72rem; color:var(--muted); }
+    .stat .v { font-size:1.05rem; font-weight:700; font-variant-numeric:tabular-nums; margin-top:2px; }
+    .foot { margin-top:20px; color:var(--muted); font-size:.78rem; text-align:center; }
+    .err { color:var(--up); padding:12px; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <h1>FundFlo 資金流向</h1>
+      <div class="meta" id="meta">載入中…</div>
+    </div>
+    <div class="navlinks">
+      <a href="./">今日故事</a>
+      <a href="./board.html">看圖版</a>
+      <a href="./action-radar.html">動作雷達</a>
+      <a href="./digest.html">完整日報</a>
+      <a href="./docs/FUNDFLO_CONTRACT.md">契約</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="disc">
+      近 5 個交易日外資／綜合估算淨額（億）。橫軸＝近5日淨流入；縱軸＝較前一窗動能。
+      泡泡顏色依近5日漲跌幅（<span class="up">紅漲</span>／<span class="down">綠跌</span>）。
+      公式來自共用層 <code>js/fundflo_model.js</code>，本頁不重算。
+    </div>
+
+    <div class="toolbar">
+      <div class="mode-tabs" role="tablist">
+        <button type="button" class="active" data-mode="foreign">外資</button>
+        <button type="button" data-mode="combined">綜合</button>
+      </div>
+      <label>方向
+        <select id="direction">
+          <option value="both">雙向</option>
+          <option value="buy">流入最多</option>
+          <option value="sell">流出最多</option>
+        </select>
+      </label>
+      <label>檔數
+        <select id="count">
+          <option>10</option>
+          <option selected>15</option>
+          <option>20</option>
+        </select>
+      </label>
+      <button type="button" class="play" id="playBtn">▶ 播放</button>
+      <span id="periodLabel" class="meta"></span>
+    </div>
+
+    <div class="workspace">
+      <aside class="panel">
+        <h3 id="rankTitle">資金排行</h3>
+        <div class="rank-list" id="rankList"></div>
+      </aside>
+      <section class="panel chart-wrap">
+        <div class="legend">
+          <span><i class="red"></i>紅＝近5日累計上漲%</span>
+          <span><i class="green"></i>綠＝近5日累計下跌%</span>
+        </div>
+        <div class="chart" id="chart" aria-label="資金流向四象限">
+          <div class="grid"></div>
+          <span class="quadrant q1">流出收斂</span>
+          <span class="quadrant q2">流入增強</span>
+          <span class="quadrant q3">流出擴大</span>
+          <span class="quadrant q4">流入放緩</span>
+          <span class="axis-label north">近5日淨額較前一窗增加 ↑</span>
+          <span class="axis-label west">← 近5日淨流出</span>
+          <span class="axis-label east">近5日淨流入 →</span>
+          <div id="bubbles"></div>
+        </div>
+        <div class="playback">
+          <input id="timeline" type="range" min="0" max="4" step="1" value="4" aria-label="回放交易日" />
+          <strong id="chartDate">—</strong>
+        </div>
+        <div class="detail" id="detail">
+          <div class="stat"><div class="k">當日估算淨額</div><div class="v" id="dDaily">—</div></div>
+          <div class="stat"><div class="k">近5日累計淨額</div><div class="v" id="dRoll">—</div></div>
+          <div class="stat"><div class="k">較前一窗變化</div><div class="v" id="dMom">—</div></div>
+          <div class="stat"><div class="k">近5日漲跌幅</div><div class="v" id="dRet">—</div></div>
+        </div>
+      </section>
+    </div>
+    <p class="foot">啟發式觀察工具，非投資建議。契約：docs/FUNDFLO_CONTRACT.md</p>
+    <p class="err" id="err" hidden></p>
+  </div>
+
+  <script src="./js/fundflo_model.js"></script>
+  <script>
+  (async function () {
+    const M = window.FundFloModel;
+    const $ = (id) => document.getElementById(id);
+    const fmtYi = (v) => v == null || !Number.isFinite(v) ? '—' : ((v >= 0 ? '+' : '') + v.toFixed(2) + ' 億');
+    const fmtPct = (v) => v == null || !Number.isFinite(v) ? '—' : ((v >= 0 ? '+' : '') + v.toFixed(2) + '%');
+    const cls = (v) => (v > 0 ? 'up' : v < 0 ? 'down' : '');
+
+    let mode = 'foreign';
+    let frame = 4;
+    let selected = null;
+    let stocks = [];
+    let dates = [];
+    let playing = null;
+    const nodes = new Map();
+
+    async function loadData() {
+      const tries = [
+        'data/fundflo/series_top.json',
+        'data/fundflo/fixture.json',
+        'data/fundflo/latest.json',
+      ];
+      let doc = null, src = '';
+      for (const url of tries) {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) continue;
+          doc = await r.json();
+          src = url;
+          break;
+        } catch (_) {}
+      }
+      if (!doc) throw new Error('無法載入 fundflo 資料');
+
+      if (Array.isArray(doc.series) && doc.series.length) {
+        stocks = doc.series.map((s) => ({
+          id: s.code,
+          code: s.code,
+          name: s.name,
+          days: s.days,
+        }));
+        const allDates = [...new Set(stocks.flatMap((s) => s.days.map((d) => d.date)))].sort();
+        dates = allDates;
+      } else if (Array.isArray(doc.stocks)) {
+        // latest-only: synthesize 1-frame series from precomputed rolling fields
+        dates = [doc.meta?.date || 'latest'];
+        stocks = doc.stocks.slice(0, 80).map((s) => {
+          const foreign = s.foreign_flow_yi;
+          const etf = s.etf_flow_yi || 0;
+          // pad 6 identical-ish days using rolling/5 so state() has WINDOW+1
+          const dailyF = (s.rolling_foreign_5d_yi != null) ? s.rolling_foreign_5d_yi / 5 : foreign;
+          const dailyC = (s.rolling_combined_5d_yi != null) ? s.rolling_combined_5d_yi / 5 : (foreign || 0) + etf;
+          const days = [];
+          for (let i = 0; i < 6; i++) {
+            days.push({
+              date: dates[0],
+              foreign_flow_yi: dailyF,
+              etf_flow_yi: dailyC - (dailyF || 0),
+              close: s.close || 100,
+              adjustedClose: s.close || 100,
+              shares: s.shares,
+            });
+          }
+          // put true today on last day
+          days[5] = {
+            ...days[5],
+            foreign_flow_yi: foreign,
+            etf_flow_yi: etf,
+            shares: s.shares,
+            close: s.close,
+            adjustedClose: s.close,
+          };
+          return { id: s.code, code: s.code, name: s.name, days, _pre: s };
+        });
+      } else {
+        throw new Error('資料格式不符');
+      }
+
+      // Align to shared frame model: need >= WINDOW+1 days for frame 0..n
+      const minLen = Math.min(...stocks.map((s) => s.days.length));
+      const maxFrame = Math.max(0, minLen - M.WINDOW - 0); // end=frame+WINDOW < len → frame <= len-WINDOW-1? 
+      // end = frame + WINDOW must be < length → frame <= length - WINDOW - 1? 
+      // if length=6, frame=0 → end=5 ok; frame max = length - WINDOW - 1? length-1-WINDOW = 0. So maxFrame = length - WINDOW - 1 + something
+      // end = frame + WINDOW <= length-1 → frame <= length - 1 - WINDOW
+      const frameMax = Math.max(0, minLen - 1 - M.WINDOW);
+      $('timeline').max = String(frameMax);
+      $('timeline').value = String(frameMax);
+      frame = frameMax;
+
+      $('meta').textContent = `${doc.meta?.date || dates[dates.length - 1] || ''} · ${stocks.length} 檔 · 來源 ${src}` +
+        (doc.meta?.synthetic ? '（合成 fixture）' : '');
+      return { frameMax, src, meta: doc.meta };
+    }
+
+    function currentRanked() {
+      const count = Number($('count').value) || 15;
+      const direction = $('direction').value;
+      return M.ranked(stocks, frame, count, direction, mode);
+    }
+
+    function paintRank() {
+      const rows = currentRanked();
+      const rollKey = mode === 'combined' ? 'rolling' : 'rolling';
+      $('rankList').innerHTML = rows.map(({ stock, state: st }) => {
+        const ret = st.rollingRet ?? st.rolling_ret;
+        return `<div class="rank-item ${selected === stock.code ? 'active' : ''}" data-code="${stock.code}">
+          <div><div class="code">${stock.code} ${stock.name}</div><div class="name">當日 ${fmtYi(st.dailyFlow ?? st.daily_flow)}</div></div>
+          <div class="vals">
+            <div class="${cls(st.rolling)}">${fmtYi(st.rolling)}</div>
+            <div class="${cls(ret)}">${fmtPct(ret)} · 動能 ${fmtYi(st.momentum)}</div>
+          </div>
+        </div>`;
+      }).join('');
+      $('rankList').querySelectorAll('.rank-item').forEach((el) => {
+        el.onclick = () => { selected = el.dataset.code; paint(); };
+      });
+      if (!selected && rows[0]) selected = rows[0].stock.code;
+    }
+
+    function paintBubbles() {
+      const rows = currentRanked();
+      const sc = M.scales(rows.map((r) => r.stock), mode, [frame]);
+      const box = $('bubbles');
+      // reuse nodes
+      const keep = new Set(rows.map((r) => r.stock.code));
+      for (const [code, el] of nodes) {
+        if (!keep.has(code)) { el.remove(); nodes.delete(code); }
+      }
+      rows.forEach(({ stock, state: st }) => {
+        let el = nodes.get(stock.code);
+        if (!el) {
+          el = document.createElement('button');
+          el.className = 'bubble';
+          el.type = 'button';
+          el.innerHTML = '<strong></strong><span class="bubble-return"></span><span class="bubble-value"></span>';
+          el.onclick = () => { selected = stock.code; paint(); };
+          box.appendChild(el);
+          nodes.set(stock.code, el);
+        }
+        const x = M.normalize(st.rolling, sc.x); // -1..1
+        const y = M.normalize(st.momentum, sc.y);
+        const left = 50 + x * 42;
+        const top = 50 - y * 42;
+        const size = 48 + Math.sqrt(Math.abs(st.rolling) / sc.size) * 56;
+        const ret = st.rollingRet ?? st.rolling_ret;
+        const color = (ret == null || ret >= 0) ? 'rgba(248,113,113,.85)' : 'rgba(34,197,94,.85)';
+        el.style.left = left + '%';
+        el.style.top = top + '%';
+        el.style.width = el.style.height = size + 'px';
+        el.style.background = color;
+        el.classList.toggle('active', selected === stock.code);
+        el.querySelector('strong').textContent = stock.name;
+        el.querySelector('.bubble-return').textContent = fmtPct(ret);
+        el.querySelector('.bubble-value').textContent = (st.rolling >= 0 ? '+' : '') + st.rolling.toFixed(1);
+      });
+    }
+
+    function paintDetail() {
+      const stock = stocks.find((s) => s.code === selected);
+      if (!stock) return;
+      const st = M.state(stock, frame, mode);
+      if (!st) {
+        $('dDaily').textContent = '—';
+        return;
+      }
+      const set = (id, v, isPct) => {
+        const el = $(id);
+        el.textContent = isPct ? fmtPct(v) : fmtYi(v);
+        el.className = 'v ' + cls(v);
+      };
+      set('dDaily', st.dailyFlow ?? st.daily_flow, false);
+      set('dRoll', st.rolling, false);
+      set('dMom', st.momentum, false);
+      set('dRet', st.rollingRet ?? st.rolling_ret, true);
+    }
+
+    function paintDate() {
+      // end index = frame + WINDOW
+      const sample = stocks[0];
+      const end = frame + M.WINDOW;
+      const dt = sample?.days?.[end]?.date || dates[Math.min(end, dates.length - 1)] || '';
+      $('chartDate').textContent = dt;
+      const start = end - M.WINDOW + 1;
+      const startDt = sample?.days?.[start]?.date || '';
+      $('periodLabel').textContent = startDt && dt ? `統計 ${startDt}～${dt}` : '';
+      $('rankTitle').textContent = mode === 'combined' ? '綜合資金排行' : '外資資金排行';
+    }
+
+    function paint() {
+      paintDate();
+      paintRank();
+      paintBubbles();
+      paintDetail();
+    }
+
+    document.querySelectorAll('.mode-tabs button').forEach((btn) => {
+      btn.onclick = () => {
+        document.querySelectorAll('.mode-tabs button').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        mode = btn.dataset.mode;
+        paint();
+      };
+    });
+    $('direction').onchange = paint;
+    $('count').onchange = paint;
+    $('timeline').oninput = () => { frame = Number($('timeline').value); paint(); };
+    $('playBtn').onclick = () => {
+      if (playing) { clearInterval(playing); playing = null; $('playBtn').textContent = '▶ 播放'; return; }
+      $('playBtn').textContent = '⏸ 暫停';
+      playing = setInterval(() => {
+        const max = Number($('timeline').max);
+        frame = frame >= max ? 0 : frame + 1;
+        $('timeline').value = String(frame);
+        paint();
+      }, 900);
+    };
+
+    try {
+      await loadData();
+      paint();
+    } catch (e) {
+      $('err').hidden = false;
+      $('err').textContent = String(e.message || e);
+    }
+  })();
+  </script>
+</body>
+</html>

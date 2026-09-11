@@ -4,3 +4,4 @@ __pycache__/
 raw/
 probe/
 *.tgz
+data/fundflo/series.json
