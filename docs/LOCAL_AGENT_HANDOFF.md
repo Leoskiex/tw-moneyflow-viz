@@ -386,6 +386,10 @@ CMI is a separate Grok Bot agent with Mac SQLite. Share CSVs under `outputs/`; n
 
 
 - 頁面：`fund-flow.html`（白話「讓水流動」＋泡泡軌跡＋河道摘要）
-- 日更 slim 仍須寫 `data/fundflo/series_top.json`，`keep_dates=40`、`top_n=50`（`etl/build_fundflo_features.py`）
+- 日更 slim 仍須寫 `data/fundflo/series_top.json`，`keep_dates=120`、`top_n=50`（`etl/build_fundflo_features.py`）
 - 只有 `latest.json` 時頁面會警告「無法看水流」
 - 首頁連結文案：看錢怎麼流
+
+## Handoff status (2026-09-11)
+
+**Local agent may take over daily refresh + remaining backlog.** See `docs/FUNDFLO_FULL_HISTORY_HANDBOOK.md` **rev3**. FundFlo UI/active ETF/keep_dates=120 are live; still open: curated index rebuild, screens full-calendar, optional 2023 curate. Always slim-push Pages after a successful refresh.
