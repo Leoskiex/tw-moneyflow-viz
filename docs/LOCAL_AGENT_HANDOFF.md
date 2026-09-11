@@ -130,7 +130,7 @@ Repo: `Leoskiex/tw-moneyflow-viz` (`main`)
 
 ```bash
 # 1) Selective sync from /workspace/tw-moneyflow-viz
-#    include: *_latest.json, regimes.json, digest md, html, etf/00981a latest, last curated day
+#    include: *_latest.json, regimes.json, digest md, html, etf/00981a latest, data/fundflo/latest.json (+ series_top if small), last curated day
 #    exclude: *.gz, full curated history, features/outcomes bulk, huge trades
 
 # 2) Commit + push (identity via -c if needed)
@@ -149,6 +149,16 @@ git push origin main
 - `4f0fb8c` — first 2026-09-09 core pack
 - `c790170` — 2026-09-07 refresh after stuck period
 - `c59de26` — LOCAL_AGENT_HANDOFF.md
+
+
+### 3.6 FundFlo shared layer (merged 2026-09-11)
+
+- Contract: `docs/FUNDFLO_CONTRACT.md`; model: `etl/fundflo_model.py` + `js/fundflo_model.js`
+- Build: `etl/build_fundflo_features.py` hooked in `refresh_daily.py` **after curated** (non-fatal if it fails)
+- Artifacts: `data/fundflo/latest.json` (also `series_top.json`, `by_date/`)
+- Pages + aistockmap-clone consumer read **Pages** `data/fundflo/latest.json`
+- **Daily Pages sync must include `data/fundflo/latest.json`** (and ideally `series_top.json`); full `by_date/` optional/large
+- Units: curated `foreign_net` = 千張; FundFlo `*_yi` = 億元 via `foreign_net * price / 100`
 
 Evening ETL routines historically synced **Mac** but sometimes **forgot Pages** — local agent should **always push Pages** after a successful refresh (or add it to the routine prompt).
 
