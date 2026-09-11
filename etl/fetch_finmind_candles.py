@@ -27,22 +27,34 @@ TZ8 = timezone(timedelta(hours=8))
 SECRETS = Path("/home/box/sand-data/box-secrets.json")
 
 
+def _looks_like_token(s: str) -> bool:
+    ascii_t = "".join(ch for ch in s if ord(ch) < 128).strip()
+    if len(ascii_t) < 20 or " " in ascii_t or "\n" in ascii_t:
+        return False
+    # plan-paste leftovers often mostly spaces/CJK; real tokens are dense alnum/._-
+    alnum = sum(c.isalnum() for c in ascii_t)
+    return alnum / max(len(ascii_t), 1) >= 0.8
+
+
 def load_token() -> Optional[str]:
-    """Optional. Free-tier TaiwanStockPrice works anonymously (~300/hr); token ~600/hr.
-    Rejects non-ASCII 'tokens' (users sometimes paste plan text with checkmarks).
+    """Optional. Prefer a valid-looking token from env or box-secrets.
+    Free-tier TaiwanStockPrice works anonymously; token raises rate limit.
+    Rejects plan-description pastes (spaces / low alnum ratio).
     """
-    t = (os.environ.get("FINMIND_TOKEN") or "").strip()
-    if not t and SECRETS.exists():
+    candidates: list[str] = []
+    env = (os.environ.get("FINMIND_TOKEN") or "").strip()
+    if env:
+        candidates.append(env)
+    if SECRETS.exists():
         doc = json.loads(SECRETS.read_text())
         card = doc.get("card") or {}
-        t = (card.get("FINMIND_TOKEN") or "").strip()
-    if not t:
-        return None
-    ascii_t = "".join(ch for ch in t if ord(ch) < 128).strip()
-    # real tokens are compact; plan-paste leftovers have spaces / are short alnum
-    if " " in ascii_t or len(ascii_t) < 20:
-        return None
-    return ascii_t
+        sec = (card.get("FINMIND_TOKEN") or "").strip()
+        if sec:
+            candidates.append(sec)
+    for t in candidates:
+        if _looks_like_token(t):
+            return "".join(ch for ch in t if ord(ch) < 128).strip()
+    return None
 
 
 def api_get(token: Optional[str], params: dict[str, str], timeout: int = 90) -> dict[str, Any]:

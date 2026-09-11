@@ -49,3 +49,9 @@ Token：環境變數 `FINMIND_TOKEN` 或 box-secrets；可省略（匿名日線�
 1. 真實 API token 尚未注入（用戶曾誤貼方案說明）；日線不依賴 token。  
 2. 分K需 Sponsor。  
 3. 生產 rate：匿名 ~300/hr；註冊 token ~600/hr。
+
+## Token status (2026-09-11)
+
+- Real `FINMIND_TOKEN` injected (register tier). Daily `TaiwanStockPrice` works with `auth=token`.
+- `TaiwanStockKBar` returns 400: *Your level is register. Please update… Sponsor* — matches free-list expectation.
+- Fetcher prefers valid token from env/box-secrets; rejects plan-description pastes; falls back to anon for daily.
