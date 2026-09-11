@@ -203,7 +203,7 @@
       <div class="river-card">
         <div class="k" id="riverNetK">畫面上的水（排行合計）</div>
         <div class="v" id="riverNet">—</div>
-        <div class="hint" id="riverHint">近5日累計淨額加總</div>
+        <div class="hint" id="riverHint">最近30個交易日回放 · 每日仍用近5日滾動</div>
         <div class="wave" id="riverWave"></div>
       </div>
       <div class="river-card">
@@ -297,6 +297,7 @@
     const M = window.FundFloModel;
     const $ = (id) => document.getElementById(id);
     const BASE_MS = 4000;
+    const PLAYBACK_DAYS = 30; // last N trading-day frames when page opens
     const FINAL_HOLD_MS = 1600;
 
     const fmtYi = (v) => v == null || !Number.isFinite(v) ? '—' : ((v >= 0 ? '+' : '') + v.toFixed(2) + ' 億');
@@ -307,6 +308,7 @@
     let mode = 'foreign';
     let frame = 4;
     let frameMax = 4;
+    let frameOffset = 0;
     let selected = null;
     let stocks = [];
     let dates = [];
@@ -462,7 +464,11 @@
       }
 
       const minLen = Math.min(...stocks.map((s) => s.days.length));
-      frameMax = Math.max(0, minLen - 1 - M.WINDOW);
+      const fullMax = Math.max(0, minLen - 1 - M.WINDOW);
+      // Last PLAYBACK_DAYS frames only (needs WINDOW history days before frame 0).
+      const want = Math.min(Math.max(PLAYBACK_DAYS - 1, 0), fullMax);
+      frameOffset = Math.max(0, fullMax - want);
+      frameMax = want;
       $('timeline').max = String(frameMax);
       $('timeline').value = String(frameMax);
       frame = frameMax;
@@ -477,13 +483,17 @@
     function frameIndex() {
       return Math.max(0, Math.min(frameMax, Math.floor(frame + 1e-6)));
     }
+    function absFrame(local) {
+      const loc = local == null ? frameIndex() : Math.max(0, Math.min(frameMax, Math.floor(local + 1e-6)));
+      return frameOffset + loc;
+    }
 
     function interpolated(stock) {
       const from = frameIndex();
       const to = Math.min(frameMax, from + 1);
       const t = frame - Math.floor(frame);
-      const a = M.state(stock, from, mode);
-      const b = M.state(stock, to, mode);
+      const a = M.state(stock, absFrame(from), mode);
+      const b = M.state(stock, absFrame(to), mode);
       return M.interpolateState(a, b, t);
     }
 
@@ -491,7 +501,7 @@
       const count = Number($('count').value) || 15;
       const direction = $('direction').value;
       const f = atFrame == null ? frameIndex() : atFrame;
-      return M.ranked(stocks, f, count, direction, mode);
+      return M.ranked(stocks, absFrame(f), count, direction, mode);
     }
 
     function paintRank() {
@@ -563,7 +573,7 @@
       const sc = M.scales(
         rows.map((r) => r.stock),
         mode,
-        [idx, Math.min(frameMax, idx + 1)].filter((v, i, a) => a.indexOf(v) === i)
+        [absFrame(idx), absFrame(Math.min(frameMax, idx + 1))].filter((v, i, a) => a.indexOf(v) === i)
       );
       const box = $('bubbles');
       const trailBox = $('trails');
@@ -635,7 +645,7 @@
     function paintDetail() {
       const stock = stocks.find((s) => s.code === selected);
       if (!stock) return;
-      const st = M.state(stock, frameIndex(), mode);
+      const st = M.state(stock, absFrame(), mode);
       if (!st) {
         $('dDaily').textContent = '—';
         return;
@@ -661,15 +671,18 @@
 
     function paintDate() {
       const sample = stocks[0];
-      const end = frameIndex() + M.WINDOW;
+      const end = absFrame() + M.WINDOW;
       const dt = sample?.days?.[end]?.date || dates[Math.min(end, dates.length - 1)] || '';
       $('chartDate').textContent = dt;
       $('riverDay').textContent = dt || '—';
       const start = end - M.WINDOW + 1;
       const startDt = sample?.days?.[start]?.date || '';
       const period = startDt && dt ? `${startDt}～${dt}` : '';
-      $('periodLabel').textContent = period ? `統計 ${period}` : '';
-      $('riverPeriod').textContent = period ? `近5日窗：${period}` : '拖時間軸看每天變';
+      const spanStart = sample?.days?.[absFrame(0) + M.WINDOW]?.date || '';
+      const spanEnd = sample?.days?.[absFrame(frameMax) + M.WINDOW]?.date || '';
+      const span = spanStart && spanEnd ? `${spanStart}～${spanEnd}` : '';
+      $('periodLabel').textContent = span ? `回放最近${PLAYBACK_DAYS}日 ${span}` : (period ? `統計 ${period}` : '');
+      $('riverPeriod').textContent = period ? `近5日滾動窗：${period}` : '拖時間軸看每天變';
     }
 
     function paint(full) {

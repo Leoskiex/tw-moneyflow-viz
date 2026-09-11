@@ -673,7 +673,7 @@ def _score_keys(row: dict) -> List[float]:
     return vals
 
 
-def _compact_series(series: List[dict], keep_dates: int = 40, top_n: int = 50) -> List[dict]:
+def _compact_series(series: List[dict], keep_dates: int = 36, top_n: int = 50) -> List[dict]:
     """Keep last keep_dates days; include codes that ranked top_n on any mode metric."""
     if not series:
         return []
@@ -729,14 +729,14 @@ def write_outputs(latest: dict, dates: List[str], write_by_date: bool = True) ->
     (OUT_DIR / "latest.json").write_text(
         json.dumps(lite, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
     )
-    series_top = _compact_series(latest.get("series") or [], keep_dates=40, top_n=50)
+    series_top = _compact_series(latest.get("series") or [], keep_dates=36, top_n=50)
     (OUT_DIR / "series_top.json").write_text(
         json.dumps(
             {
                 "meta": {
                     **latest["meta"],
                     "series_mode": "top",
-                    "keep_dates": 40,
+                    "keep_dates": 36,
                     "top_n": 50,
                     "n_series_top": len(series_top),
                 },
