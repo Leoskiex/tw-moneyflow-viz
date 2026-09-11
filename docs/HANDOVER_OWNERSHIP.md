@@ -1,6 +1,6 @@
 # Local-agent handover ownership (after box crons paused)
 
-**As of:** 2026-09-11 ~21:50 Asia/Taipei  
+**As of:** 2026-09-11 ~21:55 Asia/Taipei · **all daily lanes landed**  
 **Trigger:** User → AISTOCKMAP paused box money-flow routines; **local Mac agent owns daily updates**.  
 **CoS:** chase every bot that writes raw / Pages / 8777 / ETL / FundFlo / candles / ETF / screens / digest.
 
@@ -22,7 +22,7 @@ AISTOCKMAP paused:
 | FinMind daily candles | AISTOCKMAP | `docs/FINMIND_CANDLES.md` + `FINMIND_INTEGRATION.md` | Docs present; **optional satellite**. Local must set `FINMIND_TOKEN` on Mac if used. |
 | Fugle 5m/15m/60m | AISTOCKMAP | `docs/FUGLE_CANDLES.md` | Docs present; **optional**. Local must set `FUGLE_API_KEY` on Mac if used. |
 | Active ETF adapters + fund-flow UI cadence | 反向破解 → **local** | [`ETF_UI_LOCAL_HANDOFF.md`](./ETF_UI_LOCAL_HANDOFF.md) (+ schema in `ACTIVE_ETF_HOLDINGS.md`) | **Landed** 2026-09-11: issuers, fetch cadence, day-lag, Pages/8777 paths, no secrets, failure modes. T86 SoT untouched. |
-| CMI consume FundFlo T−1 | CMI SYSTEM | missing | **Asked** consume-only note: paths, do-not-overwrite, no daily ETL. |
+| CMI consume FundFlo T−1 | CMI SYSTEM | [`CMI_CONSUME_HANDOFF.md`](./CMI_CONSUME_HANDOFF.md) | **Done 2026-09-11:** overlay CSVs into viz `data/cmi/` + `cmi_system_v1_5/outputs/`; do not touch `cmi.sqlite3`; CMI does not publish Pages/8777/slim. |
 | Signova-style signal radar + 目標價 | CoS Tasks (spec) / local implement | `docs/SIGNAL_RADAR_LOCAL_HANDOFF.md` + `/workspace/signova-re/` | Spec ready; **not** part of daily FundFlo slim. |
 
 ---

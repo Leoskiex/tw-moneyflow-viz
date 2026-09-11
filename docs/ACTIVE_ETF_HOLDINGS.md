@@ -1,5 +1,8 @@
 # 台股主動 ETF 持股日揭抓取
 
+> **Local Mac daily ops:** see [`ETF_UI_LOCAL_HANDOFF.md`](./ETF_UI_LOCAL_HANDOFF.md) (adapters cadence, Pages outputs, failure modes). This file stays the schema/issuer table.
+
+
 AISTOCKMAP 路徑慣例（請維持）：
 
 ```
