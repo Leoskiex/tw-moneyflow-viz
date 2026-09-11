@@ -427,7 +427,7 @@ def build(raw_dir: Optional[Path], max_dates: Optional[int] = None) -> Tuple[dic
 
 
 
-def _compact_series(series: List[dict], keep_dates: int = 10, top_n: int = 40) -> List[dict]:
+def _compact_series(series: List[dict], keep_dates: int = 40, top_n: int = 50) -> List[dict]:
     """Keep last keep_dates days; include codes that ranked top_n by |rolling_foreign| any day."""
     if not series:
         return []
@@ -471,10 +471,10 @@ def write_outputs(latest: dict, dates: List[str], write_by_date: bool = True) ->
         json.dumps(lite, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
     )
     # Compact playback series: last N dates × stocks that hit top-|rolling| on any day
-    series_top = _compact_series(latest.get("series") or [], keep_dates=10, top_n=40)
+    series_top = _compact_series(latest.get("series") or [], keep_dates=40, top_n=50)
     (OUT_DIR / "series_top.json").write_text(
         json.dumps(
-            {"meta": {**latest["meta"], "series_mode": "top", "keep_dates": 10, "top_n": 40},
+            {"meta": {**latest["meta"], "series_mode": "top", "keep_dates": 40, "top_n": 50},
              "series": series_top},
             ensure_ascii=False,
             separators=(",", ":"),

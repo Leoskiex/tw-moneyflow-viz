@@ -50,5 +50,10 @@
       "etf_date": "2026-09-10"
     }
   },
-  "finished": "2026-09-10T18:49:08+08:00"
+  "finished": "2026-09-10T18:49:08+08:00",
+  "fundflo_water": {
+    "updated_at": "2026-09-11T02:26:31.979757Z",
+    "series_keep_dates": 40,
+    "note": "water-flow UI"
+  }
 }
