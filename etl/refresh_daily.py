@@ -151,7 +151,8 @@ def build_all() -> dict:
         import build_fundflo_features as bff
         raw = bff.discover_raw_dir(str(ROOT / "raw"))
         latest, dates = bff.build(raw)
-        bff.write_outputs(latest, dates)
+        # daily slim: latest + series_top only (avoid pushing full by_date)
+        bff.write_outputs(latest, dates, write_by_date=False)
         out["fundflo"] = (latest.get("meta") or {}).get("date")
         out["fundflo_stocks"] = (latest.get("meta") or {}).get("n_stocks")
     except Exception as e:
