@@ -269,12 +269,22 @@ def main() -> int:
         if block:
             block = dict(block)
             block["source"] = "Fugle"
-            combo["timeframes"][lab] = block
-            if lab == "1D" and block.get("bars"):
-                # don't clobber FinMind daily unless empty
-                if not combo.get("daily"):
-                    combo["daily"] = block["bars"]
-                    combo["timeframes"]["1D"] = block
+            if lab == "1D":
+                # Prefer longer FinMind daily series when present
+                existing = combo.get("daily") or []
+                if len(existing) >= len(block.get("bars") or []):
+                    combo["timeframes"]["1D"] = {
+                        "ok": True,
+                        "n": len(existing),
+                        "bars": existing,
+                        "source": "FinMind",
+                    }
+                else:
+                    combo["timeframes"][lab] = block
+                    if not existing:
+                        combo["daily"] = block["bars"]
+            else:
+                combo["timeframes"][lab] = block
     combo_path.write_text(json.dumps(combo, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"merged {combo_path}")
 
