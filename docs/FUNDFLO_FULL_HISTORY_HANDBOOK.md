@@ -261,3 +261,50 @@ git add … && git commit -m "…" && git push origin main
 > 網站上的「水流」只播最近四十天，是故意壓小檔案，不是沒整理。  
 > 若要看更長的水流或把 2023 也整理進去，照本手冊在本地跑即可。
 
+---
+
+## 9. 整個 moneyflow「計算層」完成度（2026-09-11 實測）
+
+用戶常記得「只有三月到現在」或「六十天」——那是**早期／部分產物**的記憶，不是全部層的現況。
+
+### 已拉長到 2024→今（~651 交易日）的
+
+| 層 | 起迄 | 狀態 |
+|----|------|------|
+| curated 日 JSON | 2024-01-02 → 2026-09-09 | ✅ |
+| regimes.json | 同上 ~651 | ✅（曾只有 2026-03-17 起，已重跑） |
+| features/by_date | 同上 ~651 | ✅ |
+| outcomes/by_date | 同上 ~651 | ✅ |
+| signals/by_date | 同上 ~651 | ✅ |
+| lifecycle/by_date | 同上 ~651 | ✅ |
+
+### 仍然偏短／未做完的（這才是「沒做完」）
+
+| 層 | 現況 | 問題 |
+|----|------|------|
+| curated **index.json** | 只有 **122** 天（2026-03-17→09-09） | 索引過期，易誤判「只有三月起」 |
+| **screens/** | **166** 天（2026-01-02→09-09） | 未回填 2024 全年 |
+| FundFlo **series_top** | **keep_dates=40** | 回放窗壓縮（見上文） |
+| FundFlo **by_date** | **63** 天（2026-06-11 起） | 日更 slim 常 skip |
+| lifecycle `latest` caveat 文字 | 仍寫「~60d」 | **文案過期**，實際 by_date 已 651 |
+| strategy tournament v1 summary | `regime_n≈119` | 舊窗殘留；未用全曆史重跑全部 scoreboard |
+| labeled_panel.csv | 日期抽樣到 ~2026-01-15 | 驗證面板可能未覆寫到最新 |
+| **2023** curated／以上各層 | raw 有、整理無 | 未做 |
+| 多檔主動 ETF → `etf_flow_yi` | 幾乎全 0 | 未做完（反向破解進行中） |
+| turnover／成交熱度模式 | 無 | 未做 |
+| rAF 分數 frame 動畫 | 尚無 | 未做 |
+
+### 「六十天」從哪來？
+
+早期 validation／lifecycle／action-radar 是在 **~60 個精選交易日** 上先做的；後來才把 curated／features 扩到 ~648–651。  
+**部分報告、caveat、screens、FundFlo 回放、tournament 摘要沒有全部跟著重跑**，所以你會同時看到「651 天檔案」和「60／119／三月」的說法並存。
+
+### 本地 agent 建議優先序（計算層補齊）
+
+1. 重寫 `data/curated/index.json`（§4.2）— 立刻消除「只有三月」誤解。  
+2. 全量重跑 **screens** 覆蓋 2024-01→今（對齊 curated 日期列表）。  
+3. FundFlo：去掉 `--max-dates`，`keep_dates`→120+；本機可建全 `by_date`。  
+4. 清掉 lifecycle／scoreboard／tournament 的過期「~60d／119 regimes」caveat，必要時用 651d 重跑 tournament。  
+5. （可選）`curate_range` 起始改 2023 → 再級聯 features／outcomes／regimes／FundFlo。  
+6. 主動 ETF／turnover／rAF：交給「反向破解」與本手冊 §7 分工。
+
