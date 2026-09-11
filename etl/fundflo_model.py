@@ -3,6 +3,8 @@
 See docs/FUNDFLO_CONTRACT.md. WINDOW=5.
 Curated foreign_net is 千張 (1e6 shares); foreign_flow_yi = shares * price / 1e8
 = foreign_net * price / 100 when converting from curated.
+
+Modes: foreign | etf | combined | turnover
 """
 from __future__ import annotations
 
@@ -12,6 +14,28 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 WINDOW = 5
 
 Number = Optional[float]
+
+BLEND_KEYS = (
+    "flow",
+    "momentum",
+    "rolling",
+    "rolling_ret",
+    "rollingRet",
+    "daily_flow",
+    "dailyFlow",
+    "daily_ret",
+    "dailyRet",
+    "average5",
+    "market_share",
+    "marketShare",
+    "turnover_change",
+    "turnoverChange",
+    "change_pct",
+    "changePct",
+    "foreign_flow_yi",
+    "etf_flow_yi",
+    "shares",
+)
 
 
 def _finite(x: Any) -> bool:
@@ -29,6 +53,12 @@ def as_float(x: Any) -> Number:
 
 def clamp(v: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, v))
+
+
+def ease(t: float) -> float:
+    """Smoothstep ease used by FundFlo playback interpolation."""
+    t = clamp(float(t), 0.0, 1.0)
+    return t * t * (3.0 - 2.0 * t)
 
 
 def normalize(value: float, scale: float) -> float:
@@ -65,6 +95,9 @@ def flow_of(day: Dict[str, Any], mode: str = "foreign") -> Number:
         if f is None and e is None:
             return None
         return (f or 0.0) + (e or 0.0)
+    if mode == "turnover":
+        # ranking / size uses amount; chart x uses changePct via state()
+        return as_float(day.get("amount"))
     return as_float(day.get("foreign_flow_yi", day.get("flow")))
 
 
@@ -98,9 +131,72 @@ def rolling_ret_5d(days: Sequence[Dict[str, Any]], start: int, end: int) -> Numb
     base_day = days[start - 1] or {}
     close = as_float(end_day.get("adjustedClose", end_day.get("adj_close", end_day.get("close"))))
     base = as_float(base_day.get("adjustedClose", base_day.get("adj_close", base_day.get("close"))))
-    if close is None or base is None or base == 0:
+    if close is not None and base is not None and base != 0:
+        return (close / base - 1.0) * 100.0
+    # Fallback: chain daily change% over (start..end)
+    prod = 1.0
+    for i in range(start, end + 1):
+        ch = as_float((days[i] or {}).get("change", (days[i] or {}).get("daily_ret")))
+        if ch is None:
+            return None
+        prod *= 1.0 + ch / 100.0
+    return (prod - 1.0) * 100.0
+
+
+def _turnover_state(days: Sequence[Dict[str, Any]], frame: int) -> Optional[Dict[str, Any]]:
+    """FundFlo turnover: flow=changePct, momentum=return, rolling=amount."""
+    start, end = _window_indices(frame)
+    if end >= len(days) or end < 0:
         return None
-    return (close / base - 1.0) * 100.0
+    today = days[end] or {}
+    amount = as_float(today.get("amount"))
+    average5 = as_float(today.get("average5", today.get("average_5")))
+    change_pct = as_float(
+        today.get("change_pct", today.get("changePct", today.get("turnover_change", today.get("turnoverChange"))))
+    )
+    market_share = as_float(today.get("market_share", today.get("marketShare")))
+    daily_ret = as_float(today.get("daily_ret", today.get("dailyRet", today.get("return", today.get("change")))))
+    cum_ret = as_float(
+        today.get("cumulative_return", today.get("cumulativeReturn", today.get("rolling_ret_5d", today.get("rollingRet"))))
+    )
+    if cum_ret is None and start >= 1:
+        cum_ret = rolling_ret_5d(days, start, end)
+    if amount is None or not _finite(amount):
+        return None
+    # Prefer precomputed changePct; else derive from average5
+    if change_pct is None and average5 is not None and average5 != 0:
+        change_pct = (amount / average5 - 1.0) * 100.0
+    if average5 is None and end >= WINDOW:
+        prior = [as_float((days[i] or {}).get("amount")) for i in range(end - WINDOW, end)]
+        if all(v is not None for v in prior):
+            average5 = sum(prior) / float(WINDOW)  # type: ignore[arg-type]
+            if change_pct is None and average5:
+                change_pct = (amount / average5 - 1.0) * 100.0
+    return {
+        "flow": change_pct,
+        "rolling": amount,
+        "momentum": daily_ret,
+        "prior_rolling": average5,
+        "rolling_ret": cum_ret,
+        "rollingRet": cum_ret,
+        "daily_flow": amount,
+        "dailyFlow": amount,
+        "daily_ret": daily_ret,
+        "dailyRet": daily_ret,
+        "average5": average5,
+        "market_share": market_share,
+        "marketShare": market_share,
+        "turnover_change": change_pct,
+        "turnoverChange": change_pct,
+        "change_pct": change_pct,
+        "changePct": change_pct,
+        "foreign_flow_yi": as_float(today.get("foreign_flow_yi", today.get("flow"))),
+        "etf_flow_yi": as_float(today.get("etf_flow_yi", today.get("etfFlow"))) or 0.0,
+        "shares": as_float(today.get("shares")),
+        "close": as_float(today.get("close")),
+        "start": start,
+        "end": end,
+    }
 
 
 def state(
@@ -110,9 +206,12 @@ def state(
 ) -> Optional[Dict[str, Any]]:
     """Compute rolling / momentum / ret for one stock series at frame.
 
-    `days` is chronological daily dicts with foreign_flow_yi / etf_flow_yi / close.
-    Returns None if the 5-day window is incomplete.
+    `days` is chronological daily dicts with foreign_flow_yi / etf_flow_yi / close
+    (or turnover fields). Returns None if the window / day is incomplete.
     """
+    if mode == "turnover":
+        return _turnover_state(days, frame)
+
     start, end = _window_indices(frame)
     if end >= len(days) or start < 0:
         return None
@@ -128,13 +227,18 @@ def state(
     if etf is None:
         etf = 0.0
     shares = as_float(today.get("shares"))
+    ret = rolling_ret_5d(days, start, end)
     return {
         "flow": rolling,
         "rolling": rolling,
         "momentum": rolling - prior_rolling,
         "prior_rolling": prior_rolling,
-        "rolling_ret": rolling_ret_5d(days, start, end),
+        "rolling_ret": ret,
+        "rollingRet": ret,
         "daily_flow": daily,
+        "dailyFlow": daily,
+        "daily_ret": as_float(today.get("change", today.get("daily_ret"))),
+        "dailyRet": as_float(today.get("change", today.get("daily_ret"))),
         "foreign_flow_yi": foreign,
         "etf_flow_yi": etf,
         "combined_flow_yi": (foreign or 0.0) + etf if foreign is not None else (etf if daily is not None else None),
@@ -145,13 +249,52 @@ def state(
     }
 
 
-def enrich_day_metrics(history: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """For each day index that has a full WINDOW, attach rolling/momentum fields.
+def interpolate_state(
+    a: Optional[Dict[str, Any]],
+    b: Optional[Dict[str, Any]],
+    t: float,
+    use_ease: bool = True,
+) -> Optional[Dict[str, Any]]:
+    """Blend two state() dicts for fractional frame playback.
 
-    Frame mapping: at day index `i` (end), frame = i - WINDOW; requires i >= WINDOW
-    so that start-1 = i - WINDOW exists for returns when i >= WINDOW.
-    We emit metrics when i >= WINDOW - 1 (full rolling window); momentum/ret need i >= WINDOW.
+    UI blending keys: flow, momentum, rolling, rollingRet/rolling_ret,
+    average5, marketShare/market_share, turnoverChange/turnover_change.
     """
+    if a is None and b is None:
+        return None
+    if a is None:
+        return dict(b) if b else None
+    if b is None:
+        return dict(a)
+    tt = ease(t) if use_ease else clamp(float(t), 0.0, 1.0)
+    out = dict(a)
+    keys = set(a) | set(b)
+    for key in keys:
+        va, vb = a.get(key), b.get(key)
+        if _finite(va) and _finite(vb):
+            out[key] = float(va) + (float(vb) - float(va)) * tt
+        elif _finite(vb):
+            out[key] = float(vb)
+        elif _finite(va):
+            out[key] = float(va)
+        else:
+            out[key] = vb if vb is not None else va
+    # Keep camelCase aliases in sync when present
+    if "rolling_ret" in out and "rollingRet" not in out:
+        out["rollingRet"] = out["rolling_ret"]
+    if "rollingRet" in out and "rolling_ret" not in out:
+        out["rolling_ret"] = out["rollingRet"]
+    if "turnover_change" in out:
+        out["turnoverChange"] = out["turnover_change"]
+        out["changePct"] = out["turnover_change"]
+        out["change_pct"] = out["turnover_change"]
+    if "market_share" in out:
+        out["marketShare"] = out["market_share"]
+    return out
+
+
+def enrich_day_metrics(history: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """For each day index that has a full WINDOW, attach rolling/momentum fields."""
     out: List[Dict[str, Any]] = []
     for i, day in enumerate(history):
         row = dict(day)
@@ -162,20 +305,6 @@ def enrich_day_metrics(history: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]
             row["etf_flow_yi"] = 0.0
         if foreign is not None:
             row["combined_flow_yi"] = foreign + etf
-        # Need WINDOW days ending at i → frame = i - WINDOW + 1? 
-        # end = frame + WINDOW, we want end == i → frame = i - WINDOW
-        # start = i - WINDOW + 1. For rolling only, need start >= 0 → i >= WINDOW - 1
-        # For prior + ret, need start - 1 >= 0 → i >= WINDOW
-        frame = i - WINDOW
-        if frame < 0:
-            # still allow rolling when i == WINDOW-1 (frame=-? no)
-            # when i = WINDOW-1, frame = -1 invalid. So first rolling at i=WINDOW-1
-            # with frame=0 requires end=5, so len at least 6 for frame 0...
-            # Spec: end = frame + WINDOW, start = end - 4. For frame=0: start=1,end=5
-            # That implies days[0] is history before first display frame.
-            # For ETL by calendar day we treat chronological list where index 0 is oldest.
-            # At calendar day i, use end=i, start=i-4, prior window start-1..end-1.
-            pass
 
         end = i
         start = end - WINDOW + 1
@@ -190,6 +319,7 @@ def enrich_day_metrics(history: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]
 
         for mode, rkey, mkey in (
             ("foreign", "rolling_foreign_5d_yi", "momentum_foreign_5d_yi"),
+            ("etf", "rolling_etf_5d_yi", "momentum_etf_5d_yi"),
             ("combined", "rolling_combined_5d_yi", "momentum_combined_5d_yi"),
         ):
             rolling = _sum_mode(mode, start, end)
@@ -203,6 +333,8 @@ def enrich_day_metrics(history: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]
         ret = rolling_ret_5d(history, start, end)
         if ret is not None:
             row["rolling_ret_5d"] = round(ret, 6)
+            if row.get("cumulative_return") is None and row.get("cumulativeReturn") is None:
+                row["cumulative_return"] = round(ret, 6)
         out.append(row)
     return out
 
@@ -223,34 +355,52 @@ def ranked(
     mode: str = "foreign",
     days_key: str = "days",
 ) -> List[Dict[str, Any]]:
-    """Rank stocks by |rolling| / buy / sell using state()."""
+    """Rank stocks by |rolling| / buy / sell / turnover fields using state()."""
     scored = []
     for stock in stocks:
         days = stock.get(days_key) or []
         st = state(days, frame, mode)
         if not st:
             continue
+        if mode == "turnover":
+            if direction == "surge":
+                field = "turnoverChange"
+            elif direction == "share":
+                field = "marketShare"
+            else:
+                field = "rolling"
+            val = st.get(field)
+            if not _finite(val):
+                continue
+            scored.append((stock, st, float(val)))
+            continue
         r = st["rolling"]
         if direction == "buy" and not (r > 0):
             continue
         if direction == "sell" and not (r < 0):
             continue
-        scored.append((stock, st))
-    if direction == "buy":
+        scored.append((stock, st, float(r)))
+
+    if mode == "turnover":
+        scored.sort(key=lambda x: x[2], reverse=True)
+    elif direction == "buy":
         scored.sort(key=lambda x: x[1]["rolling"], reverse=True)
     elif direction == "sell":
         scored.sort(key=lambda x: x[1]["rolling"])
     else:
         scored.sort(key=lambda x: abs(x[1]["rolling"]), reverse=True)
-    return [{"stock": s, "state": st} for s, st in scored[:count]]
+    return [{"stock": s, "state": st} for s, st, _ in scored[:count]]
 
 
 __all__ = [
     "WINDOW",
+    "BLEND_KEYS",
     "normalize",
     "clamp",
+    "ease",
     "flow_of",
     "state",
+    "interpolate_state",
     "rolling_sum",
     "rolling_ret_5d",
     "enrich_day_metrics",

@@ -71,7 +71,7 @@
     .toolbar {
       display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px;
     }
-    .mode-tabs { display:flex; gap:6px; }
+    .mode-tabs { display:flex; flex-wrap:wrap; gap:6px; }
     .mode-tabs button, .toolbar select, .toolbar button.play {
       background:var(--panel2); color:var(--text); border:1px solid var(--border);
       border-radius:8px; padding:7px 12px; font-size:.85rem; cursor:pointer;
@@ -104,6 +104,11 @@
         linear-gradient(180deg, #0b1722 0%, #0a1a28 55%, #071820 100%);
       border:1px solid var(--border); border-radius:12px; overflow:hidden;
     }
+    .chart.turnover-mode {
+      background:
+        radial-gradient(ellipse at 50% 120%, #f59e0b22, transparent 55%),
+        linear-gradient(180deg, #0b1722 0%, #1a1208 55%, #071820 100%);
+    }
     .chart .water-layer {
       position:absolute; inset:0; pointer-events:none; opacity:.55;
       background:
@@ -130,7 +135,7 @@
       position:absolute; transform:translate(-50%,-50%);
       border-radius:999px; pointer-events:none;
       border:1px solid rgba(255,255,255,.12);
-      opacity:.28; transition: left .55s ease, top .55s ease, opacity .4s;
+      opacity:.22;
     }
     .bubble {
       position:absolute; transform:translate(-50%,-50%);
@@ -138,7 +143,8 @@
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       color:#fff; cursor:pointer; min-width:44px; min-height:44px;
       box-shadow:0 6px 22px rgba(14,165,233,.25), inset 0 -8px 16px rgba(0,0,0,.25);
-      transition: left .55s cubic-bezier(.22,.61,.36,1), top .55s cubic-bezier(.22,.61,.36,1), width .25s, height .25s, background .35s;
+      transition: width .2s, height .2s, background .35s, box-shadow .2s;
+      will-change: left, top, width, height;
       backdrop-filter: blur(2px);
     }
     .bubble::after {
@@ -186,7 +192,7 @@
   </div>
 
   <div class="wrap">
-    <div class="disc">
+    <div class="disc" id="disc">
       <strong>把每天的錢想成水。</strong>
       泡泡愈大＝近幾天流進來（或流出去）愈多；往右＝水進來，往上＝水流比前一段更快。
       按「讓水流動」就能看日子一天天變。顏色：<span class="up">紅＝股價這幾天上漲</span>／<span class="down">綠＝下跌</span>。
@@ -195,15 +201,15 @@
 
     <div class="river-bar" id="riverBar">
       <div class="river-card">
-        <div class="k">畫面上的水（排行合計）</div>
+        <div class="k" id="riverNetK">畫面上的水（排行合計）</div>
         <div class="v" id="riverNet">—</div>
         <div class="hint" id="riverHint">近5日累計淨額加總</div>
         <div class="wave" id="riverWave"></div>
       </div>
       <div class="river-card">
-        <div class="k">今天比前一段</div>
+        <div class="k" id="riverMomK">今天比前一段</div>
         <div class="v" id="riverMom">—</div>
-        <div class="hint">水變大／變小（動能）</div>
+        <div class="hint" id="riverMomHint">水變大／變小（動能）</div>
       </div>
       <div class="river-card">
         <div class="k">這一天</div>
@@ -214,10 +220,12 @@
 
     <div class="toolbar">
       <div class="mode-tabs" role="tablist">
-        <button type="button" class="active" data-mode="foreign">外資的水</button>
-        <button type="button" data-mode="combined">外資＋主動基金</button>
+        <button type="button" class="active" data-mode="foreign">外資</button>
+        <button type="button" data-mode="etf">主動式ETF</button>
+        <button type="button" data-mode="combined">綜合</button>
+        <button type="button" data-mode="turnover">成交熱度</button>
       </div>
-      <label>看哪邊
+      <label id="directionLabel">看哪邊
         <select id="direction">
           <option value="both">兩邊都看</option>
           <option value="buy">進來最多</option>
@@ -231,6 +239,14 @@
           <option>20</option>
         </select>
       </label>
+      <label>速度
+        <select id="speed">
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="3">3×</option>
+        </select>
+      </label>
       <button type="button" class="play" id="playBtn">▶ 讓水流動</button>
       <span id="periodLabel" class="meta"></span>
     </div>
@@ -241,37 +257,37 @@
         <div class="rank-list" id="rankList"></div>
       </aside>
       <section class="panel chart-wrap">
-        <div class="legend">
+        <div class="legend" id="legend">
           <span><i class="red"></i>紅＝近5日股價上漲</span>
           <span><i class="green"></i>綠＝近5日股價下跌</span>
-          <span>淡影＝上一天位置（看出移動）</span>
+          <span>位置每幀插值（順暢移動）</span>
         </div>
         <div class="chart" id="chart" aria-label="錢怎麼流">
           <div class="water-layer"></div>
           <div class="grid"></div>
-          <span class="quadrant q1">水出去變少</span>
-          <span class="quadrant q2">水進來變急</span>
-          <span class="quadrant q3">水出去變急</span>
-          <span class="quadrant q4">水進來變緩</span>
-          <span class="axis-label north">水流變急 ↑</span>
-          <span class="axis-label west">← 水往外流</span>
-          <span class="axis-label east">水往裡流 →</span>
+          <span class="quadrant q1" id="q1">水出去變少</span>
+          <span class="quadrant q2" id="q2">水進來變急</span>
+          <span class="quadrant q3" id="q3">水出去變急</span>
+          <span class="quadrant q4" id="q4">水進來變緩</span>
+          <span class="axis-label north" id="axisN">水流變急 ↑</span>
+          <span class="axis-label west" id="axisW">← 水往外流</span>
+          <span class="axis-label east" id="axisE">水往裡流 →</span>
           <div id="trails"></div>
           <div id="bubbles"></div>
         </div>
         <div class="playback">
-          <input id="timeline" type="range" min="0" max="4" step="1" value="4" aria-label="回放交易日" />
+          <input id="timeline" type="range" min="0" max="4" step="0.01" value="4" aria-label="回放交易日" />
           <span class="day-chip" id="chartDate">—</span>
         </div>
         <div class="detail" id="detail">
-          <div class="stat"><div class="k">這一天的水</div><div class="v" id="dDaily">—</div></div>
-          <div class="stat"><div class="k">近5日累計</div><div class="v" id="dRoll">—</div></div>
-          <div class="stat"><div class="k">比前一段多／少</div><div class="v" id="dMom">—</div></div>
-          <div class="stat"><div class="k">近5日股價</div><div class="v" id="dRet">—</div></div>
+          <div class="stat"><div class="k" id="kDaily">這一天的水</div><div class="v" id="dDaily">—</div></div>
+          <div class="stat"><div class="k" id="kRoll">近5日累計</div><div class="v" id="dRoll">—</div></div>
+          <div class="stat"><div class="k" id="kMom">比前一段多／少</div><div class="v" id="dMom">—</div></div>
+          <div class="stat"><div class="k" id="kRet">近5日股價</div><div class="v" id="dRet">—</div></div>
         </div>
       </section>
     </div>
-    <p class="foot">這是觀察工具，不是投資建議。數字單位是「億元」。</p>
+    <p class="foot">這是觀察工具，不是投資建議。資金單位「億元」；成交熱度同。紅漲綠跌。</p>
     <p class="err" id="err" hidden></p>
   </div>
 
@@ -280,20 +296,94 @@
   (async function () {
     const M = window.FundFloModel;
     const $ = (id) => document.getElementById(id);
+    const BASE_MS = 4000;
+    const FINAL_HOLD_MS = 1600;
+
     const fmtYi = (v) => v == null || !Number.isFinite(v) ? '—' : ((v >= 0 ? '+' : '') + v.toFixed(2) + ' 億');
+    const fmtYiPlain = (v) => v == null || !Number.isFinite(v) ? '—' : (v.toFixed(2) + ' 億');
     const fmtPct = (v) => v == null || !Number.isFinite(v) ? '—' : ((v >= 0 ? '+' : '') + v.toFixed(2) + '%');
     const cls = (v) => (v > 0 ? 'up' : v < 0 ? 'down' : '');
 
     let mode = 'foreign';
     let frame = 4;
+    let frameMax = 4;
     let selected = null;
     let stocks = [];
     let dates = [];
-    let playing = null;
+    let playing = false;
     let snapshotOnly = false;
+    let last = performance.now();
+    let hold = 0;
+    let scrubbing = false;
     const nodes = new Map();
     const trails = new Map();
     const prevPos = new Map();
+
+    const flowModes = new Set(['foreign', 'etf', 'combined']);
+
+    function syncDirectionOptions() {
+      const sel = $('direction');
+      const cur = sel.value;
+      if (mode === 'turnover') {
+        sel.innerHTML = [
+          '<option value="turnover">成交金額</option>',
+          '<option value="surge">成交增溫</option>',
+          '<option value="share">市場占比</option>',
+        ].join('');
+        sel.value = ['turnover', 'surge', 'share'].includes(cur) ? cur : 'turnover';
+        $('directionLabel').childNodes[0].textContent = '排行 ';
+      } else {
+        sel.innerHTML = [
+          '<option value="both">兩邊都看</option>',
+          '<option value="buy">進來最多</option>',
+          '<option value="sell">出去最多</option>',
+        ].join('');
+        sel.value = ['both', 'buy', 'sell'].includes(cur) ? cur : 'both';
+        $('directionLabel').childNodes[0].textContent = '看哪邊 ';
+      }
+    }
+
+    function syncAxisCopy() {
+      const heat = mode === 'turnover';
+      $('chart').classList.toggle('turnover-mode', heat);
+      if (heat) {
+        $('q1').textContent = '下跌・降溫';
+        $('q2').textContent = '上漲・增溫';
+        $('q3').textContent = '下跌・增溫';
+        $('q4').textContent = '上漲・降溫';
+        $('axisN').textContent = '當日股價上漲 ↑';
+        $('axisW').textContent = '← 成交降溫';
+        $('axisE').textContent = '成交增溫 →';
+        $('disc').innerHTML = '<strong>成交熱度。</strong>橫軸＝成交金額相對前5日平均的增溫／降溫；縱軸＝當日股價漲跌；泡泡愈大＝當日成交金額愈大。顏色：<span class="up">紅＝近5日股價上漲</span>／<span class="down">綠＝下跌</span>。';
+        $('riverNetK').textContent = '畫面成交合計';
+        $('riverMomK').textContent = '平均增溫';
+        $('riverMomHint').textContent = '成交相對前5日平均';
+        $('kDaily').textContent = '當日成交金額';
+        $('kRoll').textContent = '前5日平均';
+        $('kMom').textContent = '成交增溫';
+        $('kRet').textContent = '近5日股價';
+        $('rankTitle').textContent = '成交熱度排行';
+      } else {
+        $('q1').textContent = '水出去變少';
+        $('q2').textContent = '水進來變急';
+        $('q3').textContent = '水出去變急';
+        $('q4').textContent = '水進來變緩';
+        $('axisN').textContent = '水流變急 ↑';
+        $('axisW').textContent = '← 水往外流';
+        $('axisE').textContent = '水往裡流 →';
+        const tag = mode === 'etf' ? '主動式 ETF' : mode === 'combined' ? '外資＋主動式 ETF' : '外資';
+        $('disc').innerHTML = '<strong>把每天的錢想成水。</strong>泡泡愈大＝近幾天' + tag + '流進來（或出去）愈多；往右＝水進來，往上＝水流比前一段更快。顏色：<span class="up">紅＝股價這幾天上漲</span>／<span class="down">綠＝下跌</span>。';
+        $('riverNetK').textContent = '畫面上的水（排行合計）';
+        $('riverMomK').textContent = '今天比前一段';
+        $('riverMomHint').textContent = '水變大／變小（動能）';
+        $('kDaily').textContent = '這一天的水';
+        $('kRoll').textContent = '近5日累計';
+        $('kMom').textContent = '比前一段多／少';
+        $('kRet').textContent = '近5日股價';
+        $('rankTitle').textContent =
+          mode === 'etf' ? '主動式ETF排行' : mode === 'combined' ? '綜合水流排行' : '外資水流排行';
+      }
+    }
 
     async function loadData() {
       const tries = [
@@ -331,16 +421,23 @@
           const foreign = s.foreign_flow_yi;
           const etf = s.etf_flow_yi || 0;
           const dailyF = (s.rolling_foreign_5d_yi != null) ? s.rolling_foreign_5d_yi / 5 : foreign;
-          const dailyC = (s.rolling_combined_5d_yi != null) ? s.rolling_combined_5d_yi / 5 : (foreign || 0) + etf;
+          const dailyE = (s.rolling_etf_5d_yi != null) ? s.rolling_etf_5d_yi / 5 : etf;
           const days = [];
           for (let i = 0; i < 6; i++) {
             days.push({
               date: dates[0],
               foreign_flow_yi: dailyF,
-              etf_flow_yi: dailyC - (dailyF || 0),
+              etf_flow_yi: dailyE,
               close: s.close || 100,
               adjustedClose: s.close || 100,
               shares: s.shares,
+              amount: s.amount,
+              average5: s.average5,
+              change_pct: s.change_pct ?? s.turnover_change,
+              turnover_change: s.turnover_change ?? s.change_pct,
+              market_share: s.market_share,
+              change: s.daily_ret ?? s.change,
+              cumulative_return: s.cumulative_return ?? s.rolling_ret_5d,
             });
           }
           days[5] = {
@@ -350,6 +447,13 @@
             shares: s.shares,
             close: s.close,
             adjustedClose: s.close,
+            amount: s.amount,
+            average5: s.average5,
+            change_pct: s.change_pct ?? s.turnover_change,
+            turnover_change: s.turnover_change ?? s.change_pct,
+            market_share: s.market_share,
+            change: s.daily_ret,
+            cumulative_return: s.cumulative_return ?? s.rolling_ret_5d,
           };
           return { id: s.code, code: s.code, name: s.name, days, _pre: s };
         });
@@ -358,27 +462,53 @@
       }
 
       const minLen = Math.min(...stocks.map((s) => s.days.length));
-      const frameMax = Math.max(0, minLen - 1 - M.WINDOW);
+      frameMax = Math.max(0, minLen - 1 - M.WINDOW);
       $('timeline').max = String(frameMax);
       $('timeline').value = String(frameMax);
       frame = frameMax;
 
       const nDays = dates.length || minLen;
-      $('meta').textContent = `${doc.meta?.date || dates[dates.length - 1] || ''} · ${stocks.length} 檔 · ${nDays} 個交易日可回放 · ${src.replace('data/fundflo/','')}`;
+      const etfs = (doc.meta?.active_etfs_used || []).join('、') || '—';
+      $('meta').textContent = `${doc.meta?.date || dates[dates.length - 1] || ''} · ${stocks.length} 檔 · ${nDays} 日可回放 · ETF:${etfs} · ${src.replace('data/fundflo/','')}`;
       if (snapshotOnly) $('snapWarn').classList.add('show');
       return { frameMax, src, meta: doc.meta };
     }
 
-    function currentRanked() {
+    function frameIndex() {
+      return Math.max(0, Math.min(frameMax, Math.floor(frame + 1e-6)));
+    }
+
+    function interpolated(stock) {
+      const from = frameIndex();
+      const to = Math.min(frameMax, from + 1);
+      const t = frame - Math.floor(frame);
+      const a = M.state(stock, from, mode);
+      const b = M.state(stock, to, mode);
+      return M.interpolateState(a, b, t);
+    }
+
+    function currentRanked(atFrame) {
       const count = Number($('count').value) || 15;
       const direction = $('direction').value;
-      return M.ranked(stocks, frame, count, direction, mode);
+      const f = atFrame == null ? frameIndex() : atFrame;
+      return M.ranked(stocks, f, count, direction, mode);
     }
 
     function paintRank() {
       const rows = currentRanked();
+      const heat = mode === 'turnover';
       $('rankList').innerHTML = rows.map(({ stock, state: st }) => {
         const ret = st.rollingRet ?? st.rolling_ret;
+        if (heat) {
+          return `<div class="rank-item ${selected === stock.code ? 'active' : ''}" data-code="${stock.code}">
+            <div><div class="code">${stock.code} ${stock.name}</div>
+            <div class="name">增溫 ${fmtPct(st.turnoverChange ?? st.turnover_change)} · 占比 ${fmtPct(st.marketShare ?? st.market_share)}</div></div>
+            <div class="vals">
+              <div>${fmtYiPlain(st.rolling)}</div>
+              <div class="${cls(ret)}">${fmtPct(ret)}</div>
+            </div>
+          </div>`;
+        }
         return `<div class="rank-item ${selected === stock.code ? 'active' : ''}" data-code="${stock.code}">
           <div><div class="code">${stock.code} ${stock.name}</div><div class="name">這天 ${fmtYi(st.dailyFlow ?? st.daily_flow)}</div></div>
           <div class="vals">
@@ -388,49 +518,74 @@
         </div>`;
       }).join('');
       $('rankList').querySelectorAll('.rank-item').forEach((el) => {
-        el.onclick = () => { selected = el.dataset.code; paint(); };
+        el.onclick = () => { selected = el.dataset.code; paint(true); };
       });
       if (!selected && rows[0]) selected = rows[0].stock.code;
     }
 
     function paintRiver(rows) {
+      const heat = mode === 'turnover';
       let net = 0, mom = 0, n = 0;
       for (const { state: st } of rows) {
-        if (Number.isFinite(st.rolling)) { net += st.rolling; n++; }
-        if (Number.isFinite(st.momentum)) mom += st.momentum;
+        if (heat) {
+          if (Number.isFinite(st.rolling)) { net += st.rolling; n++; }
+          if (Number.isFinite(st.turnoverChange ?? st.turnover_change)) {
+            mom += (st.turnoverChange ?? st.turnover_change);
+          }
+        } else {
+          if (Number.isFinite(st.rolling)) { net += st.rolling; n++; }
+          if (Number.isFinite(st.momentum)) mom += st.momentum;
+        }
       }
       const elNet = $('riverNet');
-      elNet.textContent = fmtYi(n ? net : null);
-      elNet.className = 'v ' + cls(net);
+      elNet.textContent = heat ? fmtYiPlain(n ? net : null) : fmtYi(n ? net : null);
+      elNet.className = 'v ' + (heat ? '' : cls(net));
       const elMom = $('riverMom');
-      elMom.textContent = fmtYi(n ? mom : null);
+      elMom.textContent = heat ? fmtPct(n ? mom / Math.max(n, 1) : null) : fmtYi(n ? mom : null);
       elMom.className = 'v ' + cls(mom);
       const wave = $('riverWave');
-      wave.classList.toggle('out', net < 0);
-      $('riverHint').textContent = net >= 0 ? '畫面裡整體水在進來' : '畫面裡整體水在出去';
+      wave.classList.toggle('out', !heat && net < 0);
+      $('riverHint').textContent = heat
+        ? '排行檔的成交金額加總'
+        : (net >= 0 ? '畫面裡整體水在進來' : '畫面裡整體水在出去');
     }
 
     function paintBubbles() {
-      const rows = currentRanked();
+      const idx = frameIndex();
+      const rows = currentRanked(idx);
+      // Use interpolated values for positions; roster from integer frame
+      const unionCodes = new Set(rows.map((r) => r.stock.code));
+      // also include next frame roster for cross-fade motion
+      for (const r of currentRanked(Math.min(frameMax, idx + 1))) unionCodes.add(r.stock.code);
+      const union = stocks.filter((s) => unionCodes.has(s.code));
+
       paintRiver(rows);
-      const sc = M.scales(rows.map((r) => r.stock), mode, [frame]);
+      const sc = M.scales(
+        rows.map((r) => r.stock),
+        mode,
+        [idx, Math.min(frameMax, idx + 1)].filter((v, i, a) => a.indexOf(v) === i)
+      );
       const box = $('bubbles');
       const trailBox = $('trails');
-      const keep = new Set(rows.map((r) => r.stock.code));
+      const keep = unionCodes;
       for (const [code, el] of nodes) {
         if (!keep.has(code)) { el.remove(); nodes.delete(code); prevPos.delete(code); }
       }
       for (const [code, el] of trails) {
         if (!keep.has(code)) { el.remove(); trails.delete(code); }
       }
-      rows.forEach(({ stock, state: st }) => {
+
+      const heat = mode === 'turnover';
+      for (const stock of union) {
+        const st = interpolated(stock);
+        if (!st || !Number.isFinite(st.rolling)) continue;
         let el = nodes.get(stock.code);
         if (!el) {
           el = document.createElement('button');
           el.className = 'bubble';
           el.type = 'button';
           el.innerHTML = '<strong></strong><span class="bubble-return"></span><span class="bubble-value"></span>';
-          el.onclick = () => { selected = stock.code; paint(); };
+          el.onclick = () => { selected = stock.code; paint(true); };
           box.appendChild(el);
           nodes.set(stock.code, el);
         }
@@ -441,20 +596,27 @@
           trailBox.appendChild(trail);
           trails.set(stock.code, trail);
         }
-        const x = M.normalize(st.rolling, sc.x);
-        const y = M.normalize(st.momentum, sc.y);
+        const xVal = st.flow ?? st.rolling;
+        const yVal = st.momentum;
+        const x = M.normalize(xVal || 0, sc.x);
+        const y = M.normalize(yVal || 0, sc.y);
         const left = 50 + x * 42;
         const top = 50 - y * 42;
         const size = 48 + Math.sqrt(Math.abs(st.rolling) / Math.max(sc.size, 1e-6)) * 56;
         const ret = st.rollingRet ?? st.rolling_ret;
         const color = (ret == null || ret >= 0) ? 'rgba(248,113,113,.82)' : 'rgba(34,197,94,.82)';
         const prev = prevPos.get(stock.code);
-        if (prev) {
+        if (prev && !playing) {
           trail.style.left = prev.left + '%';
           trail.style.top = prev.top + '%';
           trail.style.width = trail.style.height = Math.max(18, prev.size * 0.55) + 'px';
           trail.style.background = prev.color;
-          trail.style.opacity = '0.28';
+        } else if (prev && playing) {
+          trail.style.left = prev.left + '%';
+          trail.style.top = prev.top + '%';
+          trail.style.width = trail.style.height = Math.max(14, prev.size * 0.4) + 'px';
+          trail.style.background = prev.color;
+          trail.style.opacity = '0.18';
         }
         el.style.left = left + '%';
         el.style.top = top + '%';
@@ -463,33 +625,43 @@
         el.classList.toggle('active', selected === stock.code);
         el.querySelector('strong').textContent = stock.name;
         el.querySelector('.bubble-return').textContent = fmtPct(ret);
-        el.querySelector('.bubble-value').textContent = (st.rolling >= 0 ? '+' : '') + (Number.isFinite(st.rolling) ? st.rolling.toFixed(1) : '—');
+        el.querySelector('.bubble-value').textContent = heat
+          ? ((Number.isFinite(st.rolling) ? st.rolling.toFixed(1) : '—') + '億')
+          : ((st.rolling >= 0 ? '+' : '') + (Number.isFinite(st.rolling) ? st.rolling.toFixed(1) : '—'));
         prevPos.set(stock.code, { left, top, size, color });
-      });
+      }
     }
 
     function paintDetail() {
       const stock = stocks.find((s) => s.code === selected);
       if (!stock) return;
-      const st = M.state(stock, frame, mode);
+      const st = M.state(stock, frameIndex(), mode);
       if (!st) {
         $('dDaily').textContent = '—';
         return;
       }
-      const set = (id, v, isPct) => {
+      const heat = mode === 'turnover';
+      const set = (id, v, isPct, plain) => {
         const el = $(id);
-        el.textContent = isPct ? fmtPct(v) : fmtYi(v);
-        el.className = 'v ' + cls(v);
+        el.textContent = isPct ? fmtPct(v) : (plain ? fmtYiPlain(v) : fmtYi(v));
+        el.className = 'v ' + ((heat && !isPct && plain) ? '' : cls(v));
       };
-      set('dDaily', st.dailyFlow ?? st.daily_flow, false);
-      set('dRoll', st.rolling, false);
-      set('dMom', st.momentum, false);
-      set('dRet', st.rollingRet ?? st.rolling_ret, true);
+      if (heat) {
+        set('dDaily', st.rolling, false, true);
+        set('dRoll', st.average5, false, true);
+        set('dMom', st.turnoverChange ?? st.turnover_change, true, false);
+        set('dRet', st.rollingRet ?? st.rolling_ret, true, false);
+      } else {
+        set('dDaily', st.dailyFlow ?? st.daily_flow, false, false);
+        set('dRoll', st.rolling, false, false);
+        set('dMom', st.momentum, false, false);
+        set('dRet', st.rollingRet ?? st.rolling_ret, true, false);
+      }
     }
 
     function paintDate() {
       const sample = stocks[0];
-      const end = frame + M.WINDOW;
+      const end = frameIndex() + M.WINDOW;
       const dt = sample?.days?.[end]?.date || dates[Math.min(end, dates.length - 1)] || '';
       $('chartDate').textContent = dt;
       $('riverDay').textContent = dt || '—';
@@ -498,14 +670,43 @@
       const period = startDt && dt ? `${startDt}～${dt}` : '';
       $('periodLabel').textContent = period ? `統計 ${period}` : '';
       $('riverPeriod').textContent = period ? `近5日窗：${period}` : '拖時間軸看每天變';
-      $('rankTitle').textContent = mode === 'combined' ? '綜合水流排行' : '外資水流排行';
     }
 
-    function paint() {
+    function paint(full) {
       paintDate();
-      paintRank();
+      if (full !== false) paintRank();
       paintBubbles();
       paintDetail();
+      $('timeline').value = String(frame);
+    }
+
+    function tick(now) {
+      const elapsed = Math.min(now - last, 150);
+      last = now;
+      if (playing && !scrubbing && !snapshotOnly) {
+        const before = frameIndex();
+        const speed = Number($('speed').value) || 1;
+        if (frame >= frameMax - 1e-6) {
+          hold += elapsed;
+          if (hold >= FINAL_HOLD_MS) {
+            frame = 0;
+            hold = 0;
+            paint(true);
+          } else {
+            paintBubbles();
+          }
+        } else {
+          frame = Math.min(frameMax, frame + (elapsed * speed) / BASE_MS);
+          paintBubbles();
+          if (before !== frameIndex()) {
+            paintRank();
+            paintDetail();
+            paintDate();
+          }
+        }
+        $('timeline').value = String(frame);
+      }
+      requestAnimationFrame(tick);
     }
 
     document.querySelectorAll('.mode-tabs button').forEach((btn) => {
@@ -513,15 +714,23 @@
         document.querySelectorAll('.mode-tabs button').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         mode = btn.dataset.mode;
-        paint();
+        syncDirectionOptions();
+        syncAxisCopy();
+        paint(true);
       };
     });
-    $('direction').onchange = paint;
-    $('count').onchange = paint;
-    $('timeline').oninput = () => { frame = Number($('timeline').value); paint(); };
+    $('direction').onchange = () => paint(true);
+    $('count').onchange = () => paint(true);
+    $('speed').onchange = () => { /* honored in tick */ };
+    $('timeline').oninput = () => {
+      scrubbing = true;
+      frame = Number($('timeline').value);
+      paint(true);
+    };
+    $('timeline').onchange = () => { scrubbing = false; };
     $('playBtn').onclick = () => {
       if (playing) {
-        clearInterval(playing); playing = null;
+        playing = false;
         $('playBtn').textContent = '▶ 讓水流動';
         $('playBtn').classList.remove('playing');
         return;
@@ -530,25 +739,25 @@
         $('snapWarn').classList.add('show');
         return;
       }
+      if (frame >= frameMax - 1e-6) frame = 0;
+      playing = true;
+      hold = 0;
+      last = performance.now();
       $('playBtn').textContent = '⏸ 先停一下';
       $('playBtn').classList.add('playing');
-      playing = setInterval(() => {
-        const max = Number($('timeline').max);
-        frame = frame >= max ? 0 : frame + 1;
-        $('timeline').value = String(frame);
-        paint();
-      }, 750);
     };
 
     try {
       await loadData();
-      paint();
-      // gentle auto-demo once if multi-day
-      if (!snapshotOnly && Number($('timeline').max) >= 2) {
+      syncDirectionOptions();
+      syncAxisCopy();
+      paint(true);
+      requestAnimationFrame(tick);
+      if (!snapshotOnly && frameMax >= 2) {
         setTimeout(() => {
           if (!playing) $('playBtn').click();
-          setTimeout(() => { if (playing) $('playBtn').click(); }, 750 * 6);
-        }, 600);
+          setTimeout(() => { if (playing) $('playBtn').click(); }, BASE_MS * 3);
+        }, 500);
       }
     } catch (e) {
       $('err').hidden = false;
