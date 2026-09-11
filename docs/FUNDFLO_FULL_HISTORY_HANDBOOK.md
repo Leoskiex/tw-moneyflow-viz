@@ -1,221 +1,147 @@
 # FundFlo／台股資金流 — 全歷史整理手冊（給本地 agent）
 
-> 寫給要在 **Mac／本地** 把「已下載的 raw」整理成可回放、可研究的 FundFlo 資料的 agent。  
-> 日期基準：2026-09-11（Asia/Taipei）。  
-> 相關契約：`docs/FUNDFLO_CONTRACT.md`、總交接：`docs/LOCAL_AGENT_HANDOFF.md`。
+> 寫給要在 **Mac／本地／有 raw 的環境** 把「已下載的 raw」整理成可回放、可研究的 FundFlo 資料的 agent。  
+> 日期基準：2026-09-11（Asia/Taipei）· **rev2**（主動 ETF／UI 補齊後更新）。  
+> 相關：`docs/FUNDFLO_CONTRACT.md`、`docs/ACTIVE_ETF_HOLDINGS.md`、`docs/LOCAL_AGENT_HANDOFF.md`。
 
 ---
 
-## 0. 先回答：「為什麼只有 40／60 天？」
+## 0. 先回答：「為什麼只有 30／40／60 天？」
 
 **不是沒整理。** 三層資料狀態不同：
 
-| 層 | 現況（box 實測 2026-09-11） | 說明 |
-|----|------------------------------|------|
-| **raw**（原始下載） | **~951 個交易日** `2023-01-02` → `2026-09-10` | TWSE／TPEx 日目錄已在 |
+| 層 | 現況（2026-09-11 rev2） | 說明 |
+|----|-------------------------|------|
+| **raw**（原始下載） | **~951 個交易日** `2023-01-02` → `2026-09-10` | TWSE／TPEx 日目錄已在（有 raw 的機器） |
 | **curated**（日快照整理） | **~651 天** `2024-01-02` → `2026-09-09` | 2024 起已整批 curate；**尚未含 2023** |
-| **FundFlo `series_top.json`**（水流頁回放） | **刻意壓成 `keep_dates=40`**（曾用 `--max-dates 60` 重算） | **不是缺資料**，是 Pages／瀏覽器體積壓縮 |
+| **FundFlo `series_top.json`** | ETL 預設 **`keep_dates` 約 36–40**；頁面開檔只播 **`PLAYBACK_DAYS=30`** | **不是缺資料**，是壓縮＋UI 窗 |
 | **FundFlo `by_date/`** | 日更常 **skip**（slim） | 完整逐日檔可選重建，體積大 |
 
 所以：
 
 1. **故事／研究用的 curated** ≈ 2024 至今，已有。  
-2. **「錢怎麼流」頁只播最近 40 天**，因為 `etl/build_fundflo_features.py` 的 `_compact_series(..., keep_dates=40)`。  
-3. **2023 raw 已下，但 curated／FundFlo 還沒吃 2023**（`curate_range.py` 預設 `START=2024-01-01`）。
-
-本地 agent 的任務＝依下方步驟決定要「拉長回放窗」還是「補 2023 curated」還是「產出研究用全曆史 FundFlo」。
+2. **「錢怎麼流」頁開檔播最近 30 日**（`fund-flow.html` 的 `PLAYBACK_DAYS`）；底層 series 需 ≥ 約 36 日（WINDOW=5）。  
+3. **2023 raw 已下，但 curated／FundFlo 還沒吃 2023**（`curate_range.py` 預設 `START=2024-01-01`）。  
+4. **Mac 上的 8777 複本常缺 `etl/`＋`raw/`** → 拉長 `keep_dates` 的重跑要在 **有 curated＋raw 的環境**（box／本地完整樹）做，再 slim sync 回 Mac／Pages。
 
 ---
 
 ## 1. 目錄地圖（勿搞混）
 
-假設本地與 box 對齊的兩棵樹：
-
 ```
 twse-trading/                 # ETL／raw／腳本
-  raw/YYYY-MM-DD/             # 原始日資料（勿 Path.iterdir 掃整棵）
+  raw/YYYY-MM-DD/
   raw/manifest.json
   build_curated.py
   curate_range.py
-  refresh_daily.py
-  build_regimes.py
+  refresh_daily.py            # 含非阻擋 active ETF batch → build_fundflo
+  fetch_00981a.py
+  active_etf/                 # registry＋adapters（若在 trading 樹）
+  fetch_active_etf_holdings.py
   …
 
 tw-moneyflow-viz/             # 視覺／Pages 產物
   data/curated/YYYY-MM-DD.json
-  data/curated/index.json     # ⚠ 可能過期，見 §5
+  data/curated/index.json     # 可能過期，見 §5
   data/fundflo/latest.json
   data/fundflo/series_top.json
   data/fundflo/by_date/        # 可選
+  data/etf/<code>/holdings/YYYY-MM-DD.json
+  data/etf/<code>/holdings_latest.json
   etl/build_fundflo_features.py
   etl/fundflo_model.py
-  fund-flow.html
+  etl/active_etf/*            # 若合在 viz 樹
+  fund-flow.html              # 外資｜主動式ETF｜綜合｜成交熱度；rAF 插值
   docs/FUNDFLO_CONTRACT.md
+  docs/ACTIVE_ETF_HOLDINGS.md
+  docs/FUNDFLO_FULL_HISTORY_HANDBOOK.md  # 本檔
 ```
 
-`refresh_daily.py` 會把 `tw-moneyflow-viz/etl` 加進 `sys.path` 後呼叫 `build_fundflo_features`。
+`refresh_daily.py` 把 `tw-moneyflow-viz/etl` 加進 `sys.path` 後呼叫 `build_fundflo_features`；主動 ETF batch 為非阻擋。
 
 ---
 
 ## 2. 硬規則（本地必遵守）
 
-1. **禁止**對巨大 `raw/` 用 `Path.iterdir()`／無界 `glob`（box 會掛；本地也可能極慢）。用 `ls`／明確日期迴圈。  
-2. **單位**：curated `foreign_net`＝**千張**（1 千張＝1e6 股）；FundFlo `*_yi`＝**億元**；換算 `foreign_flow_yi = foreign_net * price / 100`（見契約）。  
-3. **GitHub**：用已登入的 `gh`／`git push`，**禁止**在對話貼 `ghp_` token。  
-4. **Pages 推送**：選擇性 sync（不要一次推全量 curated／features）。日更 slim：`latest.json` + `series_top.json`；全量 `by_date/` 通常**不要**上 Pages。  
-5. UI 文案：繁中白話；故事頁禁中英混雜術語。
+1. **禁止**對巨大 `raw/` 用 `Path.iterdir()`／無界 `glob`。用 `ls`／明確日期迴圈。  
+2. **單位**：curated `foreign_net`＝**千張**；FundFlo `*_yi`＝**億元**；`foreign_flow_yi = foreign_net * price / 100`。  
+3. **GitHub**：已登入 `gh`／`git push`；**禁止**對話貼 `ghp_`。  
+4. **Pages slim**：`fund-flow.html`、`js/fundflo_model.js`、`data/fundflo/latest.json`＋`series_top.json`、`data/etf/**/holdings_latest.json`（至少統一四檔）。**不要**推全量 curated／features／`by_date/`。  
+5. UI：繁中白話；故事頁禁中英混雜術語。  
+6. **00981A 主線故事權重不改**；其它主動 ETF 只補強 `etf_flow_yi`。
 
 ---
 
-## 3. 你要達成的三種目標（選一種或依序做）
+## 3. 三種目標
 
-### 目標 A — 只把「水流回放」拉長（最常見）
+### 目標 A — 拉長「水流」回放（§6 預設）
 
-**前提**：curated 2024→今已齊。  
-**做**：重跑 FundFlo，**不要** `--max-dates`，並把 `keep_dates` 調大（例如 120／250），或另存研究檔。
+把 ETL `keep_dates` → **120**（Pages）或 **250**（本機研究），**無** `--max-dates`，`--skip-by-date` 可保留。  
+成功：`series_top.meta.keep_dates` 與 sample `days` 長度一致；檔案 MB 可接受再 push。
 
-### 目標 B — 補 2023 curated（raw 已有、整理層缺）
+### 目標 B — 補 2023 curated
 
-**前提**：`raw/2023-*` 存在。  
-**做**：把 `curate_range.py` 的起始日改成 `2023-01-01`（或加 `--start`），跑完再跑 FundFlo。
+`curate_range` 起始 `2023-01-01` → 重寫 index → 級聯 regimes／features／FundFlo／screens。
 
-### 目標 C — 研究用「全曆史 FundFlo」（本機磁碟）
+### 目標 C — 本機全曆史 FundFlo
 
-**做**：全量 `build_fundflo_features.py`（無 `--max-dates`），**寫 `by_date/`**（不要 `--skip-by-date`），`series_top` 可另存 `series_research.json`（keep 全部或 250+）。  
-**不要**把完整 `by_date/` 推進 GitHub Pages。
+全量跑、寫 `by_date/`；**勿**把完整 `by_date/` 推 Pages。
 
 ---
 
 ## 4. 步驟詳解
 
-### 4.1 盤點現況（先做這個，寫進回報）
-
-在 `tw-moneyflow-viz`／`twse-trading` 根目錄執行（用 shell `ls`，不要 Python `iterdir`）：
+### 4.1 盤點
 
 ```bash
-# raw 天數與起迄
 ls twse-trading/raw | rg '^[0-9]{4}-' | sort | head -2
 ls twse-trading/raw | rg '^[0-9]{4}-' | sort | tail -2
-ls twse-trading/raw | rg -c '^[0-9]{4}-'
-
-# curated 天數與起迄
-ls tw-moneyflow-viz/data/curated | rg '^[0-9]{4}-.*\.json$' | sort | head -2
-ls tw-moneyflow-viz/data/curated | rg '^[0-9]{4}-.*\.json$' | sort | tail -2
 ls tw-moneyflow-viz/data/curated | rg -c '^[0-9]{4}-.*\.json$'
-
-# FundFlo meta
 python3 - <<'PY'
 import json
 from pathlib import Path
 p=Path('tw-moneyflow-viz/data/fundflo/series_top.json')
-d=json.loads(p.read_text())
-m=d['meta']; s=d['series'][0]
+d=json.loads(p.read_text()); m=d['meta']; s=d['series'][0]
 print('keep_dates', m.get('keep_dates'), 'date', m.get('date'),
       'n_series', len(d['series']),
       'sample_days', len(s['days']), s['days'][0]['date'], '->', s['days'][-1]['date'])
 PY
+ls tw-moneyflow-viz/data/etf/*/holdings_latest.json
 ```
 
-**期望**：raw 含 2023；curated 從 2024-01-02；series_top `keep_dates` 預設 40。
+### 4.2 重寫 curated index（消「只有三月」）
 
-### 4.2（可選）補 curated — 含 2023 或補洞
+用 `ls` 列出全部 `YYYY-MM-DD.json`，排序後寫回 `data/curated/index.json`（勿信過期 index）。
 
-腳本：`twse-trading/curate_range.py`  
-預設 `START = "2024-01-01"`。
+### 4.3 重建 FundFlo（拉長 keep_dates）
 
-**補 2023：**
-
-1. 改 `START = "2023-01-01"`，或加 CLI（若本地已 fork 出 `--start`）：  
-   `python3 curate_range.py --start 2023-01-01`  
-2. 確認 `build_curated.RAW_DIR`／`OUT_DIR` 指到你的本地路徑。  
-3. 執行（可先 dry 看 log）：
-
-```bash
-cd twse-trading
-python3 curate_range.py          # 預設只補缺／太小的檔
-# 若要重算某段：python3 curate_range.py --force   # 很慢，慎用
-```
-
-4. 成功標準：  
-   `data/curated/2023-01-*.json` 出現且單檔 ≳ 10KB；  
-   curated 日期連續性可用「raw∩交易日 − curated」列 gap。
-
-5. **重建 `data/curated/index.json`**（目前常過期，只剩近幾個月）：
-
-```bash
-# 用 ls 列出全部日期寫回 index（範例）
-python3 - <<'PY'
-import json, subprocess, re
-from pathlib import Path
-cur = Path('tw-moneyflow-viz/data/curated')  # 依本地實際路徑
-out = subprocess.check_output(['ls', str(cur)], text=True)
-dates = sorted(n[:-5] for n in out.split() if re.match(r'\d{4}-\d{2}-\d{2}\.json$', n))
-(cur/'index.json').write_text(json.dumps(dates, ensure_ascii=False, indent=2), encoding='utf-8')
-print(len(dates), dates[0], '->', dates[-1])
-PY
-```
-
-### 4.3 重建 FundFlo（核心）
+1. 改 `etl/build_fundflo_features.py`：`_compact_series` 預設與 `write_outputs` 呼叫／meta 的 `keep_dates`／`top_n` **兩處一致**。  
+2. 建議 Pages：`keep_dates=120`, `top_n=50`。  
+3. 執行（路徑依機器）：
 
 ```bash
 cd tw-moneyflow-viz
-
-# A) 給 Pages／水流頁：長窗 series_top，不寫 by_date
-#    先把 etl/build_fundflo_features.py 內 keep_dates/top_n 調到目標
-#    建議 Pages：keep_dates=120, top_n=50（約數十 MB 內）
-#    建議本機研究回放：keep_dates=250 或 =全部 curated 天數
 python3 etl/build_fundflo_features.py \
   --skip-by-date \
   --raw-dir /絕對路徑/twse-trading/raw
-
-# B) 本機研究全量（慢、佔磁碟）
-python3 etl/build_fundflo_features.py \
-  --raw-dir /絕對路徑/twse-trading/raw
-  # 不要加 --skip-by-date、不要加 --max-dates
+# 不要加 --max-dates
 ```
 
-**改 keep_dates 的位置**（兩處常數要一致）：
+4. 煙測 `fund-flow.html`（開檔約 30 日回放；拖軸可看 series 全長）。  
+5. Slim sync Pages＋8777。
 
-- `_compact_series(..., keep_dates=40, top_n=50)` 預設參數  
-- `write_outputs` 裡呼叫與 meta 寫入的 `keep_dates`／`top_n`
+### 4.4 主動 ETF（已落地，細節見 ACTIVE_ETF_HOLDINGS.md）
 
-**禁止**為了「快」長期用 `--max-dates 60` 當正式產物（那只會讓回放又變短）。`--max-dates` 僅供除錯。
+- 路徑：`data/etf/<lowercase_code>/holdings/`  
+- 統一啟用：`00981A`（priority 1）＋`00403A`／`00411A`／`00988A`（priority 2）  
+- Registry 另有 00980A／00982A／… 登錄；來源優先投信官網／PCF／ezMoney  
+- **新檔若只有 1 個持股日 → 隔日再抓才有 share 差分 → `etf_flow_yi` 才非零**；00981A 歷史差分仍可用  
+- `build_fundflo` 聚合：各檔 consecutive share 差分 × price / 1e8 加總為 `etf_flow_yi`
 
-**成功標準：**
+### 4.5 screens／過期 caveat（仍欠）
 
-```text
-series_top.meta.keep_dates == 你設的值
-sample stock days 長度 ≈ keep_dates
-meta.date == 最新 curated 日
-price_hits >> price_miss（有接 MI_INDEX raw 均價／收盤）
-fund-flow.html 載入後可「讓水流動」且泡泡明顯搬家
-```
-
-### 4.4（建議）同步 regimes／日更狀態
-
-若補了 2023 或大段 curated：
-
-```bash
-cd twse-trading
-python3 build_regimes.py    # 需涵蓋全部 curated 日（曾有只從 2026-03 標的問題）
-# 然後視需要 screens / digest；日更可用 refresh_daily.py
-```
-
-### 4.5 推 GitHub Pages（選擇性）
-
-只推：
-
-- `fund-flow.html`、`js/fundflo_model.js`
-- `data/fundflo/latest.json`、`data/fundflo/series_top.json`
-- 必要時 `etl/build_fundflo_features.py`、`docs/*`
-
-**不要推**：完整 `data/curated/*`、完整 `data/fundflo/by_date/*`、features／outcomes  bulk。
-
-```bash
-# 在已認證的 gh-pages 工作複本
-git add … && git commit -m "…" && git push origin main
-# 用 git／gh，禁止對話要 token
-```
+- `data/screens/` 仍約自 2026-01 起 → 應對齊 curated 全曆重跑  
+- lifecycle／tournament 文案若仍寫「約 60d／119 regimes」→ 清掉或重跑
 
 ---
 
@@ -223,88 +149,93 @@ git add … && git commit -m "…" && git push origin main
 
 | 坑 | 症狀 | 處理 |
 |----|------|------|
-| `keep_dates=40` | 水流頁只有 ~1–2 個月 | 調大 keep_dates 後**全量**重跑（無 max-dates） |
-| `--max-dates 60` | 以為「只有 60 天資料」 | 那是除錯參數；正式跑拿掉 |
-| `curated/index.json` 過期 | index 只有 ~122 天 | §4.2 用 ls 重寫 |
-| 日更 `write_by_date=False` | `by_date/` 很少 | 正常；研究時本機全量寫 |
-| `etf_flow_yi`≈0 | 幾乎只有 00981A | 另案：多檔主動 ETF（反向破解進行中） |
-| manifest 未前進 | curated 停在舊日 | 修 `raw/manifest.json` `latest_trade_day` 再 curate |
-| Path.iterdir on raw | agent 卡住 | 改 ls／日期列表 |
+| `keep_dates` 仍 36–40 | 底層回放短 | §4.3 → 120 |
+| `PLAYBACK_DAYS=30` | 開檔只動 30 日 | 正常；改常數或拖軸看更長 series |
+| `--max-dates 60` | 誤以為只有 60 天 | 正式跑拿掉 |
+| `curated/index.json` 過期 | 顯示只有三月起 | §4.2 |
+| Mac 缺 etl／raw | 無法在 8777 目錄重跑 | 在完整樹上跑完再 slim 拷回 |
+| 新 ETF 單日持股 | `etf_flow` 仍稀 | 隔日再 fetch |
+| 日更 skip by_date | by_date 很少 | 正常 |
+| Path.iterdir on raw | agent 卡住 | 改 ls |
 
 ---
 
-## 6. 建議預設（給本地 agent 的「直接做」清單）
+## 6. 建議預設（「直接做」清單）— §6 給有 raw 的 agent
 
-若用戶說「把歷史整理出來給水流用」且磁碟充足：
+反向破解／本地若已對過本節：
 
-1. 盤點 §4.1，回報 raw／curated／series_top 起迄。  
-2. **若只要長回放**：把 `keep_dates` → **120**（Pages）或 **250**（本機），跑  
-   `python3 etl/build_fundflo_features.py --skip-by-date --raw-dir …`（**無** max-dates）。  
-3. **若要 2023**：`curate_range` 起始改 2023-01-01 → 跑完 → 重寫 index → 再跑 FundFlo。  
-4. 煙測 `fund-flow.html` 播放。  
-5. 選擇性 push Pages（latest + series_top + html）。  
-6. 回報：新 `keep_dates`、series 天數、檔案 MB、是否含 2023。
+1. 盤點 §4.1。  
+2. **`keep_dates` → 120**，跑 `build_fundflo_features.py --skip-by-date --raw-dir …`（**無** max-dates）。  
+3. 確認 `series_top` meta＋sample days＝120；`etf_flow`／`active_etfs_used` meta 合理。  
+4. Slim push／sync：fundflo 兩檔＋`holdings_latest`＋html／js。  
+5. （可選）重寫 curated index；screens 回填；2023 curate。  
+6. 回報：keep_dates、MB、etf_flow 非零檔數、是否含 2023。
+
+> Mac-only 8777 樹：**不要**在缺 raw 時硬跑；改在 box／完整本地樹跑完再拷。
 
 ---
 
-## 7. 與「反向破解」的分工
+## 7. 與「反向破解」／AISTOCKMAP 的分工（rev2）
 
-- **反向破解**：多檔主動 ETF 頁籤、rAF 分數 frame、turnover 模式（在 `main` 上接）。  
-- **本地／本手冊**：歷史 curated／FundFlo 天數與 `series_top` 長度、2023 補齊、本機 `by_date`。  
-- 兩邊都維持：slim 日更＝`latest` + `series_top`；契約欄位不變。
+| 誰 | 負責 |
+|----|------|
+| **反向破解** | 主動 ETF registry／fetch、fund-flow 四頁籤、rAF 插值、turnover、**有 raw 時把 keep_dates→120** |
+| **AISTOCKMAP（本 agent）** | Pages／8777 slim sync、regime／故事層、交接文件、與 CMI 協作 |
+| **用戶本地 agent** | 可選：2023 curate、screens 全曆、tournament 重跑、本機 by_date |
+
+兩邊都維持：slim 日更＝`latest`＋`series_top`（＋ holdings_latest）；契約 WINDOW=5。
 
 ---
 
 ## 8. 一頁口語對用戶
 
 > 2023～現在的原始檔早就下載了；2024 到現在也整理成每日快照了。  
-> 網站上的「水流」只播最近四十天，是故意壓小檔案，不是沒整理。  
-> 若要看更長的水流或把 2023 也整理進去，照本手冊在本地跑即可。
+> 網站開檔只自動播最近約三十天，底層系列大概四十天，是故意壓小，不是沒整理。  
+> 主動 ETF 已能抓多檔（統一姊妹檔已開）；新檔要兩天持股才算得出流進流出。  
+> 若要把回放拉到約一百二十天，在有 raw 的機器照 §6 跑即可。
 
 ---
 
-## 9. 整個 moneyflow「計算層」完成度（2026-09-11 實測）
+## 9. moneyflow「計算層」完成度（2026-09-11 rev2）
 
-用戶常記得「只有三月到現在」或「六十天」——那是**早期／部分產物**的記憶，不是全部層的現況。
+### 已拉長到 2024→今（~651 交易日）
 
-### 已拉長到 2024→今（~651 交易日）的
+| 層 | 狀態 |
+|----|------|
+| curated 日 JSON | 已完成 2024-01-02 → 2026-09-09 |
+| regimes.json | 已完成 ~651 |
+| features／outcomes／signals／lifecycle by_date | 已完成 ~651 |
 
-| 層 | 起迄 | 狀態 |
-|----|------|------|
-| curated 日 JSON | 2024-01-02 → 2026-09-09 | ✅ |
-| regimes.json | 同上 ~651 | ✅（曾只有 2026-03-17 起，已重跑） |
-| features/by_date | 同上 ~651 | ✅ |
-| outcomes/by_date | 同上 ~651 | ✅ |
-| signals/by_date | 同上 ~651 | ✅ |
-| lifecycle/by_date | 同上 ~651 | ✅ |
+### UI／主動 ETF（本日已合 main）
 
-### 仍然偏短／未做完的（這才是「沒做完」）
+| 項 | 狀態 |
+|----|------|
+| fund-flow 外資／主動式ETF／綜合／成交熱度 | 已完成 |
+| rAF＋分數 frame 插值 | 已完成 |
+| `PLAYBACK_DAYS=30` | 已完成 |
+| `data/etf/*/holdings` 多檔＋統一 00981A／00403A／00411A／00988A | 抓取已落地 |
+| `etf_flow_yi` 聚合進 fundflo | 已接上；新檔差分仍稀疏（需隔日） |
 
-| 層 | 現況 | 問題 |
-|----|------|------|
-| curated **index.json** | 只有 **122** 天（2026-03-17→09-09） | 索引過期，易誤判「只有三月起」 |
-| **screens/** | **166** 天（2026-01-02→09-09） | 未回填 2024 全年 |
-| FundFlo **series_top** | **keep_dates=40** | 回放窗壓縮（見上文） |
-| FundFlo **by_date** | **63** 天（2026-06-11 起） | 日更 slim 常 skip |
-| lifecycle `latest` caveat 文字 | 仍寫「~60d」 | **文案過期**，實際 by_date 已 651 |
-| strategy tournament v1 summary | `regime_n≈119` | 舊窗殘留；未用全曆史重跑全部 scoreboard |
-| labeled_panel.csv | 日期抽樣到 ~2026-01-15 | 驗證面板可能未覆寫到最新 |
-| **2023** curated／以上各層 | raw 有、整理無 | 未做 |
-| 多檔主動 ETF → `etf_flow_yi` | 幾乎全 0 | 未做完（反向破解進行中） |
-| turnover／成交熱度模式 | 無 | 未做 |
-| rAF 分數 frame 動畫 | 尚無 | 未做 |
+### 仍然偏短／未做完
 
-### 「六十天」從哪來？
+| 層 | 現況 | 下一步 |
+|----|------|--------|
+| curated **index.json** | ~122 天（2026-03 起） | §4.2 重寫 |
+| **screens/** | ~166 天（2026-01 起） | 對齊 curated 重跑 |
+| FundFlo **series_top keep_dates** | 仍 ~36–40 | **§6 → 120**（有 raw 的環境） |
+| FundFlo **by_date** | 日更 slim | 本機研究再全寫 |
+| lifecycle／tournament 舊 caveat | ~60d／119 | 清理或重跑 |
+| **2023** curated 級聯 | 未做 | 目標 B |
+| 新 ETF 多日差分 | 多半 1 日快照 | 日更持續 fetch |
 
-早期 validation／lifecycle／action-radar 是在 **~60 個精選交易日** 上先做的；後來才把 curated／features 扩到 ~648–651。  
-**部分報告、caveat、screens、FundFlo 回放、tournament 摘要沒有全部跟著重跑**，所以你會同時看到「651 天檔案」和「60／119／三月」的說法並存。
+### 「六十天／三月」從哪來？
 
-### 本地 agent 建議優先序（計算層補齊）
+早期短樣本 validation；後來主層扩到 ~651，但 **index／screens／series_top／部分報告沒全部跟着重跑**，說法會並存。以本表「仍然偏短」為準。
 
-1. 重寫 `data/curated/index.json`（§4.2）— 立刻消除「只有三月」誤解。  
-2. 全量重跑 **screens** 覆蓋 2024-01→今（對齊 curated 日期列表）。  
-3. FundFlo：去掉 `--max-dates`，`keep_dates`→120+；本機可建全 `by_date`。  
-4. 清掉 lifecycle／scoreboard／tournament 的過期「~60d／119 regimes」caveat，必要時用 651d 重跑 tournament。  
-5. （可選）`curate_range` 起始改 2023 → 再級聯 features／outcomes／regimes／FundFlo。  
-6. 主動 ETF／turnover／rAF：交給「反向破解」與本手冊 §7 分工。
+### 優先序（rev2）
 
+1. **§6 `keep_dates→120`**（有 raw；反向破解已接）→ slim sync  
+2. 重寫 curated index  
+3. screens 全曆  
+4. 持續主動 ETF 日揭（讓姊妹檔出現差分）  
+5. （可選）2023＋tournament 重跑  
