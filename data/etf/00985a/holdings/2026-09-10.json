@@ -4,7 +4,7 @@
   "fund_code": null,
   "source": "nomura_api",
   "source_url": "https://www.nomurafunds.com.tw/ETFWEB/product-description?fundNo=00985A&tab=Shareholding",
-  "fetched_at": "2026-09-11T11:08:27+08:00",
+  "fetched_at": "2026-09-11T11:21:57+08:00",
   "meta": {
     "etf_code": "00985A",
     "nav_date": "2026-09-10",

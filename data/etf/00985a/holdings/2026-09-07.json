@@ -1,67 +1,67 @@
 {
-  "date": "2026-09-10",
+  "date": "2026-09-07",
   "etf": "00985A",
   "fund_code": null,
   "source": "nomura_api",
   "source_url": "https://www.nomurafunds.com.tw/ETFWEB/product-description?fundNo=00985A&tab=Shareholding",
-  "fetched_at": "2026-09-11T11:21:57+08:00",
+  "fetched_at": "2026-09-11T11:21:48+08:00",
   "meta": {
     "etf_code": "00985A",
-    "nav_date": "2026-09-10",
-    "aum": 10493223101.0,
-    "nav": "23.10",
-    "units": "454289000",
+    "nav_date": "2026-09-07",
+    "aum": 10599183593.0,
+    "nav": "23.38",
+    "units": "453289000",
     "n_equity": 50,
-    "weight_sum_equity": 86.24,
+    "weight_sum_equity": 88.01,
     "amount_estimated_from_aum_weight": true,
-    "search_date_tried": "2026-09-10"
+    "search_date_tried": "2026-09-07"
   },
   "holdings": [
     {
       "code": "2330",
       "name": "台灣積體電路製造",
-      "share": 637000.0,
-      "amount": 1560342275.12,
-      "weight_pct": 14.87,
-      "money_type": "NTD"
-    },
-    {
-      "code": "3711",
-      "name": "日月光投資控股",
-      "share": 706000.0,
-      "amount": 458553849.51,
-      "weight_pct": 4.37,
+      "share": 588000.0,
+      "amount": 1446788560.44,
+      "weight_pct": 13.65,
       "money_type": "NTD"
     },
     {
       "code": "2376",
       "name": "技嘉科技",
       "share": 1215000.0,
-      "amount": 427074180.21,
-      "weight_pct": 4.07,
+      "amount": 443045874.19,
+      "weight_pct": 4.18,
+      "money_type": "NTD"
+    },
+    {
+      "code": "3711",
+      "name": "日月光投資控股",
+      "share": 706000.0,
+      "amount": 438806200.75,
+      "weight_pct": 4.14,
       "money_type": "NTD"
     },
     {
       "code": "4904",
       "name": "遠傳電信",
       "share": 3832000.0,
-      "amount": 400841122.46,
-      "weight_pct": 3.82,
+      "amount": 391109874.58,
+      "weight_pct": 3.69,
       "money_type": "NTD"
     },
     {
       "code": "2412",
       "name": "中華電信",
       "share": 2828000.0,
-      "amount": 394545188.6,
-      "weight_pct": 3.76,
+      "amount": 390049956.22,
+      "weight_pct": 3.68,
       "money_type": "NTD"
     },
     {
       "code": "2454",
       "name": "聯發科技",
       "share": 67000.0,
-      "amount": 315846015.34,
+      "amount": 319035426.15,
       "weight_pct": 3.01,
       "money_type": "NTD"
     },
@@ -69,119 +69,127 @@
       "code": "2395",
       "name": "研華",
       "share": 444000.0,
-      "amount": 292760924.52,
-      "weight_pct": 2.79,
+      "amount": 302076732.4,
+      "weight_pct": 2.85,
       "money_type": "NTD"
     },
     {
       "code": "2383",
       "name": "台光電子材料",
       "share": 52000.0,
-      "amount": 279119734.49,
-      "weight_pct": 2.66,
+      "amount": 286177957.01,
+      "weight_pct": 2.7,
       "money_type": "NTD"
     },
     {
       "code": "6669",
       "name": "緯穎科技服務",
       "share": 114036.0,
-      "amount": 267577189.08,
-      "weight_pct": 2.55,
+      "amount": 284058120.29,
+      "weight_pct": 2.68,
       "money_type": "NTD"
     },
     {
       "code": "2317",
       "name": "鴻海精密工業",
       "share": 1021000.0,
-      "amount": 256034643.66,
-      "weight_pct": 2.44,
+      "amount": 261799834.75,
+      "weight_pct": 2.47,
+      "money_type": "NTD"
+    },
+    {
+      "code": "3037",
+      "name": "欣興電子",
+      "share": 252000.0,
+      "amount": 239541549.2,
+      "weight_pct": 2.26,
       "money_type": "NTD"
     },
     {
       "code": "6442",
       "name": "光紅建聖",
       "share": 140000.0,
-      "amount": 251837354.42,
-      "weight_pct": 2.4,
+      "amount": 238481630.84,
+      "weight_pct": 2.25,
+      "money_type": "NTD"
+    },
+    {
+      "code": "7750",
+      "name": "新代科技",
+      "share": 92000.0,
+      "amount": 218343182.02,
+      "weight_pct": 2.06,
+      "money_type": "NTD"
+    },
+    {
+      "code": "3661",
+      "name": "世芯電子",
+      "share": 53000.0,
+      "amount": 214103508.58,
+      "weight_pct": 2.02,
       "money_type": "NTD"
     },
     {
       "code": "1504",
       "name": "東元電機",
       "share": 2904000.0,
-      "amount": 204617850.47,
-      "weight_pct": 1.95,
+      "amount": 207743998.42,
+      "weight_pct": 1.96,
       "money_type": "NTD"
     },
     {
-      "code": "3037",
-      "name": "欣興電子",
-      "share": 198000.0,
-      "amount": 197272594.3,
-      "weight_pct": 1.88,
+      "code": "2345",
+      "name": "智邦科技",
+      "share": 97000.0,
+      "amount": 203504324.99,
+      "weight_pct": 1.92,
       "money_type": "NTD"
     },
     {
-      "code": "3661",
-      "name": "世芯電子",
-      "share": 47000.0,
-      "amount": 190976660.44,
-      "weight_pct": 1.82,
-      "money_type": "NTD"
-    },
-    {
-      "code": "6446",
-      "name": "藥華醫藥",
-      "share": 138000.0,
-      "amount": 182582081.96,
-      "weight_pct": 1.74,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2377",
-      "name": "微星科技",
-      "share": 1213000.0,
-      "amount": 180483437.34,
-      "weight_pct": 1.72,
-      "money_type": "NTD"
-    },
-    {
-      "code": "3017",
-      "name": "奇鋐科技",
-      "share": 52000.0,
-      "amount": 179434115.03,
-      "weight_pct": 1.71,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2891",
-      "name": "中國信託金融控股",
-      "share": 2652000.0,
-      "amount": 178384792.72,
-      "weight_pct": 1.7,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2610",
-      "name": "中華航空",
-      "share": 8783000.0,
-      "amount": 177335470.41,
-      "weight_pct": 1.69,
-      "money_type": "NTD"
-    },
-    {
-      "code": "7750",
-      "name": "新代科技",
-      "share": 80000.0,
-      "amount": 177335470.41,
-      "weight_pct": 1.69,
+      "code": "3665",
+      "name": "貿聯控股（BizLink Holding In",
+      "share": 94000.0,
+      "amount": 195024978.11,
+      "weight_pct": 1.84,
       "money_type": "NTD"
     },
     {
       "code": "2308",
       "name": "台達電子工業",
       "share": 105000.0,
-      "amount": 176286148.1,
+      "amount": 193965059.75,
+      "weight_pct": 1.83,
+      "money_type": "NTD"
+    },
+    {
+      "code": "2377",
+      "name": "微星科技",
+      "share": 1213000.0,
+      "amount": 191845223.03,
+      "weight_pct": 1.81,
+      "money_type": "NTD"
+    },
+    {
+      "code": "6446",
+      "name": "藥華醫藥",
+      "share": 138000.0,
+      "amount": 183365876.16,
+      "weight_pct": 1.73,
+      "money_type": "NTD"
+    },
+    {
+      "code": "2610",
+      "name": "中華航空",
+      "share": 8783000.0,
+      "amount": 179126202.72,
+      "weight_pct": 1.69,
+      "money_type": "NTD"
+    },
+    {
+      "code": "3017",
+      "name": "奇鋐科技",
+      "share": 52000.0,
+      "amount": 178066284.36,
       "weight_pct": 1.68,
       "money_type": "NTD"
     },
@@ -189,191 +197,183 @@
       "code": "2327",
       "name": "國巨",
       "share": 295000.0,
-      "amount": 168940891.93,
-      "weight_pct": 1.61,
+      "amount": 173826610.93,
+      "weight_pct": 1.64,
       "money_type": "NTD"
     },
     {
       "code": "2603",
       "name": "長榮海運",
       "share": 726000.0,
-      "amount": 167891569.62,
+      "amount": 169586937.49,
       "weight_pct": 1.6,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2345",
-      "name": "智邦科技",
-      "share": 80000.0,
-      "amount": 157398346.51,
-      "weight_pct": 1.5,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2881",
-      "name": "富邦金融控股",
-      "share": 1004000.0,
-      "amount": 149003768.03,
-      "weight_pct": 1.42,
       "money_type": "NTD"
     },
     {
       "code": "3491",
       "name": "昇達科技",
       "share": 107000.0,
-      "amount": 144806478.79,
-      "weight_pct": 1.38,
+      "amount": 161107590.61,
+      "weight_pct": 1.52,
       "money_type": "NTD"
     },
     {
-      "code": "3665",
-      "name": "貿聯控股（BizLink Holding In",
-      "share": 74000.0,
-      "amount": 142707834.17,
-      "weight_pct": 1.36,
+      "code": "2881",
+      "name": "富邦金融控股",
+      "share": 1004000.0,
+      "amount": 150508407.02,
+      "weight_pct": 1.42,
+      "money_type": "NTD"
+    },
+    {
+      "code": "2891",
+      "name": "中國信託金融控股",
+      "share": 2178000.0,
+      "amount": 146268733.58,
+      "weight_pct": 1.38,
       "money_type": "NTD"
     },
     {
       "code": "6488",
       "name": "環球晶圓",
       "share": 143000.0,
-      "amount": 131165288.76,
-      "weight_pct": 1.25,
+      "amount": 138849305.07,
+      "weight_pct": 1.31,
+      "money_type": "NTD"
+    },
+    {
+      "code": "8046",
+      "name": "南亞電路板",
+      "share": 125000.0,
+      "amount": 131429876.55,
+      "weight_pct": 1.24,
       "money_type": "NTD"
     },
     {
       "code": "1216",
       "name": "統一企業",
       "share": 1657000.0,
-      "amount": 124869354.9,
-      "weight_pct": 1.19,
+      "amount": 125070366.4,
+      "weight_pct": 1.18,
       "money_type": "NTD"
     },
     {
       "code": "7769",
       "name": "鴻勁精密",
       "share": 18000.0,
-      "amount": 116474776.42,
+      "amount": 117650937.88,
       "weight_pct": 1.11,
       "money_type": "NTD"
     },
     {
       "code": "2303",
       "name": "聯華電子",
-      "share": 766000.0,
-      "amount": 109129520.25,
-      "weight_pct": 1.04,
+      "share": 804000.0,
+      "amount": 114471182.8,
+      "weight_pct": 1.08,
       "money_type": "NTD"
     },
     {
-      "code": "8046",
-      "name": "南亞電路板",
-      "share": 102000.0,
-      "amount": 109129520.25,
-      "weight_pct": 1.04,
+      "code": "6187",
+      "name": "萬潤科技",
+      "share": 77000.0,
+      "amount": 105991835.93,
+      "weight_pct": 1.0,
       "money_type": "NTD"
     },
     {
       "code": "2027",
       "name": "大成不銹鋼工業",
       "share": 2097000.0,
-      "amount": 100734941.77,
+      "amount": 102812080.85,
+      "weight_pct": 0.97,
+      "money_type": "NTD"
+    },
+    {
+      "code": "3653",
+      "name": "健策精密工業",
+      "share": 18000.0,
+      "amount": 101752162.49,
       "weight_pct": 0.96,
       "money_type": "NTD"
     },
     {
-      "code": "8996",
-      "name": "高力熱處理工業",
-      "share": 76000.0,
-      "amount": 98636297.15,
-      "weight_pct": 0.94,
+      "code": "6147",
+      "name": "頎邦科技",
+      "share": 517000.0,
+      "amount": 98572407.41,
+      "weight_pct": 0.93,
       "money_type": "NTD"
     },
     {
       "code": "2360",
       "name": "致茂電子",
       "share": 43000.0,
-      "amount": 93389685.6,
+      "amount": 95392652.34,
+      "weight_pct": 0.9,
+      "money_type": "NTD"
+    },
+    {
+      "code": "8996",
+      "name": "高力熱處理工業",
+      "share": 76000.0,
+      "amount": 94332733.98,
       "weight_pct": 0.89,
-      "money_type": "NTD"
-    },
-    {
-      "code": "6187",
-      "name": "萬潤科技",
-      "share": 60000.0,
-      "amount": 76600528.64,
-      "weight_pct": 0.73,
-      "money_type": "NTD"
-    },
-    {
-      "code": "3653",
-      "name": "健策精密工業",
-      "share": 13000.0,
-      "amount": 75551206.33,
-      "weight_pct": 0.72,
-      "money_type": "NTD"
-    },
-    {
-      "code": "6147",
-      "name": "頎邦科技",
-      "share": 390000.0,
-      "amount": 74501884.02,
-      "weight_pct": 0.71,
       "money_type": "NTD"
     },
     {
       "code": "1301",
       "name": "台灣塑膠工業",
       "share": 1103000.0,
-      "amount": 72403239.4,
+      "amount": 73134366.79,
       "weight_pct": 0.69,
       "money_type": "NTD"
     },
     {
       "code": "3081",
       "name": "聯亞光電工業",
-      "share": 17000.0,
-      "amount": 48268826.26,
-      "weight_pct": 0.46,
+      "share": 22000.0,
+      "amount": 67834775.0,
+      "weight_pct": 0.64,
+      "money_type": "NTD"
+    },
+    {
+      "code": "2408",
+      "name": "南亞科技",
+      "share": 105000.0,
+      "amount": 54055836.32,
+      "weight_pct": 0.51,
       "money_type": "NTD"
     },
     {
       "code": "2344",
       "name": "華邦電子",
       "share": 243000.0,
-      "amount": 44071537.02,
-      "weight_pct": 0.42,
-      "money_type": "NTD"
-    },
-    {
-      "code": "2408",
-      "name": "南亞科技",
-      "share": 79000.0,
-      "amount": 40923570.09,
-      "weight_pct": 0.39,
+      "amount": 43456652.73,
+      "weight_pct": 0.41,
       "money_type": "NTD"
     },
     {
       "code": "3131",
       "name": "弘塑科技",
       "share": 12000.0,
-      "amount": 29381024.68,
-      "weight_pct": 0.28,
+      "amount": 30737632.42,
+      "weight_pct": 0.29,
       "money_type": "NTD"
     },
     {
       "code": "2059",
       "name": "川湖科技",
       "share": 1000.0,
-      "amount": 12591867.72,
-      "weight_pct": 0.12,
+      "amount": 13778938.67,
+      "weight_pct": 0.13,
       "money_type": "NTD"
     },
     {
       "code": "3008",
       "name": "大立光電",
       "share": 1000.0,
-      "amount": 6295933.86,
+      "amount": 6359510.16,
       "weight_pct": 0.06,
       "money_type": "NTD"
     },
@@ -381,7 +381,7 @@
       "code": "8299",
       "name": "群聯電子",
       "share": 1000.0,
-      "amount": 2098644.62,
+      "amount": 2119836.72,
       "weight_pct": 0.02,
       "money_type": "NTD"
     },
@@ -389,7 +389,7 @@
       "code": "2368",
       "name": "金像電子（股）公司",
       "share": 1000.0,
-      "amount": 1049322.31,
+      "amount": 1059918.36,
       "weight_pct": 0.01,
       "money_type": "NTD"
     },
@@ -397,7 +397,7 @@
       "code": "3105",
       "name": "穩懋半導體",
       "share": 2000.0,
-      "amount": 1049322.31,
+      "amount": 1059918.36,
       "weight_pct": 0.01,
       "money_type": "NTD"
     },
@@ -405,7 +405,7 @@
       "code": "3189",
       "name": "景碩科技",
       "share": 1000.0,
-      "amount": 1049322.31,
+      "amount": 1059918.36,
       "weight_pct": 0.01,
       "money_type": "NTD"
     },
