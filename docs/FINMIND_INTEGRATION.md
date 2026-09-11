@@ -53,3 +53,7 @@ python3 etl/fetch_finmind_candles.py --watchlist data/candles/watchlist.example.
 ```
 
 Writes each `data/candles/<code>.json` + summary `data/candles/latest.json`. **Do not** add to FundFlo `refresh_daily` slim.
+
+## Fugle（5m 路徑）
+
+FinMind 免費無法做個股 5 分 OHLC。分K改走 Fugle：見 `docs/FUGLE_CANDLES.md`。同樣 **server-only key → cache → stock.html**。

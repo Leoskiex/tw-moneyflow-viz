@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-09-11T15:26:55+08:00",
+  "provider": "Fugle",
+  "code": "2330",
+  "results": {
+    "5m": {
+      "ok": true,
+      "n": 324,
+      "path": "data/candles/2330_5m.json"
+    },
+    "15m": {
+      "ok": true,
+      "n": 114,
+      "path": "data/candles/2330_15m.json"
+    },
+    "1h": {
+      "ok": true,
+      "n": 30,
+      "path": "data/candles/2330_1h.json"
+    },
+    "1D": {
+      "ok": true,
+      "n": 6,
+      "path": "data/candles/2330_1D.json"
+    }
+  },
+  "note": "FUGLE_API_KEY server-only; not in FundFlo slim."
+}

@@ -44,17 +44,17 @@
       <button type="button" id="go">打開</button>
       <span class="meta">週期</span>
       <button type="button" class="tf active" data-tf="1D">日線</button>
-      <button type="button" class="tf" data-tf="5m" disabled title="需 FinMind Sponsor（TaiwanStockKBar）">5分</button>
-      <button type="button" class="tf" data-tf="15m" disabled title="需 FinMind Sponsor">15分</button>
-      <button type="button" class="tf" data-tf="1h" disabled title="需 FinMind Sponsor">1小時</button>
-      <button type="button" class="tf" data-tf="4h" disabled title="需 FinMind Sponsor">4小時</button>
+      <button type="button" class="tf" data-tf="5m" disabled title="需 Fugle cache">5分</button>
+      <button type="button" class="tf" data-tf="15m" disabled title="需 Fugle cache">15分</button>
+      <button type="button" class="tf" data-tf="1h" disabled title="需 Fugle cache">1小時</button>
+      <button type="button" class="tf" data-tf="60m" disabled title="需 Fugle cache（60分）">60分</button>
     </div>
     <div id="chart"></div>
     <p class="err" id="err" hidden></p>
     <p class="note">
-      資料：FinMind <code>TaiwanStockPrice</code>（日線；免費／可匿名）。K 線圖：TradingView Lightweight Charts。<br />
-      分K（5m／15m／1h／4h）需 <code>TaiwanStockKBar</code>（Sponsor），免費方案未開放——按鈕已禁用。<br />
-      本頁與 FundFlo／日更 slim <strong>分開</strong>；勿把此資料寫進 <code>refresh_daily</code>。
+      日線預設：FinMind <code>TaiwanStockPrice</code>（cache）。分K（5m／15m／1h）：<strong>Fugle</strong> historical candles（server cache）。<br />
+      圖表：TradingView Lightweight Charts。有 <code>data/candles/&lt;code&gt;.json</code> 內對應週期才啟用按鈕。<br />
+      與 FundFlo／日更 slim <strong>分開</strong>；API key 只在 box，不進瀏覽器。
     </p>
   </div>
   <script>
@@ -120,15 +120,29 @@
       $('meta').textContent = '載入中…';
       try {
         let r = await fetch(`./data/candles/${code}.json`);
-        if (!r.ok) throw new Error(`尚無快取 data/candles/${code}.json — 請先跑 etl/fetch_finmind_candles.py --code ${code}`);
+        if (!r.ok) throw new Error(`尚無快取 data/candles/${code}.json — 請先跑 FinMind／Fugle fetch`);
         doc = await r.json();
+        // merge optional Fugle per-TF files if present
+        for (const lab of ['5m','15m','1h','60m','30m','1m']) {
+          if (doc.timeframes?.[lab]?.ok && doc.timeframes[lab].n) continue;
+          try {
+            const rr = await fetch(`./data/candles/${code}_${lab}.json`);
+            if (!rr.ok) continue;
+            const part = await rr.json();
+            const block = part.timeframes?.[lab];
+            if (block?.ok && block.n) {
+              doc.timeframes = doc.timeframes || {};
+              doc.timeframes[lab] = block;
+            }
+          } catch (_) {}
+        }
         // enable TFs that have bars
         document.querySelectorAll('.tf').forEach(btn => {
           const k = btn.dataset.tf;
           const b = doc.timeframes?.[k];
           const ok = k === '1D' ? (doc.daily || []).length > 0 : !!(b && b.ok && b.n);
           btn.disabled = !ok;
-          if (k !== '1D' && !ok) btn.title = '需 FinMind Sponsor（TaiwanStockKBar）或尚未抓取';
+          if (k !== '1D' && !ok) btn.title = '需 Fugle cache（etl/fetch_fugle_candles.py）';
         });
         paint();
       } catch (e) {
