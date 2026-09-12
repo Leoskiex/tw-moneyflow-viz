@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>SEPA 儀表盤 · TW</title>
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    :root { --bg:#0b0f14; --panel:#121821; --border:#243041; --text:#e8eef7; --muted:#8b9bb0; --accent:#38bdf8;
+            --ok:#22c55e; --bad:#f87171; --warn:#f7a345; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); }
+    .top { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+      padding:12px 16px; border-bottom:1px solid var(--border); background:rgba(11,15,20,.94); position:sticky; top:0; z-index:10; }
+    .top h1 { margin:0; font-size:1.05rem; }
+    .meta { color:var(--muted); font-size:.78rem; }
+    .nav a { color:var(--muted); border:1px solid var(--border); border-radius:8px; padding:5px 10px; text-decoration:none; font-size:.78rem; margin-left:6px; }
+    .wrap { max-width:1180px; margin:0 auto; padding:14px 16px 40px; }
+    .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; }
+    .toolbar input, .toolbar button { background:var(--panel); color:var(--text); border:1px solid var(--border);
+      border-radius:8px; padding:7px 10px; font-size:.85rem; }
+    .cols { display:flex; gap:12px; align-items:flex-start; }
+    .left { flex:1 1 auto; min-width:0; }
+    .pane { position:relative; border:1px solid var(--border); border-radius:12px; background:#0e1620; margin-bottom:8px; }
+    .pane .lbl { position:absolute; left:8px; top:6px; z-index:5; font-size:.7rem; letter-spacing:.05em;
+      text-transform:uppercase; color:var(--muted); background:rgba(10,10,10,.7); padding:2px 8px; border-radius:6px; }
+    #mainP { height:min(46vh, 380px); }
+    #rsP { height:120px; }
+    #volP { height:110px; }
+    #ovl { position:absolute; inset:0; z-index:4; pointer-events:none; }
+    .rail { flex:0 0 320px; display:flex; flex-direction:column; gap:8px; }
+    .card { border:1px solid var(--border); border-radius:12px; background:var(--panel); padding:10px 12px; font-size:.8rem; }
+    .card h3 { margin:0 0 6px; font-size:.8rem; color:var(--accent); }
+    table { width:100%; border-collapse:collapse; }
+    td { padding:2px 4px; border-bottom:1px dashed #1e293b; vertical-align:top; }
+    td.k { color:var(--muted); white-space:nowrap; }
+    .st-pass::before { content:"✓ "; color:var(--ok); }
+    .st-fail::before { content:"✗ "; color:var(--bad); }
+    .st-unknown::before { content:"? "; color:var(--warn); }
+    .verdict { font-weight:700; }
+    .tabs { display:flex; gap:6px; margin-bottom:6px; }
+    .tabs button { flex:1; background:var(--panel); color:var(--muted); border:1px solid var(--border);
+      border-radius:8px; padding:5px 4px; font-size:.75rem; cursor:pointer; }
+    .tabs button.on { border-color:var(--accent); color:var(--accent); }
+    .note { margin-top:10px; color:var(--muted); font-size:.8rem; line-height:1.5; }
+    .err { color:#f87171; }
+    @media (max-width:920px){ .cols { flex-direction:column; } .rail { flex:1 1 auto; width:100%; } }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <h1>SEPA 儀表盤 <span id="titleCode">—</span></h1>
+      <div class="meta" id="meta">載入中…</div>
+    </div>
+    <div class="nav">
+      <a href="./">今日故事</a>
+      <a href="./fund-flow.html">錢怎麼流</a>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="toolbar">
+      <label>代號 <input id="code" value="2330" size="6" /></label>
+      <button type="button" id="go">打開</button>
+      <span class="meta">畫線</span>
+      <button type="button" id="modeNone" class="on">不畫</button>
+      <button type="button" id="modeH">水平</button>
+      <button type="button" id="modeT">趨勢</button>
+      <button type="button" id="clr">清除本碼</button>
+      <span class="meta" id="drawHint">水準：點一次圖；趨勢：點兩點。</span>
+    </div>
+    <div class="cols">
+      <div class="left">
+        <div class="pane" id="mainP"><span class="lbl">主圖 · 日K + MA50/150/200</span>
+          <div id="main" style="height:100%"></div><canvas id="ovl"></canvas></div>
+        <div class="pane" id="rsP"><span class="lbl">RS vs 0050（跑贏百分點）</span><div id="rs" style="height:100%"></div></div>
+        <div class="pane" id="volP"><span class="lbl">量能比（vs 20MA）</span><div id="vol" style="height:100%"></div></div>
+      </div>
+      <div class="rail">
+        <div class="card"><h3>判斷</h3><div id="verdict" class="verdict">—</div><div class="meta" id="vreason"></div></div>
+        <div class="card"><h3>Minervini 8 檢查</h3><table id="checks"><tr><td class="k">—</td></tr></table></div>
+        <div class="card"><h3>進場計畫</h3><table id="plan"><tr><td class="k">—</td></tr></table></div>
+        <div class="card">
+          <div class="tabs">
+            <button type="button" data-tab="env" class="on">環境</button>
+            <button type="button" data-tab="news">消息</button>
+            <button type="button" data-tab="scn">情景</button>
+          </div>
+          <table id="tab"><tr><td class="k">—</td></tr></table>
+        </div>
+      </div>
+    </div>
+    <p class="err" id="err" hidden></p>
+    <p class="note">
+      規則與常數見 <code>docs/STOCK_OVERLAYS.md</code>（對齊 kansoku <code>packages/core/src/analysis/sepa.ts</code> 的 8 檢查與判定）。
+      資料：FinMind 日K（0050 加權指數作 RS 基準）、Fugle 分K、FundFlo 水。Token 只在 shell env，不進瀏覽器。
+    </p>
+  </div>
+  <script>
+  (async function () {
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    let code = (params.get('code') || params.get('c') || '2330').trim().toUpperCase();
+    $('code').value = code;
+
+    const mk = (el, tv) => LightweightCharts.createChart(el, {
+      layout: { background: { color: '#0e1620' }, textColor: '#8b9bb0' },
+      grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
+      rightPriceScale: { borderColor: '#243041' },
+      timeScale: { borderColor: '#243041', timeVisible: !!tv },
+    });
+    const cMain = mk($('main'), true), cRs = mk($('rs'), true), cVol = mk($('vol'), true);
+    const kMain = cMain.addCandlestickSeries({ upColor:'#f87171', downColor:'#22c55e', borderUpColor:'#f87171', borderDownColor:'#22c55e' });
+    const ln = (c, color, title, w) => c.addLineSeries({ color, lineWidth: w || 1, title });
+    const l50 = ln(cMain,'#f7c945','MA50'), l150 = ln(cMain,'#38bdf8','MA150'), l200 = ln(cMain,'#b98df7','MA200');
+    const r21 = ln(cRs,'#38bdf8','21d'), r63 = ln(cRs,'#b98df7','63d'), r126 = ln(cRs,'#f7a345','126d');
+    const vBar = cVol.addHistogramSeries({ color:'#334155', lineWidth:1, title:'vol/20MA' });
+    new ResizeObserver(() => {
+      cMain.applyOptions({ width: $('main').clientWidth, height: $('main').clientHeight });
+      cRs.applyOptions({ width: $('rs').clientWidth, height: $('rs').clientHeight });
+      cVol.applyOptions({ width: $('vol').clientWidth, height: $('vol').clientHeight });
+      sizeCanvas(); drawOvl();
+    }).observe($('mainP'));
+
+    // ---- math (matches kansoku packages/core/src/analysis/indicators.ts) ----
+    const fmt = (x, d) => (x == null || !isFinite(x)) ? '—' : x.toFixed(d);
+    function sma(arr, n) { const out = []; for (let i = 0; i < arr.length; i++) { if (i < n - 1) { out.push(null); continue; } let s = 0; for (let j = i - n + 1; j <= i; j++) s += arr[j]; out.push(s / n); } return out; }
+    const pyRound = (x, d = 0) => { const m = Math.pow(10, d); return Math.round(x * m) / m; };
+
+    // 8 checks — shape of computeChecks() in sepa.ts; benchmark = 0050
+    function computeChecks(last, ma50, ma150, ma200, ma2001m, ma2004m, hi52, lo52, rs21, rs126) {
+      const st = (p) => p ? 'pass' : 'fail';
+      const c1 = last > ma150 && last > ma200;
+      const c2 = ma150 > ma200;
+      const s1 = ma2001m ? ((ma200 - ma2001m) / ma2001m) * 100 : 0;
+      const s4 = ma2004m ? ((ma200 - ma2004m) / ma2004m) * 100 : 0;
+      const c3 = s1 > 0;
+      const c4 = ma50 > ma150 && ma50 > ma200;
+      const c5 = last > ma50;
+      const c6 = last >= lo52 * 1.3;
+      const c7 = last >= hi52 * 0.75;
+      let c8 = 'unknown';
+      if (rs126 != null) { if (rs126 >= 0) c8 = 'pass'; else if (rs126 >= -5) c8 = 'unknown'; else c8 = 'fail'; }
+      let ext = '';
+      if (c5) { const e = (last / ma50 - 1) * 100; if (e >= 25) ext = ` ⚠ extended +${fmt(e,1)}%`; }
+      return [
+        { label: '價 > 150MA 且 > 200MA', status: st(c1), val: `價 ${fmt(last,0)} vs 150MA ${fmt(ma150,1)} / 200MA ${fmt(ma200,1)}` },
+        { label: '150MA > 200MA', status: st(c2), val: c2 ? `${fmt(ma150,1)} > ${fmt(ma200,1)}` : `${fmt(ma150,1)} ≤ ${fmt(ma200,1)}` },
+        { label: '200MA 上行 ≥ 1 月', status: st(c3), val: `1月斜率 ${fmt(s1,2)}%, 4月 ${fmt(s4,2)}%` },
+        { label: '50MA > 150MA 且 > 200MA', status: st(c4), val: c4 ? `${fmt(ma50,1)} > ${fmt(ma150,1)} > ${fmt(ma200,1)}` : `${fmt(ma50,1)} / ${fmt(ma150,1)} / ${fmt(ma200,1)}` },
+        { label: '價 > 50MA', status: st(c5), val: `價 ${fmt(last,0)} vs 50MA ${fmt(ma50,1)} (${fmt((last/ma50-1)*100,1)}%)${ext}` },
+        { label: '距 52w 低 ≥ +30%', status: st(c6), val: `+${fmt((last/lo52-1)*100,0)}% (低 ${fmt(lo52,0)})` },
+        { label: '距 52w 高 ≤ 25% 內', status: st(c7), val: `${fmt((last/hi52-1)*100,2)}% (高 ${fmt(hi52,0)})` },
+        { label: 'RS ≥ 0 pp (vs 0050)', status: c8, val: rs126 != null ? `21天 ${fmt(rs21,1)} pp, 126天 ${fmt(rs126,1)} pp` : '無 0050 資料，未計算' },
+      ];
+    }
+    // shape of autoVerdict() in sepa.ts
+    function autoVerdict(checks, last, ma50) {
+      const fails = checks.filter(c => c.status === 'fail');
+      if (fails.length) return { tier:'fail', color:'var(--bad)', label:'FAIL',
+        reason:`趨勢模板 8 條中 ${fails.length} 條 Fail（${fails.slice(0,3).map(c=>c.label).join('、')}${fails.length>3?'…':''}）→ 不滿足 SEPA 入場條件。` };
+      const ext = (last / ma50 - 1) * 100;
+      if (ext >= 25) return { tier:'watch', color:'var(--warn)', label:'WATCH LIST',
+        reason:`8 條全過，但距 50MA +${fmt(ext,1)}% 已 extended（>25% 警戒）。等回調至 50MA 附近形成新整理平台再觀察。` };
+      return { tier:'watch', color:'var(--warn)', label:'WATCH LIST',
+        reason:'8 條全過，待目視確認整理形態（VCP / 杯柄 / 平台 / 旗形）。若價在 pivot ~ pivot+5% 且當日量 ≥ 1.5×20MA，可升 Strong Buy。' };
+    }
+    function entryPlan(pivot) {
+      const stop = pyRound(pivot * 0.93, 2), bh = pyRound(pivot * 1.05, 2);
+      const t1 = pyRound(pivot * 1.08, 2), t2 = pyRound(pivot * 1.15, 2);
+      const rr = pivot > stop ? (t2 - pivot) / (pivot - stop) : 0;
+      return { pivot: pyRound(pivot,2), buy_high: bh, stop, stop_pct: (stop/pivot-1)*100, t1, t2, rr };
+    }
+
+    let mainData = null; // {chart, coords} for drawings
+    const dkey = () => 'kdw:' + code;
+    const loadD = () => { try { return JSON.parse(localStorage.getItem(dkey()) || '[]'); } catch (_) { return []; } };
+    const saveD = (a) => localStorage.setItem(dkey(), JSON.stringify(a));
+
+    async function jget(u) { try { const r = await fetch(u); return r.ok ? await r.json() : null; } catch (_) { return null; } }
+
+    function sizeCanvas() { const cv = $('ovl'), el = $('main'); cv.width = el.clientWidth; cv.height = el.clientHeight; }
+    function drawOvl() {
+      const cv = $('ovl'); if (!mainData || !cv.getContext) return;
+      const g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height);
+      g.font = '11px sans-serif'; const cs = cMain.timeScale(), ms = cMain.scalar('main');
+      g.strokeStyle = '#f7c945'; g.lineWidth = 1;
+      for (const d of loadD()) {
+        if (d.type === 'h' && d.price != null) {
+          const y = ms.toNativeCoord?.(d.price) ?? ms.priceToCoordinate(d.price);
+          if (y == null) continue;
+          g.beginPath(); g.moveTo(0, y); g.lineTo(cv.width, y); g.stroke();
+          g.fillStyle = '#f7c945'; g.fillText(String(d.price), 4, y - 3);
+        } else if (d.type === 't' && d.a && d.b) {
+          const pa = cs.timeToCoordinate?.(d.a[0]) ?? null, pb = cs.timeToCoordinate?.(d.b[0]) ?? null;
+          const ya = ms.priceToCoordinate?.(d.a[1]) ?? ms.toNativeCoord?.(d.a[1]), yb = ms.priceToCoordinate?.(d.b[1]) ?? ms.toNativeCoord?.(d.b[1]);
+          if (pa == null || pb == null || ya == null || yb == null) continue;
+          g.beginPath(); g.moveTo(pa, ya); g.lineTo(pb, yb); g.stroke();
+        }
+      }
+    }
+
+    let mode = 'none', pend = [];
+    function clickPt(ev) {
+      const r = $('main').getBoundingClientRect();
+      const x = ev.clientX - r.left, y = ev.clientY - r.top;
+      const t = cMain.timeScale().coordinateToTime?.(x) ?? null;
+      const p = cMain.scalar('main').coordinateToPrice?.(y) ?? null;
+      if (t == null || p == null) return;
+      const arr = loadD();
+      if (mode === 'h') { arr.push({ type:'h', price: Math.round(p*100)/100 }); }
+      else if (mode === 't') { pend.push([t, Math.round(p*100)/100]); if (pend.length === 2) { arr.push({ type:'t', a:pend[0], b:pend[1] }); pend = []; } }
+      saveD(arr); drawOvl();
+    }
+
+    let tab = 'env', cache = { env:null, news:null, scn:null };
+    function paintTab() {
+      document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+      const t = $('tab'); const rows = cache[tab] || [];
+      t.innerHTML = rows.length ? rows.map(r => `<tr><td class="k">${r[0]}</td><td>${r[1]}</td></tr>`).join('') : '<tr><td class="k">無資料</td></tr>';
+    }
+
+    async function load(c) {
+      code = String(c || '').trim().toUpperCase();
+      $('titleCode').textContent = code;
+      history.replaceState(null, '', `?code=${encodeURIComponent(code)}`);
+      $('meta').textContent = '載入中…';
+      const [docC, docI, news, regime, ff] = await Promise.all([
+        jget(`./data/candles/${code}.json`), jget('./data/candles/0050.json'),
+        jget(`./data/candles/${code}_news.json`), jget('./data/regime_latest.json'), jget('./data/fundflo/latest.json'),
+      ]);
+      if (!docC || !(docC.daily || []).length) { $('err').hidden = false; $('err').textContent = `尚無快取 data/candles/${code}.json`; return; }
+      $('err').hidden = true;
+      const bars = docC.daily;
+      const T = bars.map(b => b.time), C = bars.map(b => b.close);
+      const m50 = sma(C,50), m150 = sma(C,150), m200 = sma(C,200), v20 = sma(bars.map(b => b.volume || 0), 20);
+      const n = C.length, last = C[n-1];
+      const ago = (a, d) => { const i = n - 1 - d; return (i >= 0) ? a[i] : null; };
+      const win = Math.min(252, n);
+      const hi52 = Math.max(...bars.slice(-win).map(b => b.high)), lo52 = Math.min(...bars.slice(-win).map(b => b.low));
+
+      // series
+      const toP = (a) => a.map((v,i) => v == null ? null : { time:T[i], value:v }).filter(x => x);
+      kMain.setData(bars.map(b => ({ time:b.time, open:b.open, high:b.high, low:b.low, close:b.close })));
+      l50.setData(toP(m50)); l150.setData(toP(m150)); l200.setData(toP(m200));
+      vBar.setData(bars.map((b,i) => v20[i] ? ({ time:T[i], value: b.volume / v20[i] }) : null).filter(x => x));
+
+      // RS vs 0050: excess pp = own% - bench% over lookback (shape of rsSeries() in indicators.ts)
+      let rs21 = null, rs126 = null; const rsLines = { 21:[], 63:[], 126:[] };
+      if (docI && (docI.daily || []).length) {
+        const bd = docI.daily, bm = new Map(bd.map(b => [b.time, b.close]));
+        // nearest-on-or-before bench close for each own date (both arrays sorted asc)
+        const near = new Array(n); let p = 0;
+        for (let i = 0; i < n; i++) {
+          while (p + 1 < bd.length && bd[p + 1].time <= T[i]) p++;
+          near[i] = (bd[p].time <= T[i]) ? { i: p, c: bd[p].close } : null;
+        }
+        for (let i = 0; i < n; i++) {
+          const nb = near[i]; if (!nb) continue;
+          for (const lb of [21, 63, 126]) {
+            if (i - lb < 0) continue;
+            // bench value lb bars back = bench at own-date (i-lb)
+            const pb = near[i - lb]; if (!pb || !pb.c) continue;
+            const sn = C[i], sp = C[i - lb]; if (!sp || !sn) continue;
+            const ex = ((sn / sp - 1) - (nb.c / pb.c - 1)) * 100;
+            rsLines[lb].push({ time: T[i], value: ex });
+            if (i === n - 1) { if (lb === 21) rs21 = ex; if (lb === 126) rs126 = ex; }
+          }
+        }
+        r21.setData(rsLines[21]); r63.setData(rsLines[63]); r126.setData(rsLines[126]);
+      }
+
+      const checks = computeChecks(last, m50[n-1] ?? last, m150[n-1] ?? last, m200[n-1] ?? last,
+        ago(m200,21), ago(m200,84), hi52, lo52, rs21, rs126);
+      $('checks').innerHTML = checks.map(c => `<tr><td class="st-${c.status}">${c.label}</td><td class="k">${c.val}</td></tr>`).join('');
+      const v = autoVerdict(checks, last, m50[n-1] ?? last);
+      $('verdict').innerHTML = `<span style="color:${v.color}">${v.label}</span>`;
+      $('vreason').textContent = v.reason;
+
+      const ep = entryPlan(last);
+      $('plan').innerHTML = [
+        ['Pivot (最後收盤)', fmt(ep.pivot,2)],
+        ['買進區上緣', fmt(ep.buy_high,2) + ' (+5%)'],
+        ['停損', fmt(ep.stop,2) + ` (${fmt(ep.stop_pct,1)}%)`],
+        ['目標1 / 2', `${fmt(ep.t1,2)} / ${fmt(ep.t2,2)}`],
+        ['R:R (T2)', fmt(ep.rr,2) + (ep.rr >= 2 ? ' ✓' : '')],
+      ].map(r => `<tr><td class="k">${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+
+      // tabs
+      const lastBar = bars[n-1];
+      cache.scn = [
+        ['收盤 / 日', `${lastBar.close} · ${lastBar.time}`],
+        ['50/150/200 MA', `${fmt(m50[n-1],1)} / ${fmt(m150[n-1],1)} / ${fmt(m200[n-1],1)}`],
+        ['52w 高 / 低', `${fmt(hi52,0)} / ${fmt(lo52,0)}`],
+        ['量能比今', v20[n-1] ? fmt(lastBar.volume / v20[n-1], 2) + '×' : '—'],
+        ['檢查 pass', `${checks.filter(c => c.status === 'pass').length} / 8`],
+      ];
+      cache.env = regime ? [
+        ['日期', regime.date || '—'],
+        ['主環境', regime.primary_label || regime.primary || '—'],
+        ['次環境', regime.secondary_label || regime.secondary || '—'],
+        ['信心', fmt(regime.confidence, 2)],
+        ['外資淨額', (regime.metrics && regime.metrics.foreign != null) ? regime.metrics.foreign + ' 億' : '—'],
+      ] : [['環境', '尚無 data/regime_latest.json']];
+      cache.news = (news && news.items) ? news.items.map((it, i) => [it.date || String(i+1), it.title]) : [['消息', '尚無 data/candles/' + code + '_news.json（跑 etl/fetch_sepa_context.py）']];
+      paintTab();
+
+      $('meta').textContent = `${docC.meta?.source || 'FinMind'} · 日線 · ${n} 根 · 最後 ${lastBar.time} 收 ${lastBar.close}` +
+        (ff && ff.meta && ff.meta.trade_date ? ` · 水 ${ff.meta.trade_date}` : '');
+      mainData = { chart: cMain };
+      sizeCanvas(); drawOvl();
+    }
+
+    $('go').onclick = () => load($('code').value);
+    $('code').addEventListener('keydown', (e) => { if (e.key === 'Enter') load($('code').value); });
+    $('modeNone').onclick = () => setMode('none'); $('modeH').onclick = () => setMode('h'); $('modeT').onclick = () => setMode('t');
+    function setMode(m) { mode = m; pend = []; ['modeNone','modeH','modeT'].forEach(id => $(id).classList.remove('on')); $({ none:'modeNone', h:'modeH', t:'modeT' }[m]).classList.add('on'); }
+    $('clr').onclick = () => { localStorage.removeItem(dkey()); drawOvl(); };
+    $('main').onclick = (ev) => { if (mode !== 'none') clickPt(ev); };
+    document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; paintTab(); });
+
+    load(code);
+  })();
+  </script>
+</body>
+</html>

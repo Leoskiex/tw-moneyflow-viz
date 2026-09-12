@@ -22,9 +22,21 @@
     }
     .toolbar button.active { border-color:var(--accent); color:var(--accent); }
     .toolbar button:disabled { opacity:.4; cursor:not-allowed; }
-    #chart { height:min(70vh, 560px); border:1px solid var(--border); border-radius:12px; background:#0e1620; }
+    .cols { display:flex; gap:12px; align-items:flex-start; }
+    .left { flex:1 1 auto; min-width:0; }
+    #chart { height:min(58vh, 460px); border:1px solid var(--border); border-radius:12px; background:#0e1620; }
+    #macdChart { height:130px; margin-top:8px; border:1px solid var(--border); border-radius:12px; background:#0e1620; }
+    #rsiChart { height:110px; margin-top:8px; border:1px solid var(--border); border-radius:12px; background:#0e1620; }
+    .rail { flex:0 0 250px; border:1px solid var(--border); border-radius:12px; background:var(--panel); padding:10px 12px; font-size:.8rem; }
+    .rail h3 { margin:0 0 6px; font-size:.82rem; color:var(--accent); }
+    .rail table { width:100%; border-collapse:collapse; }
+    .rail td { padding:2px 4px; border-bottom:1px dashed #1e293b; vertical-align:top; }
+    .rail td.k { color:var(--muted); white-space:nowrap; }
+    .slot { margin-top:8px; }
+    .slot b { color:var(--accent); }
     .note { margin-top:12px; color:var(--muted); font-size:.82rem; line-height:1.5; }
     .err { color:#f87171; margin-top:8px; }
+    @media (max-width:900px){ .cols { flex-direction:column; } .rail { flex:1 1 auto; width:100%; } }
   </style>
 </head>
 <body>
@@ -36,6 +48,7 @@
     <div class="nav">
       <a href="./">今日故事</a>
       <a href="./fund-flow.html">錢怎麼流</a>
+      <a href="./sepa.html" id="sepaLink">SEPA 儀表盤</a>
     </div>
   </div>
   <div class="wrap">
@@ -49,11 +62,32 @@
       <button type="button" class="tf" data-tf="1h" disabled title="需 Fugle cache">1小時</button>
       <button type="button" class="tf" data-tf="60m" disabled title="需 Fugle cache（60分）">60分</button>
     </div>
-    <div id="chart"></div>
+    <div class="toolbar" id="ov">
+      <span class="meta">疊加</span>
+      <button type="button" class="ov active" data-ov="ma">MA</button>
+      <button type="button" class="ov active" data-ov="macd">MACD</button>
+      <button type="button" class="ov active" data-ov="piv">S1/S2</button>
+      <button type="button" class="ov active" data-ov="rsi">RSI</button>
+      <button type="button" class="ov" data-ov="kd">KD</button>
+      <button type="button" class="ov" data-ov="boll">布林</button>
+    </div>
+    <div class="cols">
+      <div class="left">
+        <div id="chart"></div>
+        <div id="macdChart"></div>
+        <div id="rsiChart"></div>
+      </div>
+      <div class="rail">
+        <h3>最後一根 · 數值</h3>
+        <table id="readout"><tr><td class="k">—</td></tr></table>
+        <h3 class="slot">證據 / 情景 <span class="meta">(規則式)</span></h3>
+        <table id="evidence"><tr><td class="k">—</td></tr></table>
+      </div>
+    </div>
     <p class="err" id="err" hidden></p>
     <p class="note">
       日線預設：FinMind <code>TaiwanStockPrice</code>（cache）。分K（5m／15m／1h）：<strong>Fugle</strong> historical candles（server cache）。<br />
-      圖表：TradingView Lightweight Charts。有 <code>data/candles/&lt;code&gt;.json</code> 內對應週期才啟用按鈕。<br />
+      疊加為本機 JS 計算（MA／MACD／RSI／S1S2／KD／布林，公式見 <code>docs/STOCK_OVERLAYS.md</code>）。圖表：TradingView Lightweight Charts。<br />
       與 FundFlo／日更 slim <strong>分開</strong>；API key 只在 box，不進瀏覽器。
     </p>
   </div>
@@ -64,52 +98,185 @@
     const initial = (params.get('code') || params.get('c') || '2330').toUpperCase();
     $('code').value = initial;
 
-    const el = $('chart');
-    const chart = LightweightCharts.createChart(el, {
+    const mk = (el, id) => LightweightCharts.createChart(el, {
       layout: { background: { color: '#0e1620' }, textColor: '#8b9bb0' },
       grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
       rightPriceScale: { borderColor: '#243041' },
       timeScale: { borderColor: '#243041', timeVisible: false },
+      sync: { timeScale: true },
     });
+    const chart = mk($('chart'));
+    const mChart = mk($('macdChart'));
+    const rChart = mk($('rsiChart'));
     const series = chart.addCandlestickSeries({
       upColor: '#f87171', downColor: '#22c55e',
       borderUpColor: '#f87171', borderDownColor: '#22c55e',
       wickUpColor: '#f87171', wickDownColor: '#22c55e',
     });
-    const vol = chart.addHistogramSeries({
-      priceFormat: { type: 'volume' },
-      priceScaleId: '',
-      color: '#334155',
-    });
-    vol.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+    const vol = chart.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: '', color: '#334155' });
+    vol.applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+    const maLine = (color, title) => chart.addLineSeries({ color, lineWidth: 1, title });
+    const sMA5 = maLine('#f7c945', 'MA5'), sMA20 = maLine('#38bdf8', 'MA20'), sMA60 = maLine('#b98df7', 'MA60');
+    const sKU = maLine('#9aa7b8', '上軌'), sKL = maLine('#9aa7b8', '下軌');
+    const sK = maLine('#f7c945', 'K'), sD = maLine('#38bdf8', 'D');
+    const sDIF = mChart.addLineSeries({ color: '#38bdf8', lineWidth: 1, title: 'DIF' });
+    const sDEA = mChart.addLineSeries({ color: '#f7a345', lineWidth: 1, title: 'DEA' });
+    const sHIST = mChart.addHistogramSeries({ lineWidth: 1, title: 'HIST' });
+    const sRSI = rChart.addLineSeries({ color: '#38bdf8', lineWidth: 1, title: 'RSI14' });
 
     new ResizeObserver(() => {
-      chart.applyOptions({ width: el.clientWidth, height: el.clientHeight });
-    }).observe(el);
+      chart.applyOptions({ width: $('chart').clientWidth, height: $('chart').clientHeight });
+      mChart.applyOptions({ width: $('macdChart').clientWidth, height: $('macdChart').clientHeight });
+      rChart.applyOptions({ width: $('rsiChart').clientWidth, height: $('rsiChart').clientHeight });
+    }).observe($('chart'));
 
-    let doc = null;
-    let tf = '1D';
+    // ---- local indicator math (see docs/STOCK_OVERLAYS.md) ----
+    const n2 = (v) => (v == null || !isFinite(v)) ? '—' : (Math.round(v * 100) / 100);
+    function sma(arr, n) {
+      const out = new Array(arr.length); let acc = 0;
+      for (let i = 0; i < arr.length; i++) { acc += arr[i]; if (i >= n) acc -= arr[i - n]; if (i >= n - 1) out[i] = acc / n; }
+      return out;
+    }
+    function ema(arr, n) {
+      const k = 2 / (n + 1); const out = new Array(arr.length); let e;
+      for (let i = 0; i < arr.length; i++) {
+        e = i ? arr[i] * k + e * (1 - k) : arr[i]; out[i] = e;
+      }
+      return out;
+    }
+    function macd(closes) {
+      const e12 = ema(closes, 12), e26 = ema(closes, 26);
+      const dif = closes.map((_, i) => e12[i] - e26[i]);
+      const dea = ema(dif, 9);
+      const hist = dif.map((v, i) => v - dea[i]);
+      return { dif, dea, hist };
+    }
+    function rsi(closes, n) {
+      const out = new Array(closes.length);
+      let ag = 0, al = 0;
+      for (let i = 1; i < closes.length; i++) {
+        const d = closes[i] - closes[i - 1];
+        const g = d > 0 ? d : 0, l = d < 0 ? -d : 0;
+        if (i <= n) { ag += g; al += l; if (i === n) { ag /= n; al /= n; out[i] = al ? 100 - 100 / (1 + ag / al) : 50; } }
+        else { ag = (ag * (n - 1) + g) / n; al = (al * (n - 1) + l) / n; out[i] = al ? 100 - 100 / (1 + ag / al) : 50; }
+      }
+      return out;
+    }
+    function kd(bars, n) {
+      const K = new Array(bars.length), D = new Array(bars.length);
+      for (let i = 0; i < bars.length; i++) {
+        const lo = Math.min(...bars.slice(Math.max(0, i - n + 1), i + 1).map(b => b.low));
+        const hi = Math.max(...bars.slice(Math.max(0, i - n + 1), i + 1).map(b => b.high));
+        K[i] = hi > lo ? (bars[i].close - lo) / (hi - lo) * 100 : 50;
+        D[i] = i >= n - 1 ? K.slice(i - n + 1, i + 1).reduce((a, b) => a + b, 0) / n : K[i];
+      }
+      return { K, D };
+    }
+    function boll(closes, n, mult) {
+      const mid = sma(closes, n); const up = new Array(closes.length), lo = new Array(closes.length);
+      for (let i = n - 1; i < closes.length; i++) {
+        const win = closes.slice(i - n + 1, i + 1);
+        const m = mid[i];
+        const sd = Math.sqrt(win.reduce((a, v) => a + (v - m) * (v - m), 0) / n);
+        up[i] = m + mult * sd; lo[i] = m - mult * sd;
+      }
+      return { mid, up, lo };
+    }
+    function pivots(b) { // classic floor-trader from last bar
+      const P = (b.high + b.low + b.close) / 3;
+      return { P, R1: 2 * P - b.low, S1: 2 * P - b.high, R2: P + (b.high - b.low), S2: P - (b.high - b.low) };
+    }
+
+    let doc = null, tf = '1D';
+    const ov = { ma: true, macd: true, piv: true, rsi: true, kd: false, boll: false };
+    let pivLines = [];
+
+    function barsOf() {
+      if (!doc) return [];
+      if (tf === '1D') return doc.daily || [];
+      const b = doc.timeframes?.[tf];
+      return (b && b.ok) ? (b.bars || []) : [];
+    }
 
     function paint() {
-      if (!doc) return;
-      const block = doc.timeframes?.[tf] || (tf === '1D' ? { ok: true, bars: doc.daily } : null);
-      if (!block || !block.ok || !(block.bars || []).length) {
-        $('err').hidden = false;
-        $('err').textContent = (block && block.reason) || '此週期無資料（多半是分K未授權）';
-        series.setData([]);
-        vol.setData([]);
+      const bars = barsOf();
+      if (!bars.length) {
+        $('err').hidden = false; $('err').textContent = '此週期無資料';
+        [series, vol, sMA5, sMA20, sMA60, sKU, sKL, sK, sD, sDIF, sDEA, sHIST, sRSI].forEach(s => s.setData([]));
         return;
       }
       $('err').hidden = true;
-      const bars = block.bars;
+      const T = bars.map(b => b.time), C = bars.map(b => b.close);
       series.setData(bars.map(b => ({ time: b.time, open: b.open, high: b.high, low: b.low, close: b.close })));
-      vol.setData(bars.map(b => ({
-        time: b.time,
-        value: b.volume || 0,
-        color: b.close >= b.open ? 'rgba(248,113,113,.35)' : 'rgba(34,197,94,.35)',
-      })));
-      chart.timeScale().fitContent();
-      const last = bars[bars.length - 1];
+      vol.setData(bars.map(b => ({ time: b.time, value: b.volume || 0, color: b.close >= b.open ? 'rgba(248,113,113,.35)' : 'rgba(34,197,94,.35)' })));
+
+      // MA
+      const m5 = sma(C, 5), m20 = sma(C, 20), m60 = sma(C, 60);
+      const toP = (a) => a.map((v, i) => v == null ? null : { time: T[i], value: v }).filter(x => x);
+      sMA5.setData(ov.ma ? toP(m5) : []); sMA20.setData(ov.ma ? toP(m20) : []); sMA60.setData(ov.ma ? toP(m60) : []);
+      // BOLL / KD optional
+      const bl = boll(C, 20, 2);
+      sKU.setData(ov.boll ? toP(bl.up) : []); sKL.setData(ov.boll ? toP(bl.lo) : []);
+      const kdv = kd(bars, 9);
+      sK.setData(ov.kd ? toP(kdv.K) : []); sD.setData(ov.kd ? toP(kdv.D) : []);
+      // MACD pane
+      const mc = macd(C);
+      if (ov.macd) {
+        sHIST.setData(mc.hist.map((v, i) => v == null ? null : { time: T[i], value: v, color: v >= 0 ? 'rgba(248,113,113,.8)' : 'rgba(34,197,94,.8)' }).filter(x => x));
+        sDIF.setData(toP(mc.dif)); sDEA.setData(toP(mc.dea));
+      } else { sHIST.setData([]); sDIF.setData([]); sDEA.setData([]); }
+      // RSI pane
+      const rs = rsi(C, 14);
+      if (ov.rsi) {
+        sRSI.setData(toP(rs));
+        if (!sRSI.__pl) {
+          sRSI.__pl = [30, 50, 70].map(p => sRSI.createPriceLine({ price: p, color: '#243041', title: String(p), lineStyle: 2, axisLabelVisible: false }));
+        }
+      } else sRSI.setData([]);
+      // pivot price lines on candle series
+      pivLines.forEach(pl => series.removePriceLine(pl)); pivLines = [];
+      if (ov.piv) {
+        const pv = pivots(bars[bars.length - 1]);
+        [['P', pv.P, '#e8eef7'], ['R1', pv.R1, '#f7a345'], ['S1', pv.S1, '#f7a345'], ['S2', pv.S2, '#8b9bb0']].forEach(([t, v, c]) => {
+          if (v != null) series.createPriceLine({ price: Math.round(v * 100) / 100, color: c, title: t, lineWidth: 1 });
+        });
+      }
+      chart.timeScale().fitContent(); mChart.timeScale().fitContent(); rChart.timeScale().fitContent();
+
+      // rail
+      const last = bars[bars.length - 1], i = bars.length - 1;
+      const pv = pivots(last);
+      const rows = [
+        ['收盤 / 時間', `${n2(last.close)} · ${last.time}`],
+        ['MA5 / 20 / 60', `${n2(m5[i])} / ${n2(m20[i])} / ${n2(m60[i])}`],
+        ['MACD DIF/DEA', `${n2(mc.dif[i])} / ${n2(mc.dea[i])}`],
+        ['柱状 HIST', n2(mc.hist[i])],
+        ['RSI14', n2(rs[i])],
+      ];
+      if (ov.kd) rows.push(['KD(9)', `${n2(kdv.K[i])} / ${n2(kdv.D[i])}`]);
+      if (ov.boll) rows.push(['布林 20,2', `${n2(bl.up[i])} / ${n2(bl.mid[i])} / ${n2(bl.lo[i])}`]);
+      rows.push(['枢軸 P', n2(pv.P)], ['R1 / R2', `${n2(pv.R1)} / ${n2(pv.R2)}`], ['S1 / S2', `${n2(pv.S1)} / ${n2(pv.S2)}`]);
+      $('readout').innerHTML = rows.map(r => `<tr><td class="k">${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+
+      // rule-based evidence, sums to 100
+      let bull = 34, base = 33, bear = 33;
+      const trg = [];
+      if (m20[i] != null) { if (last.close > m20[i]) { bull += 10; trg.push(`收盤 ${n2(last.close)} > MA20 ${n2(m20[i])}（偏多）`); } else { bear += 10; trg.push(`收盤 ${n2(last.close)} < MA20 ${n2(m20[i])}（偏空）`); } }
+      if (mc.hist[i] != null) { if (mc.hist[i] >= 0) { bull += 8; trg.push('MACD 柱為正'); } else { bear += 8; trg.push('MACD 柱為負'); } }
+      if (rs[i] != null) {
+        if (rs[i] >= 55) { bull += 6; trg.push(`RSI ${n2(rs[i])} ≥ 55`); }
+        else if (rs[i] <= 45) { bear += 6; trg.push(`RSI ${n2(rs[i])} ≤ 45`); }
+        else { base += 6; trg.push(`RSI ${n2(rs[i])} 中性帶`); }
+        if (rs[i] > 70) { bull -= 4; base += 4; trg.push('RSI >70，注意超買'); }
+        if (rs[i] < 30) { bear -= 4; base += 4; trg.push('RSI <30，注意超賣'); }
+      }
+      const tot = bull + base + bear;
+      $('evidence').innerHTML =
+        `<tr><td class="k">看多</td><td><b>${Math.round(bull / tot * 100)}%</b></td></tr>` +
+        `<tr><td class="k">基準</td><td><b>${Math.round(base / tot * 100)}%</b></td></tr>` +
+        `<tr><td class="k">看空</td><td><b>${Math.round(bear / tot * 100)}%</b></td></tr>` +
+        `<tr><td class="k">觸發</td><td>${trg.join('；') || '—'}</td></tr>`;
+
       $('meta').textContent = `${doc.meta?.source || 'FinMind'} · ${tf} · ${bars.length} 根 · 最後 ${last.time} 收 ${last.close}`;
     }
 
@@ -122,7 +289,6 @@
         let r = await fetch(`./data/candles/${code}.json`);
         if (!r.ok) throw new Error(`尚無快取 data/candles/${code}.json — 請先跑 FinMind／Fugle fetch`);
         doc = await r.json();
-        // merge optional Fugle per-TF files if present
         for (const lab of ['5m','15m','1h','60m','30m','1m']) {
           if (doc.timeframes?.[lab]?.ok && doc.timeframes[lab].n) continue;
           try {
@@ -130,13 +296,9 @@
             if (!rr.ok) continue;
             const part = await rr.json();
             const block = part.timeframes?.[lab];
-            if (block?.ok && block.n) {
-              doc.timeframes = doc.timeframes || {};
-              doc.timeframes[lab] = block;
-            }
+            if (block?.ok && block.n) { doc.timeframes = doc.timeframes || {}; doc.timeframes[lab] = block; }
           } catch (_) {}
         }
-        // enable TFs that have bars
         document.querySelectorAll('.tf').forEach(btn => {
           const k = btn.dataset.tf;
           const b = doc.timeframes?.[k];
@@ -146,8 +308,7 @@
         });
         paint();
       } catch (e) {
-        $('err').hidden = false;
-        $('err').textContent = String(e.message || e);
+        $('err').hidden = false; $('err').textContent = String(e.message || e);
         $('meta').textContent = '失敗';
       }
     }
@@ -162,8 +323,17 @@
         paint();
       };
     });
+    document.querySelectorAll('.ov').forEach(btn => {
+      btn.onclick = () => {
+        const k = btn.dataset.ov;
+        ov[k] = !ov[k];
+        btn.classList.toggle('active', ov[k]);
+        paint();
+      };
+    });
     $('go').onclick = () => load($('code').value);
     $('code').addEventListener('keydown', (e) => { if (e.key === 'Enter') load($('code').value); });
+    $('sepaLink').setAttribute('href', `./sepa.html?code=${encodeURIComponent(initial)}`);
     load(initial);
   })();
   </script>
