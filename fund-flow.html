@@ -434,6 +434,7 @@
               <div>${fmtYiPlain(st.rolling)}</div>
               <div class="${cls(ret)}">${fmtPct(ret)}</div>
             </div>
+            <div class="name"><a href="./stock.html?code=${stock.code}" style="color:var(--accent)">K線</a> · <a href="./sepa.html?code=${stock.code}" style="color:var(--accent)">SEPA</a></div>
           </div>`;
         }
         return `<div class="rank-item ${selected === stock.code ? 'active' : ''}" data-code="${stock.code}">
@@ -442,6 +443,7 @@
             <div class="${cls(st.rolling)}">${fmtYi(st.rolling)}</div>
             <div class="${cls(ret)}">${fmtPct(ret)} · 變 ${fmtYi(st.momentum)}</div>
           </div>
+          <div class="name"><a href="./stock.html?code=${stock.code}" style="color:var(--accent)">K線</a> · <a href="./sepa.html?code=${stock.code}" style="color:var(--accent)">SEPA</a></div>
         </div>`;
       }).join('');
       $('rankList').querySelectorAll('.rank-item').forEach((el) => {

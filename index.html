@@ -278,7 +278,7 @@
         if (r.trust_buy_streak > 0) bits.push("基金連買 " + r.trust_buy_streak + " 天");
         const extra = bits.length ? bits.join("；") : plain((r.suggested_action||r.topic||"").slice(0,36));
         return `<div class="stock">
-          <div><span class="code">${esc(r.code)}</span> <span class="name">${esc(r.name||"")}</span></div>
+          <div><a href="./stock.html?code=${esc(r.code)}" class="code">${esc(r.code)}</a> <a href="./sepa.html?code=${esc(r.code)}" class="name">${esc(r.name||"")}</a></div>
           <div class="act">${esc(extra)}</div>
         </div>`;
       }).join("");
