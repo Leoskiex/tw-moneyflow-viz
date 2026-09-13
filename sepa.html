@@ -45,6 +45,12 @@
     .tabs button.on { border-color:var(--accent); color:var(--accent); }
     .note { margin-top:10px; color:var(--muted); font-size:.8rem; line-height:1.5; }
     .err { color:#f87171; }
+    #panel { position:fixed; right:14px; top:56px; width:300px; max-height:70vh; overflow:auto; z-index:20;
+      background:var(--panel); border:1px solid var(--accent); border-radius:12px; padding:10px 12px; font-size:.8rem; }
+    #panel h4 { margin:0 0 6px; color:var(--accent); font-size:.8rem; }
+    #panel .q { display:block; border:1px solid var(--border); border-radius:8px; padding:5px 7px; margin:4px 0; cursor:pointer; }
+    #panel ol { margin:6px 0 0 16px; padding:0; }
+    .hide { display:none; }
     @media (max-width:920px){ .cols { flex-direction:column; } .rail { flex:1 1 auto; width:100%; } }
   </style>
 </head>
@@ -57,6 +63,7 @@
     <div class="nav">
       <a href="./">今日故事</a>
       <a href="./fund-flow.html">錢怎麼流</a>
+      <a href="#" id="panelBtn">憑什麼</a>
     </div>
   </div>
   <div class="wrap">
@@ -68,11 +75,12 @@
       <button type="button" id="modeH">水平</button>
       <button type="button" id="modeT">趨勢</button>
       <button type="button" id="clr">清除本碼</button>
+      <button type="button" id="clrAi">只清 AI 線</button>
       <span class="meta" id="drawHint">水準：點一次圖；趨勢：點兩點。</span>
     </div>
     <div class="cols">
       <div class="left">
-        <div class="pane" id="mainP"><span class="lbl">主圖 · 日K + MA50/150/200</span>
+        <div class="pane" id="mainP"><span class="lbl">主圖 · 日K + MA50/150/200 + 區間</span>
           <div id="main" style="height:100%"></div><canvas id="ovl"></canvas></div>
         <div class="pane" id="rsP"><span class="lbl">RS vs 0050（跑贏百分點）</span><div id="rs" style="height:100%"></div></div>
         <div class="pane" id="volP"><span class="lbl">量能比（vs 20MA）</span><div id="vol" style="height:100%"></div></div>
@@ -81,11 +89,13 @@
         <div class="card"><h3>判斷</h3><div id="verdict" class="verdict">—</div><div class="meta" id="vreason"></div></div>
         <div class="card"><h3>Minervini 8 檢查</h3><table id="checks"><tr><td class="k">—</td></tr></table></div>
         <div class="card"><h3>進場計畫</h3><table id="plan"><tr><td class="k">—</td></tr></table></div>
+        <div class="card"><h3>區間（zones.ts）</h3><table id="zones"><tr><td class="k">—</td></tr></table></div>
         <div class="card">
           <div class="tabs">
             <button type="button" data-tab="env" class="on">環境</button>
             <button type="button" data-tab="news">消息</button>
             <button type="button" data-tab="scn">情景</button>
+            <button type="button" data-tab="arc">歸檔</button>
           </div>
           <table id="tab"><tr><td class="k">—</td></tr></table>
         </div>
@@ -93,10 +103,12 @@
     </div>
     <p class="err" id="err" hidden></p>
     <p class="note">
-      規則與常數見 <code>docs/STOCK_OVERLAYS.md</code>（對齊 kansoku <code>packages/core/src/analysis/sepa.ts</code> 的 8 檢查與判定）。
-      資料：FinMind 日K（0050 加權指數作 RS 基準）、Fugle 分K、FundFlo 水。Token 只在 shell env，不進瀏覽器。
+      規則與常數見 <code>docs/STOCK_OVERLAYS.md</code>（對齊 kansoku <code>packages/core/src/analysis/sepa.ts / zones.ts / indicators.ts</code>
+      與 <code>apps/web …/sepa/SepaDashboard.tsx</code>）。資料：FinMind 日K + 0050（RS 基準）、Fugle 分K、FundFlo 水（只讀）。
+      開圖時自動輪詢分K快取（Tab 可見時）；Token 只在 shell env。
     </p>
   </div>
+  <div id="panel" class="hide"></div>
   <script>
   (async function () {
     const $ = (id) => document.getElementById(id);
@@ -155,14 +167,17 @@
         { label: 'RS ≥ 0 pp (vs 0050)', status: c8, val: rs126 != null ? `21天 ${fmt(rs21,1)} pp, 126天 ${fmt(rs126,1)} pp` : '無 0050 資料，未計算' },
       ];
     }
-    // shape of autoVerdict() in sepa.ts
-    function autoVerdict(checks, last, ma50) {
+    // autoVerdict() in sepa.ts + the Strong Buy upgrade note
+    function autoVerdict(checks, last, ma50, volRatio) {
       const fails = checks.filter(c => c.status === 'fail');
       if (fails.length) return { tier:'fail', color:'var(--bad)', label:'FAIL',
         reason:`趨勢模板 8 條中 ${fails.length} 條 Fail（${fails.slice(0,3).map(c=>c.label).join('、')}${fails.length>3?'…':''}）→ 不滿足 SEPA 入場條件。` };
       const ext = (last / ma50 - 1) * 100;
       if (ext >= 25) return { tier:'watch', color:'var(--warn)', label:'WATCH LIST',
         reason:`8 條全過，但距 50MA +${fmt(ext,1)}% 已 extended（>25% 警戒）。等回調至 50MA 附近形成新整理平台再觀察。` };
+      const inZone = last <= last * 1.05 + 1e-9; // pivot = 最後收盤 → 區間為 pivot ~ pivot+5%
+      if (inZone && volRatio != null && volRatio >= 1.5) return { tier:'strong', color:'var(--ok)', label:'STRONG BUY',
+        reason:`8 條全過；價在 pivot ~ +5% 區間，当日量 ${fmt(volRatio,2)}× ≥ 1.5×20MA → 升为 Strong Buy。` };
       return { tier:'watch', color:'var(--warn)', label:'WATCH LIST',
         reason:'8 條全過，待目視確認整理形態（VCP / 杯柄 / 平台 / 旗形）。若價在 pivot ~ pivot+5% 且當日量 ≥ 1.5×20MA，可升 Strong Buy。' };
     }
@@ -172,53 +187,161 @@
       const rr = pivot > stop ? (t2 - pivot) / (pivot - stop) : 0;
       return { pivot: pyRound(pivot,2), buy_high: bh, stop, stop_pct: (stop/pivot-1)*100, t1, t2, rr };
     }
+    // markers — shape of detectMarkers() in sepa.ts（財报日期無快取清單 → []）
+    function dailyMarkers(bars) {
+      const T = bars.map(b => b.time), C = bars.map(b => b.close), H = bars.map(b => b.high);
+      const V = bars.map(b => b.volume || 0);
+      const vol20 = sma(V, 20), ma50 = sma(C, 50), ma200 = sma(C, 200);
+      const mk = [];
+      for (let i = 20; i < C.length; i++) {
+        const v20 = vol20[i];
+        if (v20 && V[i] >= 2.5 * v20 && C[i] < bars[i].open) {
+          const w = Math.max(...H.slice(Math.max(0, i - 5), i + 1));
+          if (H[i] === w) mk.push({ time: T[i], position: 'aboveBar', color: '#d32f2f', shape: 'arrowDown', text: `climax top (${Math.round(V[i] / 1e6)}M, ${(V[i] / v20).toFixed(1)}×)` });
+        }
+      }
+      for (let i = 1; i < C.length; i++) {
+        const p = ma50[i - 1], c = ma50[i];
+        if (p && c && C[i - 1] >= p && C[i] < c) mk.push({ time: T[i], position: 'belowBar', color: '#ff9800', shape: 'arrowDown', text: '跌破 MA50' });
+        const p2 = ma200[i - 1], c2 = ma200[i];
+        if (p2 && c2 && C[i - 1] >= p2 && C[i] < c2) mk.push({ time: T[i], position: 'belowBar', color: '#d32f2f', shape: 'arrowDown', text: '跌破 MA200' });
+      }
+      const win = Math.min(252, H.length), hi = Math.max(...H.slice(-win));
+      const hiIdx = H.indexOf(hi);
+      if (hiIdx >= 0) mk.push({ time: T[hiIdx], position: 'aboveBar', color: '#9c27b0', shape: 'square', text: `52w 高 ${hi}` });
+      mk.sort((a, b) => (a.time < b.time ? -1 : 1));
+      return mk;
+    }
+    // volume profile + default zones — computeVolumeProfile()/defaultSupportZones() in zones.ts
+    function volumeProfile(bars, lookback = 120, nBins = 30) {
+      const seg = Math.min(lookback, bars.length);
+      const hs = bars.slice(-seg).map(b => b.high), ls = bars.slice(-seg).map(b => b.low), vs = bars.slice(-seg).map(b => b.volume || 0);
+      const lo = Math.min(...ls), hi = Math.max(...hs);
+      if (hi <= lo) return { bins: [], max_weight: 0, lookback: seg };
+      const width = (hi - lo) / nBins;
+      const arr = new Array(nBins).fill(0);
+      for (let i = 0; i < seg; i++) {
+        let bLo = Math.trunc((ls[i] - lo) / width), bHi = Math.trunc((hs[i] - lo) / width);
+        bLo = Math.max(0, Math.min(nBins - 1, bLo)); bHi = Math.max(0, Math.min(nBins - 1, bHi));
+        const per = vs[i] / (bHi - bLo + 1);
+        for (let b = bLo; b <= bHi; b++) arr[b] += per;
+      }
+      const maxW = Math.max(...arr) || 1;
+      return { bins: arr.map((w, i) => ({ low: pyRound(lo + i * width, 4), high: pyRound(lo + (i + 1) * width, 4), weight: pyRound(w, 2), pct: pyRound(w / maxW, 4) })), max_weight: pyRound(maxW, 2), lookback: seg };
+    }
+    const TIER = { warning:{c:'#ef5350',f:'rgba(239,83,80,.16)',l:'誘多區'}, watch:{c:'#ffc107',f:'rgba(255,193,7,.16)',l:'關注區'},
+                   buy:{c:'#26a69a',f:'rgba(38,166,154,.20)',l:'第一買點'}, value:{c:'#00897b',f:'rgba(0,137,123,.32)',l:'價值區'} };
+    function supportZones(C, ma50, ma150, ma200, vp) {
+      const out = [], last = C[C.length - 1];
+      if (ma50 && ma50 < last) out.push({ low: pyRound(ma50 * 0.98, 2), high: pyRound(ma50 * 1.02, 2), tier: 'watch', label: 'MA50 關注區' });
+      if (ma200 && ma200 < last) out.push({ low: pyRound(Math.min(ma200, ma150 || ma200) * 0.97, 2), high: pyRound(Math.max(ma200, ma150 || ma200) * 1.03, 2), tier: 'value', label: '長期均線價值區' });
+      const below = vp.bins.filter(b => b.high < last);
+      if (below.length) {
+        const top = below.reduce((a, b) => (b.weight > a.weight ? b : a), below[0]);
+        const idx = below.indexOf(top), th = top.weight * 0.6;
+        let lo = top.low, hi = top.high;
+        for (let j = idx - 1; j >= 0; j--) { if (below[j].weight >= th) lo = below[j].low; else break; }
+        for (let j = idx + 1; j < below.length; j++) { if (below[j].weight >= th) hi = below[j].high; else break; }
+        out.push({ low: pyRound(lo, 2), high: pyRound(hi, 2), tier: ((hi + lo) / 2 < last * 0.85 ? 'value' : 'buy'), label: '成交密集區' });
+      }
+      out.sort((a, b) => b.low - a.low);
+      return out;
+    }
 
-    let mainData = null; // {chart, coords} for drawings
+    // drawings store: user lines (yellow) + ai lines (purple dashed)
+    let lastRows = { zones: [], ai: [], scn: null, fields: null, hist: null };
     const dkey = () => 'kdw:' + code;
-    const loadD = () => { try { return JSON.parse(localStorage.getItem(dkey()) || '[]'); } catch (_) { return []; } };
+    const akey = () => 'kdw:' + code + ':ai';
+    const loadA = (k) => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch (_) { return []; } };
+    const loadD = () => loadA(dkey());
     const saveD = (a) => localStorage.setItem(dkey(), JSON.stringify(a));
 
-    async function jget(u) { try { const r = await fetch(u); return r.ok ? await r.json() : null; } catch (_) { return null; } }
+    async function jget(u) { try { const r = await fetch(u, {cache:'no-store'}); return r.ok ? await r.json() : null; } catch (_) { return null; } }
 
     function sizeCanvas() { const cv = $('ovl'), el = $('main'); cv.width = el.clientWidth; cv.height = el.clientHeight; }
+    const sc = () => (cMain.scalarForSeries ? cMain.scalarForSeries(kMain) : (cMain.scalar ? cMain.scalar('main') : null));
+    function yOf(price) { const s = sc(); return s && s.priceToCoordinate ? s.priceToCoordinate(price) : null; }
+    function xOf(t) { const cs = cMain.timeScale(); return cs.timeToCoordinate ? cs.timeToCoordinate(t) : null; }
     function drawOvl() {
-      const cv = $('ovl'); if (!mainData || !cv.getContext) return;
+      const cv = $('ovl'); if (!cv.getContext || !lastRows.zones) return;
       const g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height);
-      g.font = '11px sans-serif'; const cs = cMain.timeScale(), ms = cMain.scalar('main');
-      g.strokeStyle = '#f7c945'; g.lineWidth = 1;
+      g.font = '11px sans-serif';
+      for (const z of lastRows.zones) {
+        const y1 = yOf(z.high), y2 = yOf(z.low);
+        if (y1 == null || y2 == null) continue;
+        const t = TIER[z.tier] || TIER.watch;
+        g.fillStyle = t.f; g.fillRect(0, Math.min(y1, y2), cv.width, Math.abs(y2 - y1));
+        g.strokeStyle = t.c; g.lineWidth = 1;
+        g.beginPath(); g.moveTo(0, y1); g.lineTo(cv.width, y1); g.stroke();
+        g.beginPath(); g.moveTo(0, y2); g.lineTo(cv.width, y2); g.stroke();
+        g.fillStyle = t.c; g.fillText(`${t.l} ${z.low}–${z.high}`, 6, Math.min(y1, y2) - 3);
+      }
+      // user drawings (yellow solid)
+      g.strokeStyle = '#f7c945'; g.setLineDash([]);
       for (const d of loadD()) {
         if (d.type === 'h' && d.price != null) {
-          const y = ms.toNativeCoord?.(d.price) ?? ms.priceToCoordinate(d.price);
-          if (y == null) continue;
+          const y = yOf(d.price); if (y == null) continue;
           g.beginPath(); g.moveTo(0, y); g.lineTo(cv.width, y); g.stroke();
           g.fillStyle = '#f7c945'; g.fillText(String(d.price), 4, y - 3);
         } else if (d.type === 't' && d.a && d.b) {
-          const pa = cs.timeToCoordinate?.(d.a[0]) ?? null, pb = cs.timeToCoordinate?.(d.b[0]) ?? null;
-          const ya = ms.priceToCoordinate?.(d.a[1]) ?? ms.toNativeCoord?.(d.a[1]), yb = ms.priceToCoordinate?.(d.b[1]) ?? ms.toNativeCoord?.(d.b[1]);
+          const pa = xOf(d.a[0]), pb = xOf(d.b[0]);
+          const ya = yOf(d.a[1]), yb = yOf(d.b[1]);
           if (pa == null || pb == null || ya == null || yb == null) continue;
           g.beginPath(); g.moveTo(pa, ya); g.lineTo(pb, yb); g.stroke();
         }
       }
+      // AI lines (purple dashed) from frozen scenario rows
+      g.setLineDash([5, 4]); g.strokeStyle = '#9c27b0';
+      const ai = lastRows.ai || [];
+      if (ai.length) localStorage.setItem(akey(), JSON.stringify(ai));
+      for (const d of ai) {
+        if (d.price == null) continue;
+        const y = yOf(d.price); if (y == null) continue;
+        g.beginPath(); g.moveTo(0, y); g.lineTo(cv.width, y); g.stroke();
+        g.fillStyle = '#9c27b0'; g.fillText(`${d.t} ${d.price}`, cv.width - 110, y - 3);
+      }
+      g.setLineDash([]);
     }
+    const t0 = []; function t0idx(s){ const i = t0.indexOf(s); return i < 0 ? 0 : i; }
 
     let mode = 'none', pend = [];
     function clickPt(ev) {
       const r = $('main').getBoundingClientRect();
       const x = ev.clientX - r.left, y = ev.clientY - r.top;
-      const t = cMain.timeScale().coordinateToTime?.(x) ?? null;
-      const p = cMain.scalar('main').coordinateToPrice?.(y) ?? null;
+      const cs = cMain.timeScale(), ms = cMain.scalar('main');
+      const t = cs.coordinateToTime ? cs.coordinateToTime(x) : null;
+      const p = (ms.coordinateToPrice ? ms.coordinateToPrice(y) : null);
       if (t == null || p == null) return;
       const arr = loadD();
+      const raw = (typeof t === 'number') ? t : Number(t);
       if (mode === 'h') { arr.push({ type:'h', price: Math.round(p*100)/100 }); }
-      else if (mode === 't') { pend.push([t, Math.round(p*100)/100]); if (pend.length === 2) { arr.push({ type:'t', a:pend[0], b:pend[1] }); pend = []; } }
+      else if (mode === 't') { pend.push([raw, Math.round(p*100)/100]); if (pend.length === 2) { arr.push({ type:'t', a:pend[0], b:pend[1] }); pend = []; } }
       saveD(arr); drawOvl();
     }
 
-    let tab = 'env', cache = { env:null, news:null, scn:null };
+    let tab = 'env', cache = { env:null, news:null, scn:null, arc:null };
     function paintTab() {
       document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
       const t = $('tab'); const rows = cache[tab] || [];
       t.innerHTML = rows.length ? rows.map(r => `<tr><td class="k">${r[0]}</td><td>${r[1]}</td></tr>`).join('') : '<tr><td class="k">無資料</td></tr>';
+    }
+
+    // frozen archive + hit-rate (same 1.5% tol / +5 bar as etl/cockpit_p2.py)
+    function archiveRows(bars) {
+      const C = bars.map(b => b.close), T = bars.map(b => b.time);
+      let rows = [];
+      try { rows = (localStorage.getItem('kdw:archive:' + code) || '').split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch (_) {}
+      return rows.map(r => {
+        const i = T.indexOf(r.as_of);
+        let hit = null, actual = null;
+        if (i >= 0 && i + 5 < C.length) {
+          actual = C[i + 5];
+          const cand = { bull: r.scenarios.bull, base: r.scenarios.base, bear: r.scenarios.bear };
+          const best = Object.keys(cand).reduce((a, k) => Math.abs(cand[k] - actual) < Math.abs(cand[a] - actual) ? k : a, 'base');
+          hit = Math.abs(cand[best] - actual) / r.pivot <= 0.015;
+        }
+        return Object.assign({}, r, { actual_5d: actual, hit });
+      });
     }
 
     async function load(c) {
@@ -226,41 +349,40 @@
       $('titleCode').textContent = code;
       history.replaceState(null, '', `?code=${encodeURIComponent(code)}`);
       $('meta').textContent = '載入中…';
-      const [docC, docI, news, regime, ff] = await Promise.all([
+      const [docC, docI, news, regime, ff, js] = await Promise.all([
         jget(`./data/candles/${code}.json`), jget('./data/candles/0050.json'),
-        jget(`./data/candles/${code}_news.json`), jget('./data/regime_latest.json'), jget('./data/fundflo/latest.json'),
+        jget(`./data/candles/${code}_news.json`), jget('./data/regime_latest.json'),
+        jget('./data/fundflo/latest.json'), jget('./data/cockpit/cockpit.jsonl'),
       ]);
       if (!docC || !(docC.daily || []).length) { $('err').hidden = false; $('err').textContent = `尚無快取 data/candles/${code}.json`; return; }
       $('err').hidden = true;
       const bars = docC.daily;
-      const T = bars.map(b => b.time), C = bars.map(b => b.close);
+      const T = bars.map(b => b.time), C = bars.map(b => b.close); t0.length = 0; T.forEach(x => t0.push(x));
       const m50 = sma(C,50), m150 = sma(C,150), m200 = sma(C,200), v20 = sma(bars.map(b => b.volume || 0), 20);
       const n = C.length, last = C[n-1];
       const ago = (a, d) => { const i = n - 1 - d; return (i >= 0) ? a[i] : null; };
       const win = Math.min(252, n);
       const hi52 = Math.max(...bars.slice(-win).map(b => b.high)), lo52 = Math.min(...bars.slice(-win).map(b => b.low));
 
-      // series
       const toP = (a) => a.map((v,i) => v == null ? null : { time:T[i], value:v }).filter(x => x);
       kMain.setData(bars.map(b => ({ time:b.time, open:b.open, high:b.high, low:b.low, close:b.close })));
       l50.setData(toP(m50)); l150.setData(toP(m150)); l200.setData(toP(m200));
       vBar.setData(bars.map((b,i) => v20[i] ? ({ time:T[i], value: b.volume / v20[i] }) : null).filter(x => x));
+      const mks = dailyMarkers(bars);
+      if (kMain.setMarkers) kMain.setMarkers(mks);
 
-      // RS vs 0050: excess pp = own% - bench% over lookback (shape of rsSeries() in indicators.ts)
       let rs21 = null, rs126 = null; const rsLines = { 21:[], 63:[], 126:[] };
       if (docI && (docI.daily || []).length) {
-        const bd = docI.daily, bm = new Map(bd.map(b => [b.time, b.close]));
-        // nearest-on-or-before bench close for each own date (both arrays sorted asc)
+        const bd = docI.daily;
         const near = new Array(n); let p = 0;
         for (let i = 0; i < n; i++) {
           while (p + 1 < bd.length && bd[p + 1].time <= T[i]) p++;
-          near[i] = (bd[p].time <= T[i]) ? { i: p, c: bd[p].close } : null;
+          near[i] = (bd[p].time <= T[i]) ? { c: bd[p].close } : null;
         }
         for (let i = 0; i < n; i++) {
           const nb = near[i]; if (!nb) continue;
           for (const lb of [21, 63, 126]) {
             if (i - lb < 0) continue;
-            // bench value lb bars back = bench at own-date (i-lb)
             const pb = near[i - lb]; if (!pb || !pb.c) continue;
             const sn = C[i], sp = C[i - lb]; if (!sp || !sn) continue;
             const ex = ((sn / sp - 1) - (nb.c / pb.c - 1)) * 100;
@@ -274,7 +396,8 @@
       const checks = computeChecks(last, m50[n-1] ?? last, m150[n-1] ?? last, m200[n-1] ?? last,
         ago(m200,21), ago(m200,84), hi52, lo52, rs21, rs126);
       $('checks').innerHTML = checks.map(c => `<tr><td class="st-${c.status}">${c.label}</td><td class="k">${c.val}</td></tr>`).join('');
-      const v = autoVerdict(checks, last, m50[n-1] ?? last);
+      const vr = v20[n-1] ? bars[n-1].volume / v20[n-1] : null;
+      const v = autoVerdict(checks, last, m50[n-1] ?? last, vr);
       $('verdict').innerHTML = `<span style="color:${v.color}">${v.label}</span>`;
       $('vreason').textContent = v.reason;
 
@@ -287,36 +410,128 @@
         ['R:R (T2)', fmt(ep.rr,2) + (ep.rr >= 2 ? ' ✓' : '')],
       ].map(r => `<tr><td class="k">${r[0]}</td><td>${r[1]}</td></tr>`).join('');
 
-      // tabs
+      const vp = volumeProfile(bars, 120, 30);
+      const zones = supportZones(C, m50[n-1], m150[n-1], m200[n-1], vp);
+      $('zones').innerHTML = (zones.length ? zones.map(z => {
+        const t = TIER[z.tier] || TIER.watch;
+        return `<tr><td class="k" style="color:${t.c}">${z.label}</td><td>${z.low}–${z.high}</td></tr>`;
+      }).join('') : '<tr><td class="k">無</td></tr>');
+      const poc = vp.bins.length ? vp.bins.reduce((a,b) => b.weight > a.weight ? b : a, vp.bins[0]) : null;
+      lastRows.zones = zones.concat(poc ? [{ low: poc.low, high: poc.high, tier:'buy', label:'POC' }] : []);
+
       const lastBar = bars[n-1];
       cache.scn = [
         ['收盤 / 日', `${lastBar.close} · ${lastBar.time}`],
         ['50/150/200 MA', `${fmt(m50[n-1],1)} / ${fmt(m150[n-1],1)} / ${fmt(m200[n-1],1)}`],
         ['52w 高 / 低', `${fmt(hi52,0)} / ${fmt(lo52,0)}`],
-        ['量能比今', v20[n-1] ? fmt(lastBar.volume / v20[n-1], 2) + '×' : '—'],
+        ['量能比今', vr != null ? fmt(vr, 2) + '×' : '—'],
         ['檢查 pass', `${checks.filter(c => c.status === 'pass').length} / 8`],
       ];
-      cache.env = regime ? [
+      let etf = null;
+      try { const e = await jget('./data/etf/00981a/holdings_latest.json'); if (e && e.date) { const h = (e.holdings || []).find(x => x.code === code); etf = `${e.etf} ${e.date}${h ? ` · 持有權重 ${h.weight_pct}%` : ''}`; } } catch (_) {}
+      cache.env = (regime ? [
         ['日期', regime.date || '—'],
         ['主環境', regime.primary_label || regime.primary || '—'],
         ['次環境', regime.secondary_label || regime.secondary || '—'],
         ['信心', fmt(regime.confidence, 2)],
         ['外資淨額', (regime.metrics && regime.metrics.foreign != null) ? regime.metrics.foreign + ' 億' : '—'],
-      ] : [['環境', '尚無 data/regime_latest.json']];
+        ['主動 ETF', etf || 'n/a'],
+      ] : [['環境', '尚無 data/regime_latest.json']]);
       cache.news = (news && news.items) ? news.items.map((it, i) => [it.date || String(i+1), it.title]) : [['消息', '尚無 data/candles/' + code + '_news.json（跑 etl/fetch_sepa_context.py）']];
+
+      // frozen archive (jsonl tail) + hit-rate
+      const rows = archiveRowsFrom(js, bars);
+      const nHit = rows.filter(r => r.hit === true).length, nSc = rows.filter(r => r.hit != null).length;
+      cache.arc = rows.length ? rows.slice(-6).reverse().map(r => [
+        `${r.as_of} ${r.pivot}`, `b${r.scenarios.bull}/c${r.scenarios.base}/s${r.scenarios.bear} 5d=${r.actual_5d ?? '—'} ${r.hit == null ? '—' : (r.hit ? '✓' : '✗')}`
+      ]).concat([['命中率', nSc ? `${nHit}/${nSc} = ${Math.round(nHit / nSc * 1000) / 10}%` : '待下一根K']]) : [['歸檔', '尚無，跑 etl/cockpit_p2.py']];
       paintTab();
 
+      // AI lines: latest frozen scenarios for this code
+      let ai = [];
+      if (rows.length) { const r = rows[rows.length - 1]; ai = [ {t:'bull', price:r.scenarios.bull}, {t:'base', price:r.scenarios.base}, {t:'bear', price:r.scenarios.bear} ]; }
+      lastRows.ai = ai;
+
       $('meta').textContent = `${docC.meta?.source || 'FinMind'} · 日線 · ${n} 根 · 最後 ${lastBar.time} 收 ${lastBar.close}` +
-        (ff && ff.meta && ff.meta.trade_date ? ` · 水 ${ff.meta.trade_date}` : '');
-      mainData = { chart: cMain };
+        ` · 標記 ${mks.length} · 區間 ${zones.length}` +
+        (ff && ff.meta && ff.meta.date ? ` · 水 ${ff.meta.date}` : '');
       sizeCanvas(); drawOvl();
     }
 
+    function archiveRowsFrom(jsonlText, bars) {
+      const C = bars.map(b => b.close), T = bars.map(b => b.time);
+      const rows = [];
+      if (jsonlText) for (const line of String(jsonlText).split('\n')) {
+        if (!line.trim()) continue;
+        try { rows.push(JSON.parse(line)); } catch (_) {}
+      }
+      return rows.filter(r => r && r.code === code).map(r => {
+        const i = T.indexOf(r.as_of);
+        let actual = null, hit = null;
+        if (i >= 0 && i + 5 < C.length) {
+          actual = C[i + 5];
+          const cand = { bull: r.scenarios.bull, base: r.scenarios.base, bear: r.scenarios.bear };
+          const best = Object.keys(cand).reduce((a, k) => Math.abs(cand[k] - actual) < Math.abs(cand[a] - actual) ? k : a, 'base');
+          hit = Math.abs(cand[best] - actual) / r.pivot <= 0.015;
+        }
+        return Object.assign({ actual_5d: actual, hit }, r);
+      });
+    }
+
+    // ---- 憑什麼 floating panel ----
+    async function openPanel() {
+      const [js, docC] = await Promise.all([jget('./data/cockpit/cockpit.jsonl'), jget(`./data/candles/${code}.json`)]);
+      const rows = docC && docC.daily ? archiveRowsFrom(js, docC.daily) : [];
+      const p = $('panel');
+      if (!rows.length) { p.innerHTML = '<h4>憑什麼</h4>尚無凍結點評（跑 etl/cockpit_p2.py）。'; p.classList.remove('hide'); return; }
+      const r = rows[rows.length - 1];
+      const f = r.fields || {};
+      const qs = [
+        `為何偏${f.rsi14 >= 55 ? '多' : (f.rsi14 <= 45 ? '空' : '中性')}？→ rsi14=${fmt(f.rsi14,1)}，Hist ${fmt(f.hist,2)}，量 ${fmt(f.vol_ratio,2)}×20MA`,
+        `法人水怎麼走？→ foreign_flow_yi=${fmt(f.foreign_flow_yi,1)} 億、combined_5d_yi=${fmt(f.combined_5d_yi,1)} 億`,
+        `大環境配合嗎？→ ${f.regime}（信心 ${fmt(f.regime_conf,2)}），基準 0050（非 SPY）`,
+      ];
+      p.innerHTML = '<h4>憑什麼（最後凍結 ' + r.as_of + '）</h4>' +
+        `<div>${(r.comment || '').replace(/\n/g,'<br>')}</div>` +
+        '<ol>' + qs.map(q => `<li class="q">${q}</li>`).join('') + '</ol>' +
+        `<div class="meta">研究檔：<a style="color:var(--accent)" href="./data/research/${code}.md">data/research/${code}.md</a></div>` +
+        '<button type="button" id="pClose" style="margin-top:6px">收合</button>';
+      p.classList.remove('hide');
+      $('pClose').onclick = () => p.classList.add('hide');
+    }
+
+    // ---- live Fugle poll while visible ----
+    let tfs = ['5m'];
+    async function poll() {
+      if (document.hidden) return;
+      let changed = false;
+      for (const lab of tfs) {
+        try {
+          const r = await fetch(`./data/candles/${code}_${lab}.json?_=${Date.now()}`, {cache:'no-store'});
+          if (!r.ok) continue;
+          const part = await r.json();
+          const blk = part.timeframes && part.timeframes[lab];
+          if (blk && blk.ok && blk.n) {
+            const cur = (window.__lastn || {})[lab];
+            if (cur !== blk.n) { (window.__lastn = window.__lastn || {})[lab] = blk.n; changed = true; }
+            if (doc && doc.timeframes) doc.timeframes[lab] = blk;
+          }
+        } catch (_) {}
+      }
+      if (changed && tf !== '1D') paint();
+    }
+    let doc = null, tf = '1D';
+    function paint() { /* re-apply from last load() data */ load(code); }
+    setInterval(poll, 30000);
+    document.addEventListner && document.addEventListner('visibilitychange', () => { if (!document.hidden) poll(); });
+
     $('go').onclick = () => load($('code').value);
     $('code').addEventListener('keydown', (e) => { if (e.key === 'Enter') load($('code').value); });
+    $('panelBtn').onclick = (e) => { e.preventDefault(); openPanel(); };
     $('modeNone').onclick = () => setMode('none'); $('modeH').onclick = () => setMode('h'); $('modeT').onclick = () => setMode('t');
     function setMode(m) { mode = m; pend = []; ['modeNone','modeH','modeT'].forEach(id => $(id).classList.remove('on')); $({ none:'modeNone', h:'modeH', t:'modeT' }[m]).classList.add('on'); }
     $('clr').onclick = () => { localStorage.removeItem(dkey()); drawOvl(); };
+    $('clrAi').onclick = () => { localStorage.removeItem(akey()); lastRows.ai = []; drawOvl(); };
     $('main').onclick = (ev) => { if (mode !== 'none') clickPt(ev); };
     document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.tab; paintTab(); });
 

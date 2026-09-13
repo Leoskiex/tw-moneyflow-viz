@@ -148,7 +148,7 @@
       const e12 = ema(closes, 12), e26 = ema(closes, 26);
       const dif = closes.map((_, i) => e12[i] - e26[i]);
       const dea = ema(dif, 9);
-      const hist = dif.map((v, i) => v - dea[i]);
+      const hist = dif.map((v, i) => v == null || dea[i] == null ? null : 2 * (v - dea[i])); // kansoku indicators.ts macd(): 2*(DIF-DEA)
       return { dif, dea, hist };
     }
     function rsi(closes, n) {
@@ -198,6 +198,35 @@
       return (b && b.ok) ? (b.bars || []) : [];
     }
 
+    // markers on daily — shape of sepa.ts detectMarkers() (E 財报: no cached date list -> [])
+    function dailyMarkers(bars) {
+      const T = bars.map(b => b.time), C = bars.map(b => b.close), H = bars.map(b => b.high);
+      const V = bars.map(b => b.volume || 0);
+      const vol20 = sma(V, 20), ma50 = sma(C, 50), ma200 = sma(C, 200);
+      const mk = [];
+      for (const d of []) { const i = T.indexOf(d); if (i >= 0) mk.push({ time: T[i], position: 'belowBar', color: '#2196f3', shape: 'circle', text: 'E 財报' }); }
+      for (let i = 20; i < C.length; i++) {
+        const v20 = vol20[i];
+        if (v20 && V[i] >= 2.5 * v20 && C[i] < bars[i].open) {
+          const w = Math.max(...H.slice(Math.max(0, i - 5), i + 1));
+          if (H[i] === w) mk.push({ time: T[i], position: 'aboveBar', color: '#d32f2f', shape: 'arrowDown', text: `climax top (${Math.round(V[i] / 1e6)}M, ${(V[i] / v20).toFixed(1)}×)` });
+        }
+      }
+      for (let i = 1; i < C.length; i++) {
+        const p = ma50[i - 1], c = ma50[i];
+        if (p && c && C[i - 1] >= p && C[i] < c) mk.push({ time: T[i], position: 'belowBar', color: '#ff9800', shape: 'arrowDown', text: '跌破 MA50' });
+      }
+      for (let i = 1; i < C.length; i++) {
+        const p = ma200[i - 1], c = ma200[i];
+        if (p && c && C[i - 1] >= p && C[i] < c) mk.push({ time: T[i], position: 'belowBar', color: '#d32f2f', shape: 'arrowDown', text: '跌破 MA200' });
+      }
+      const win = Math.min(252, H.length), hi = Math.max(...H.slice(-win));
+      const hiIdx = H.indexOf(hi);
+      if (hiIdx >= 0) mk.push({ time: T[hiIdx], position: 'aboveBar', color: '#9c27b0', shape: 'square', text: `52w 高 ${hi}` });
+      mk.sort((a, b) => (a.time < b.time ? -1 : 1));
+      return mk;
+    }
+
     function paint() {
       const bars = barsOf();
       if (!bars.length) {
@@ -242,6 +271,7 @@
         });
       }
       chart.timeScale().fitContent(); mChart.timeScale().fitContent(); rChart.timeScale().fitContent();
+      if (tf === '1D' && series.setMarkers) series.setMarkers(dailyMarkers(bars));
 
       // rail
       const last = bars[bars.length - 1], i = bars.length - 1;

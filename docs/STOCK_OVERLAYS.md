@@ -14,8 +14,8 @@ TW 換算（有記錄的偏離）：RS 基準用 **0050**（非 SPY）；MA 維�
 
 ## 1. stock.html 疊加
 - MA5/20/60：SMA，算術平均，前 n-1 根無值。
-- MACD(12/26/9)：EMA k=2/(n+1)，DIF=EMA12−EMA26，DEA=EMA9(DIF)，柱 = DIF−DEA。
-  （note：kansoku `macd()` 的 hist 為 `2*(DIF−DEA)`；本機 stock.html 用單倍，兩版只差 2× 標定。）
+- MACD(12/26/9)：EMA k=2/(n+1)，DIF=EMA12−EMA26，DEA=EMA9(DIF)，柱 = **2×(DIF−DEA)**
+  （與 kansoku `indicators.ts` `macd()` 同式；2330 最後一根 DIF 16.0989 / DEA 14.0271 → hist +4.14）。
 - RSI(14)：Wilder 平滑，AG=(AG·13+g)/14、AL=(AL·13+l)/14，RSI=100−100/(1+AG/AL)，AL=0 取 50。
 - 樞軸（floor trader）：P=(H+L+C)/3，R1=2P−L，S1=2P−H，R2=P+(H−L)，S2=P−(H−L)。
 - KD(9)：K=(C−LLV9)/(HHV9−LLV9)×100，D=K 的 9 根均值；平高取 50。
@@ -55,3 +55,23 @@ RR = (T2−pivot)/(pivot−stop)，≥2 合格、≥3 佳。
 - 消息：`data/candles/<code>_news.json`（FinMind `TaiwanStockNews` 標題，日期+標題，最多 10 條）。
 - 情景：最後收盤、MA50/150/200、52w 高低、今日量能比、pass 數。
 - 法人/ETF 水：`data/fundflo/latest.json` 只讀顯示日期（slim 不由本頁寫入）。
+
+## 7. P3a — `stock.html`（兩項，對齊 sepa.ts / indicators.ts）
+- A1：`macd()` 柱改 **2×(DIF−DEA)**，與 kansoku 同式（2330 最後一根 +4.14）。
+- A2：`setMarkers`（僅 1D）復刻 `sepa.ts` `detectMarkers()`：
+  climax top（量 ≥ 2.5×vol20MA 且為近 6 根局部高，紅 arrowDown）、跌破 MA50（橙）、跌破 MA200（紅）、
+  52w 高（紫 square）；財報 `earnings` 因快取無日期清單 → 傳 `[]`（不佔號）。
+  `index.html` 卡（`data-code`）、`fund-flow.html` 列（`.rank-item`）同形點擊進 `stock.html?code=`。
+
+## 8. P3b — `sepa.html`
+- B1：`dailyMarkers()` 同 A2 四類標記，畫在 SEPA 主 pane。
+- B2：`supportZones()` 復刻 `zones.ts`：預設三層（MA50×0.98~1.02=watch；min(150,200)×0.97~max×1.03=value）
+  + volume profile（近 120 根、30 bins、跨 bin 均攤、peak 擴充 @60% 權重、僅低點以下的 bin）；
+  合併後依 low 降冪、中線 <0.85×last → value 否則 buy；另畫 POC。
+- B3：「憑什麼」浮面板（右上、可關閉）：最後凍結點評全文 + 依數值生成的可追問句（rsi/hist/量比/法人/環境）。
+- B4：`setInterval` 30s 輪詢 `data/candles/<code>_<tf>.json`（帶 `_=` 快取破口）；`visibilitychange` 回前台即補一輪；
+  只比較各 `timeframes[tf].n`，有變才重繪。
+- B5：畫線 `kdw:<code>`、AI 線 `kdw:<code>:ai`（由 jsonl 最後一筆 scenarios 生成紫虛線）；
+  「清除本碼」只移本碼 key，「只清 AI 線」只移 `:ai` key；其他碼 key 不動。
+- A5 Strong Buy：8 條全過 + 價在 pivot~pivot+5% 區間 + 當日量 ≥1.5×20MA → 升 'STRONG BUY'（綠）；2330 現況维持 WATCH。
+
