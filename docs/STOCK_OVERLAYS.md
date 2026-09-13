@@ -81,7 +81,11 @@ RR = (T2−pivot)/(pivot−stop)，≥2 合格、≥3 佳。
   climax top 依 2.5×vol20 + 局部高；E 財报 = 無日期清單 → `[]`。
 - A3 zones（last 2410）：MA50 關注區 2346.12–2441.88；長期價值區 1972.42–2260.88；
   POC 2380.00–2405.83；成交密集區 2328.33–2431.67（vp: lookback 120, bins 30, 60% 擴充）。
-- A4：`setInterval` 30s + `_=` cache-bust；`visibilitychange` 補輪；4 頁 token grep = 0。
+- A4：`setInterval` 30s + `_=` cache-bust；`visibilitychange` 補輪；hidden→skip；4 頁 token grep = 0。
+  **A4 選定（本輪）**：頁面只重讀快取 JSON；實際抓取走 launchd `com.leoskie.p3.poll`（StartInterval=30）
+  跑 `~/Library/Application Support/tw-moneyflow/bin/poll_fugle.sh`（→ `fetch_fugle_candles.py`，
+  逐碼逐 TF，mtime>180s 才抓）；token 只在 env（FUGLE_API_KEY），8777 為 python http.server 無 CGI。
+  `addEventListner`→`addEventListener` 已修（stock + sepa 兩頁），stock.html 補上同形 poll。
 - A5：ext +0.67%、vol_ratio 1.0408(<1.5) → 2330 仍 FAIL(check 8)，Strong Buy 路徑 n/a。
 - B3 命中率：凍結 backfill n=16 hits=11 = 68.8%；jsonl 現 n=2（as_of 2026-09-11 兩筆，+5 根未足 → 暫未計分）。
 - B4 三問（全部由凍結欄位生成）：rsi14/hist/vol_ratio；foreign_flow_yi/combined_5d_yi；regime+信心 vs 0050。
