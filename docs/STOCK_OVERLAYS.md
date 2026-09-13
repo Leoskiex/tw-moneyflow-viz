@@ -75,3 +75,18 @@ RR = (T2−pivot)/(pivot−stop)，≥2 合格、≥3 佳。
   「清除本碼」只移本碼 key，「只清 AI 線」只移 `:ai` key；其他碼 key 不動。
 - A5 Strong Buy：8 條全過 + 價在 pivot~pivot+5% 區間 + 當日量 ≥1.5×20MA → 升 'STRONG BUY'（綠）；2330 現況维持 WATCH。
 
+## 9. §3 證據（computed on Mac, 2026-09-13, 8777 loopback）
+- A1：2330 最後一根 DIF 16.2914 / DEA 14.3102 → hist = 2×(DIF−DEA) = **+3.9625**（js 式 seed）。
+- A2 markers（2330，n=16）：末四筆 — 2026-08-24 跌破MA50、2026-09-02 跌破MA50、2026-06-23 52w高 square 2535；
+  climax top 依 2.5×vol20 + 局部高；E 財报 = 無日期清單 → `[]`。
+- A3 zones（last 2410）：MA50 關注區 2346.12–2441.88；長期價值區 1972.42–2260.88；
+  POC 2380.00–2405.83；成交密集區 2328.33–2431.67（vp: lookback 120, bins 30, 60% 擴充）。
+- A4：`setInterval` 30s + `_=` cache-bust；`visibilitychange` 補輪；4 頁 token grep = 0。
+- A5：ext +0.67%、vol_ratio 1.0408(<1.5) → 2330 仍 FAIL(check 8)，Strong Buy 路徑 n/a。
+- B3 命中率：凍結 backfill n=16 hits=11 = 68.8%；jsonl 現 n=2（as_of 2026-09-11 兩筆，+5 根未足 → 暫未計分）。
+- B4 三問（全部由凍結欄位生成）：rsi14/hist/vol_ratio；foreign_flow_yi/combined_5d_yi；regime+信心 vs 0050。
+- C1：index `.stock` 卡 code→stock.html?code= / name→sepa.html?code=；fund-flow 兩模板 rank-item 加 K線/SEPA 連結。
+- C2：`data/etf/00981a/holdings_latest.json` date 2026-09-11，2330 權重 10.27%（台積電，amount 28,592,240,000 NTD）。
+- Guards：token grep 0（4 頁）、longbridge grep 0、`git diff -- data/fundflo` 空、box crons paused。
+- GitHub：main = b2eaf02（C1）、前置 8cbc86f（P3a/P3b）。
+
