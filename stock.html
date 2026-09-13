@@ -361,6 +361,27 @@
         paint();
       };
     });
+    // ---- live Fugle poll while visible (mirrors sepa.html A4) ----
+    let lastN = {};
+    async function poll() {
+      if (document.hidden) return;
+      const c = $('code').value.trim().toUpperCase();
+      if (!c) return;
+      let changed = false;
+      for (const lab of ['5m', '15m', '60m']) {
+        try {
+          const r = await fetch(`./data/candles/${c}_${lab}.json?_=${Date.now()}`, {cache: 'no-store'});
+          if (!r.ok) continue;
+          const part = await r.json();
+          const blk = part.timeframes && part.timeframes[lab];
+          if (blk && blk.ok && blk.n && lastN[lab] !== blk.n) { lastN[lab] = blk.n; changed = true; }
+        } catch (_) {}
+      }
+      if (changed) load(c);
+    }
+    setInterval(poll, 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
+
     $('go').onclick = () => load($('code').value);
     $('code').addEventListener('keydown', (e) => { if (e.key === 'Enter') load($('code').value); });
     $('sepaLink').setAttribute('href', `./sepa.html?code=${encodeURIComponent(initial)}`);

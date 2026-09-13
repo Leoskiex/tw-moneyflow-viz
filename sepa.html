@@ -523,7 +523,7 @@
     let doc = null, tf = '1D';
     function paint() { /* re-apply from last load() data */ load(code); }
     setInterval(poll, 30000);
-    document.addEventListner && document.addEventListner('visibilitychange', () => { if (!document.hidden) poll(); });
+    document.addEventListener && document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
 
     $('go').onclick = () => load($('code').value);
     $('code').addEventListener('keydown', (e) => { if (e.key === 'Enter') load($('code').value); });
