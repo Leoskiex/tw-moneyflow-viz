@@ -1,3 +1,90 @@
+# Implement paste — WAVE 4 (D4 P3 研究庫刷新採納)
+
+**As of:** 2026-09-17 07:35 TPE · CoS  
+**Already YES:** D1–D9 · D3 · D4 P0–P2 (runtime + pushed `8e8c64e`). Do not re-do.  
+**This wave:** D4 **P3 only** — research refresh → proposal diff → 採納寫回.  
+**Separate track:** freshness/TCC — see `docs/FRESHNESS_RUNBOOK.md` (human/FDA or relocate). Do **not** claim FDA; agents may prep Path A plists only if asked in the same paste’s optional appendix.
+
+Give the coding agent the block below.
+
+```text
+Read /Users/lin/Downloads/tw-moneyflow-viz/docs/MASTER_DESIGN_AND_GATES.md (D4 P3)
+also PRO_FEATURES_DERIVED.md §3 研究庫 AI, KANSOKU_FEATURES_GAP.md,
+etl/candle_server.py (/ask, /research-deep), etl/research_deep.py,
+src pages Research.jsx, data/research/*.md.
+
+GO: WAVE 4 — D4 P3 研究庫刷新採納 into SPA :8778 + :8790.
+Then STOP and report. Do not vendor kansoku. No Longbridge. No keys in frontend.
+No FundFlo slim writes. Box crons paused. Do not re-do P0–P2 / D1–D9 / D3.
+Do NOT merge AISTOCKMAP. Do NOT start P4 盲盤／畫布 this wave.
+Freshness/TCC/FDA is OUT OF SCOPE unless the optional appendix is explicitly included — default SKIP.
+
+### D4 P3 — 研究庫刷新採納
+缺口：对现有 md 刷新 → 提案 diff → 用户採納／拒絕寫回（先整篇，再分节若有時間）.
+
+1) Helper POST :8790/research-refresh
+   Body: { code, path? }  # default latest research md for code, or deep md
+   Behavior:
+   - Read current md from data/research/
+   - Pack fresh market context (daily+FundFlo+news+SEPA overlays) like research-deep
+   - Local LLM proposes a FULL rewritten md (整篇重刷 first)
+   - Write proposal to data/research/proposals/<code>-<ts>.md
+     AND a sidecar data/research/proposals/<code>-<ts>.diff.json
+     { base_path, proposal_path, summary, sections_changed[], created_at }
+   - Return job id + poll (queued→pack→llm→propose→done) same pattern as research-deep
+   - LLM down → clear error, no fake proposal
+
+2) Helper POST :8790/research-adopt
+   Body: { proposal_id or proposal_path, action: "adopt"|"reject" }
+   - adopt: backup current md → data/research/history/<code>-<ts>.md ;
+            overwrite target md with proposal; append timeline row
+            data/research/timeline/<code>.jsonl
+            {ts, action, proposal, base}
+   - reject: mark proposal rejected in sidecar; no overwrite
+   - Never delete history
+
+3) SPA 研究庫
+   - On open doc: buttons 「刷新提案」+ progress
+   - When proposal ready: show diff summary (and side-by-side or unified diff if cheap)
+   - 「採納」／「拒絕」→ call research-adopt; viewer reloads adopted md
+   - Timeline strip: last N adopt/reject events for this code
+
+4) Honesty
+   - Proposals must field-cite like deep research; no invented numbers
+   - If base md missing → offer create via existing 深度研究, not empty adopt
+
+Acceptance:
+- [ ] 2454: one refresh → proposal files exist; UI shows diff/summary
+- [ ] 採納 → md updated + history backup + timeline row; 拒絕 → md unchanged
+- [ ] tokens 0 (src+dist grep)
+- [ ] no kansoku-pro files
+
+### Optional appendix — ONLY if paste says INCLUDE_FRESHNESS_PREP
+Prep Path A from docs/FRESHNESS_RUNBOOK.md (plist path rewrites to
+~/Library/Application Support/tw-moneyflow/runtime/) but DO NOT rsync huge candles
+without user OK; DO NOT claim FDA. Default for this wave: SKIP appendix.
+
+After WAVE 4: reply
+YES master D4P3
+with URLs, proposal paths, adopt smoke on 2454, token grep count.
+If push blocked, leave:
+  /Users/lin/Library/Application Support/tw-moneyflow/wave4.bundle
+Then STOP.
+```
+
+---
+
+## Freshness (human + local) — not a coding-agent “feature” wave
+
+Follow `docs/FRESHNESS_RUNBOOK.md`:
+1. Prefer **Path A** relocate runtime → Application Support; re-point 8790 / finmind / fugle launchd.
+2. Or **Path B** Full Disk Access for python3 (human click).
+3. Reboot checklist §6.
+
+---
+
+## Archive — WAVE 3 (done Mini + push 8e8c64e 2026-09-17)
+
 # Implement paste — WAVE 3 (D3 熱力 + D4 P1 記憶 + D4 P2 深研)
 
 **As of:** 2026-09-17 04:40 TPE · CoS  
