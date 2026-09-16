@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "updated": "2026-09-16",
+    "source": "手工整理自公開 13F / 新聞（非即時報價）；報價欄為 seed，盤中由 :8790 補（需 FINNHUB_API_KEY，無 key 顯示 seed）",
+    "note": "本頁＝美 NVIDIA 生態觀察，≠ 台股 /live"
+  },
+  "holdings": [
+    {"ticker": "NVDA", "name": "NVIDIA", "status": "current", "tags": ["core"], "investment_usd": null, "sector": "半導體／AI 晶片", "tw_code": null, "note": "觀察主體；13F 追蹤其持有組合"},
+    {"ticker": "TSM", "name": "TSMC", "status": "current", "tags": ["supply-chain"], "investment_usd": 32000000000, "sector": "晶圓代工", "tw_code": "2330", "note": "CoWoS 先進封裝／AI 晶圓主要代工；NVIDIA 生態敘事"},
+    {"ticker": "MRVL", "name": "Marvell Technology", "status": "current", "tags": ["data-center", "custom-asic"], "investment_usd": 900000000, "sector": "資料中心／自訂 ASIC", "tw_code": null, "note": "資料中心 ASIC／光電"},
+    {"ticker": "AVGO", "name": "Broadcom", "status": "current", "tags": ["custom-asic", "networking"], "investment_usd": 1500000000, "sector": "自訂 ASIC／網通", "tw_code": null, "note": "自訂晶片＋網通"},
+    {"ticker": "INTC", "name": "Intel", "status": "current", "tags": ["strategic", "partnership"], "investment_usd": 5000000000, "sector": "CPU／製程", "tw_code": null, "note": "NVIDIA 战略投資＋合作敘事（2025）"},
+    {"ticker": "GLW", "name": "Corning", "status": "current", "tags": ["optical", "glass"], "investment_usd": 400000000, "sector": "光通訊材料", "tw_code": null, "note": "光纖／光學玻璃"},
+    {"ticker": "ANET", "name": "Arista Networks", "status": "current", "tags": ["networking", "data-center"], "investment_usd": 700000000, "sector": "資料中心網通", "tw_code": null, "note": "AI 資料中心交換"},
+    {"ticker": "SMCI", "name": "Super Micro", "status": "exited", "tags": ["ai-server"], "investment_usd": 250000000, "sector": "AI 伺服器", "tw_code": null, "note": "AI 伺服器整合（觀察組合曾含）"},
+    {"ticker": "Naver", "name": "Naver Corp", "status": "partnership", "tags": ["strategic", "kr"], "investment_usd": 1000000000, "sector": "韓國 AI 平台", "tw_code": null, "note": "NVIDIA $1B 戰略配置（2026）"},
+    {"ticker": "SPCX", "name": "SpaceX (未上市)", "status": "partnership", "tags": ["strategic"], "investment_usd": 21000000000, "sector": "太空／資料中心", "tw_code": null, "note": "NVIDIA $21B 持股（2026，敘事）"},
+    {"ticker": "GENB", "name": "Genesis / 特殊持股", "status": "partnership", "tags": ["special"], "investment_usd": 120000000, "sector": "特殊", "tw_code": null, "note": "非公開／特殊觀察（佔位，待補）"}
+  ]
+}

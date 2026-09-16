@@ -1,0 +1,12 @@
+{
+  "meta": { "updated": "2026-09-16", "source": "公開新聞／13F 手整；季度更新" },
+  "events": [
+    {"date": "2026-08-18", "ticker": "NVDA", "type": "earnings", "text": "NVIDIA 財報：資料中心營收再創高，指引維持強勁（seed）"},
+    {"date": "2026-07-02", "ticker": "SPCX", "type": "stake", "text": "NVIDIA 宣布對 SpaceX 約 $21B 持股／合作（seed）"},
+    {"date": "2026-05-21", "ticker": "Naver", "type": "stake", "text": "NVIDIA 對 Naver $1B 戰略配置（seed）"},
+    {"date": "2026-04-30", "ticker": "NVDA", "type": "13f", "text": "13F：NVDA 組合維持 TSM／MRVL／AVGO 為前重；新增 ANET 觀察"},
+    {"date": "2026-02-14", "ticker": "INTC", "type": "partnership", "text": "NVIDIA–Intel 合作敘事深化（x86＋NVIDIA GPU 機架）"},
+    {"date": "2025-12-01", "ticker": "GLW", "type": "supply", "text": "光學材料需求隨 AI 資料中心擴張（seed）"},
+    {"date": "2025-10-20", "ticker": "TSM", "type": "supply", "text": "CoWoS 產能擴產，對應 NVIDIA 先進封裝需求（seed）"}
+  ]
+}
