@@ -477,3 +477,49 @@
 .qb-links a { color: var(--text2); text-decoration: none; }
 .qb-links a:hover { color: var(--accent); }
 .qb-ext { border-bottom: 1px dashed var(--border); }
+
+/* ---------- WAVE 3: 台股熱力 (D3) ---------- */
+.heat { margin-bottom: 12px; }
+.heat-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px 14px 6px; }
+.heat-title { display: flex; align-items: baseline; gap: 8px; }
+.heat-title h3 { margin: 0; font-size: 14px; }
+.heat-modes { display: inline-flex; gap: 4px; }
+.heat-modes .mbtn { font-size: 11px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); }
+.heat-modes .mbtn.active { color: var(--text); border-color: var(--accent); }
+.heat-grid { padding: 4px 14px 10px; display: flex; flex-direction: column; gap: 10px; max-height: 560px; overflow: auto; }
+.heat-group-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; letter-spacing: .4px; }
+.heat-cells { display: flex; flex-wrap: wrap; gap: 5px; }
+.heat-cell { border: 1px solid var(--border); border-radius: 8px; padding: 5px 8px; text-align: left; display: flex; flex-direction: column; gap: 1px; min-width: 92px; cursor: pointer; }
+.heat-cell:hover { outline: 2px solid var(--accent); }
+.hc-name { font-size: 11px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+.hc-val { font-size: 11px; font-weight: 600; }
+.hc-n { font-size: 9px; }
+.heat-detail { padding: 8px 14px 12px; }
+.heat-back { font-size: 12px; color: var(--accent); cursor: pointer; margin-bottom: 6px; }
+.heat-detail-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.heat-members { display: flex; flex-wrap: wrap; gap: 5px; max-height: 300px; overflow: auto; }
+.hm-row { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 4px 9px; text-decoration: none; color: var(--text); background: var(--surface2); }
+.hm-row:hover { border-color: var(--accent); }
+.hm-row.dim { opacity: .55; }
+.hm-code { font-weight: 600; }
+.heat-foot { padding: 8px 14px; border-top: 1px dashed var(--border); font-size: 10px; }
+.heat.compact .heat-grid { max-height: 380px; }
+.heatpage { max-width: 1100px; }
+.secbar { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.secbar h3 { margin: 0; font-size: 14px; }
+
+/* ---------- WAVE 3: 長期記憶 (D4 P1) ---------- */
+.mem-head, .symmem-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mem-head h3 { margin: 0 0 8px; font-size: 14px; }
+.mem-btns, .symmem-btns { display: inline-flex; gap: 6px; }
+.mem-head .btn { font-size: 11px; padding: 3px 10px; }
+.symmem { padding: 8px 4px; }
+.symmem-head b { font-size: 12px; }
+.symmem .fld { margin-bottom: 6px; }
+
+/* ---------- WAVE 3: 深度研究 (D4 P2) ---------- */
+.jdeep { border-left: 3px solid var(--accent); }
+.deep-progress { margin: 8px 0 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); }
+.deep-phases { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.deep-ph { font-size: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+.deep-ph.on { color: var(--text); border-color: var(--accent); background: rgba(56,189,248,.12); }

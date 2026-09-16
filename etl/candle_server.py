@@ -65,6 +65,72 @@ def is_fresh(p: Path) -> bool:
     return a > 0 and a <= STALE_MS
 
 
+# ---------- WAVE 3 D4 P1: 長期記憶 (small JSON memory layer) ----------
+MEM_DIR = ROOT / "data" / "memory"
+MEM_SYMBOLS = MEM_DIR / "symbols"
+
+
+def _mem_user_path() -> Path:
+    return MEM_DIR / "user.json"
+
+
+def _mem_symbol_path(code: str) -> Path:
+    return MEM_SYMBOLS / f"{str(code).zfill(4)}.json"
+
+
+def _read_json_safe(p: Path):
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def memory_context(code: str) -> dict:
+    """Injectable memory block for /ask and /p2. Never contains secrets.
+    Missing files -> empty (assistant still works)."""
+    out = {"present": False, "user": None, "symbol": None}
+    u = _read_json_safe(_mem_user_path())
+    s = _read_json_safe(_mem_symbol_path(code)) if code else None
+    if u is not None:
+        out["user"] = u
+        out["present"] = True
+    if s is not None:
+        out["symbol"] = s
+        out["present"] = True
+    return out
+
+
+def memory_render(code: str) -> str:
+    """Compact text block appended to an LLM prompt. Empty string if none."""
+    mc = memory_context(code)
+    if not mc["present"]:
+        return ""
+    lines = ["[長期記憶 — 本機 user/symbol JSON，供上下文引用，非新聞]"]
+    u = mc["user"] or {}
+    if u:
+        pref = u.get("risk_pref")
+        rules = u.get("rules") or []
+        notes = u.get("watch_notes") or []
+        if pref:
+            lines.append(f"- 風險偏好: {pref}")
+        if notes:
+            lines.append(f"- 觀察備註: {('; '.join(str(n) for n in notes))[:300]}")
+        if rules:
+            lines.append(f"- 規則: {('; '.join(str(r) for r in rules))[:300]}")
+    s = mc["symbol"] or {}
+    if s:
+        tk = s.get("last_takeaway")
+        lo = s.get("levels_of_interest") or []
+        un = s.get("user_notes") or []
+        if tk:
+            lines.append(f"- {code} 上次結論: {str(tk)[:300]}")
+        if lo:
+            lines.append(f"- {code} 關注位: {('; '.join(str(x) for x in lo))[:300]}")
+        if un:
+            lines.append(f"- {code} 用戶筆記: {('; '.join(str(x) for x in un))[:300]}")
+    return "\n".join(lines)
+
+
 def _env() -> dict:
     e = dict(os.environ)
     key = load_key()
@@ -736,6 +802,7 @@ class Handler(BaseHTTPRequestHandler):
         q = urllib.parse.urlparse(self.path).query
         p = urllib.parse.parse_qs(q)
         path = urllib.parse.urlparse(self.path).path
+        code = (p.get("code", [""]) or [""])[0].strip().upper()
         if path == "/livescan":
             out = live_scan(force_refresh=True)
             self._send(200, out)
@@ -787,12 +854,58 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._send(200, {"code": code, "state": follow_state(code)})
             return
+        if path == "/research-deep":
+            # WAVE 3 P2: poll deep-research job status (phase file written by etl/research_deep.py)
+            pf = Path(f"/tmp/deepresearch_{code}.json")
+            if not code or not pf.exists():
+                self._send(200, {"code": code, "status": None})
+                return
+            try:
+                st = json.loads(pf.read_text(encoding="utf-8"))
+            except Exception:
+                st = None
+            if st and st.get("running") and time.time() - st.get("updated_at", 0) > 900:
+                st = {**st, "running": False, "phase": "error", "activity": "timeout (15m)"}
+            self._send(200, {"code": code, "status": st})
+            return
+        if path == "/memory":
+            code = (p.get("code", [""]) or [""])[0].strip().upper()
+            u = _read_json_safe(_mem_user_path())
+            s = _read_json_safe(_mem_symbol_path(code)) if code else None
+            self._send(200, {"user": u, "symbol": s, "code": code,
+                             "present": memory_context(code)["present"]})
+            return
+        if path == "/research-read":
+            # WAVE 3 P2: read a research file's text. ?code=2454&deep=1 -> latest {code}-deep-*.md ; else {code}.md
+            deep = bool(p.get("deep", [""])[0])
+            if not code:
+                self._send(400, {"error": "code required"})
+                return
+            d = ROOT / "data" / "research"
+            target = None
+            if deep and d.is_dir():
+                cands = sorted(d.glob(f"{code}-deep-*.md"), reverse=True)
+                if cands:
+                    target = cands[0]
+            if target is None:
+                target = d / f"{code}.md"
+            if not target.exists():
+                self._send(200, {"code": code, "deep": deep, "text": None, "name": None})
+                return
+            self._send(200, {"code": code, "deep": deep, "name": target.name,
+                             "text": target.read_text(encoding="utf-8"),
+                             "mtime": int(target.stat().st_mtime)})
+            return
         if path == "/research":
             out = []
             d = ROOT / "data" / "research"
             if d.is_dir():
                 for f in sorted(d.glob("*.md"), reverse=True):
-                    out.append({"name": f.stem, "size": f.stat().st_size,
+                    stem = f.stem
+                    deep = stem.rsplit("-deep-", 1)
+                    out.append({"name": f.name, "stem": stem, "deep": bool(deep) and len(deep) == 2,
+                                "code": (deep[0] if deep and len(deep) == 2 else stem),
+                                "size": f.stat().st_size,
                                 "mtime": int(f.stat().st_mtime)})
             self._send(200, {"docs": out})
             return
@@ -929,6 +1042,69 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, {"ok": False, "error": f"{type(e).__name__}: {e}"})
             return
 
+        if path == "/research-deep":
+            # WAVE 3 P2: start deep-research job (six-section md). Subprocess, poll /research-deep?code=
+            if not code or len(code) != 4 or not code.isalnum():
+                self._send(400, {"error": "code required"})
+                return
+            pf = Path(f"/tmp/deepresearch_{code}.json")
+            if pf.exists():
+                try:
+                    st = json.loads(pf.read_text(encoding="utf-8"))
+                    if st.get("running") and time.time() - st.get("updated_at", 0) < 900:
+                        self._send(202, {"started": False, "reason": "already-running", "code": code})
+                        return
+                except Exception:
+                    pass
+            log(f"research-deep {code}")
+            subprocess.Popen(
+                [sys.executable, "etl/research_deep.py", code],
+                cwd=str(ROOT), start_new_session=True,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self._send(202, {"started": True, "code": code})
+            return
+
+        if path == "/memory":
+            # WAVE 3 P1: edit / clear user memory and per-symbol memory.
+            # Frontend sends the full object it wants persisted (or {} to clear a field).
+            action = str(req.get("action") or "save").strip()
+            target = str(req.get("scope") or "user").strip().lower()
+            if target not in ("user", "symbol"):
+                self._send(400, {"ok": False, "error": "scope must be user|symbol"})
+                return
+            payload = req.get("data") or {}
+            if target == "symbol":
+                if not code or len(code) != 4 or not code.isalnum():
+                    self._send(400, {"ok": False, "error": "code required for symbol memory"})
+                    return
+                pth = _mem_symbol_path(code)
+            else:
+                pth = _mem_user_path()
+            if action == "clear":
+                # clear = delete file (symbol) or reset to {} (user keeps schema)
+                if target == "symbol":
+                    pth.unlink(missing_ok=True)
+                    self._send(200, {"ok": True, "scope": "symbol", "code": code,
+                                     "cleared": True, "present": False})
+                else:
+                    pth.parent.mkdir(parents=True, exist_ok=True)
+                    pth.write_text(json.dumps({}, ensure_ascii=False), encoding="utf-8")
+                    self._send(200, {"ok": True, "scope": "user", "cleared": True, "present": False})
+                return
+            # save
+            pth.parent.mkdir(parents=True, exist_ok=True)
+            existing = _read_json_safe(pth) or {}
+            merged = {**existing, **payload}
+            # strip null/empty values so "clear a field" (send null) works
+            for k in list(merged.keys()):
+                if merged[k] is None or merged[k] == "" or merged[k] == []:
+                    merged.pop(k, None)
+            pth.write_text(json.dumps(merged, ensure_ascii=False, indent=2), encoding="utf-8")
+            log(f"memory save scope={target} code={code} keys={list(merged.keys())}")
+            self._send(200, {"ok": True, "scope": target, "code": code,
+                             "present": True, "saved": merged})
+            return
+
         if path == "/research-save":
             if not code or len(code) != 4 or not code.isalnum():
                 self._send(400, {"error": "code required"})
@@ -1026,12 +1202,14 @@ class Handler(BaseHTTPRequestHandler):
             ov = {k: clip(v, 24) for k, v in (ctx.get("overlays") or {}).items()}
             fl = {k: clip(v, 24) for k, v in (ctx.get("fundflo") or {}).items()}
             doc_excerpt = str(ctx.get("doc_excerpt") or ctx.get("doc") or "")[:3000]
+            mem_block = memory_render(code)
             prompt = ("你是台股駕駛艙助手。用繁體中文簡短回答（<120字）。每句結論必須引用給定欄位"
                       "（close/MA20/HIST/RSI/vol_ratio/foreign_net_yi 等）；資料不足就直說；不給投資建議。\n"
                       f"代碼 {code} 週期 {clip(ctx.get('tf'), 8)}\n"
                       f"疊加欄位: {json.dumps(ov, ensure_ascii=False)}\n"
                       f"法人 FundFlo: {json.dumps(fl, ensure_ascii=False)}\n"
                       + (f"研究檔摘錄:\n{doc_excerpt}\n" if doc_excerpt else "")
+                      + (f"{mem_block}\n" if mem_block else "")
                       + f"近{len(bars)}根K: {bars_s}\n"
                       f"問: {q[:200]}")
             try:

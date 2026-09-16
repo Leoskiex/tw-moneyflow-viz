@@ -7,6 +7,7 @@ import FundRank from '../features/story/FundRank.jsx';
 import CmiBadge from '../features/cmi/CmiBadge.jsx';
 import ActionRadar from '../features/radar/ActionRadar.jsx';
 import DigestPanel from '../features/story/DigestPanel.jsx';
+import HeatTw from '../features/heat/HeatTw.jsx';
 
 // / — 今日 (D1: FundFlo 五章故事 + 水流排行 遷入 SPA，讀同一 data/fundflo JSON)
 // 名稱／代號點擊 → /symbol/:code（keep code）。舊 :8777/fund-flow.html 不再是唯一入口。
@@ -55,6 +56,7 @@ export default function Home() {
         {(ff?.stocks || []).slice(0, 8).map(s => <Link key={s.code} className="chip" to={`/symbol/${s.code}`}>{s.code} {s.name}</Link>)}
         <span className="qb-links muted">
           <Link to="/flow">盤面 泡泡</Link>
+          <Link to="/heat">熱力</Link>
           <Link to="/board">看圖版</Link>
           <a href="http://127.0.0.1:8765/" target="_blank" rel="noreferrer" className="qb-ext">產業地圖 ↗</a>
         </span>
@@ -64,6 +66,13 @@ export default function Home() {
         <div className="home-main">
           <StoryChapters />
           <FundRank />
+          <div style={{ marginBottom: 10 }}>
+            <div className="secbar">
+              <h3 style={{ display: 'inline' }}>熱力</h3>
+              <Link to="/heat" className="muted" style={{ fontSize: 12 }}>完整熱力 →</Link>
+            </div>
+            <HeatTw compact />
+          </div>
           <DigestPanel />
           <ActionRadar />
 
@@ -108,6 +117,7 @@ export default function Home() {
             <h3>導航</h3>
             <div className="kv">
               <Link to="/flow" style={{ display: 'block', padding: '3px 0' }}>盤面 泡泡圖 →</Link>
+              <Link to="/heat" style={{ display: 'block', padding: '3px 0' }}>台股熱力 →</Link>
               <Link to="/board" style={{ display: 'block', padding: '3px 0' }}>看圖版 →</Link>
               <Link to="/watch" style={{ display: 'block', padding: '3px 0' }}>NVIDIA 觀察 →</Link>
               <Link to="/live" style={{ display: 'block', padding: '3px 0' }}>盤中 Live →</Link>

@@ -14,6 +14,7 @@ import SymbolSearch from './pages/SymbolSearch.jsx';
 import FlowPage from './pages/FlowPage.jsx';
 import WatchPage from './pages/WatchPage.jsx';
 import BoardPage from './pages/BoardPage.jsx';
+import HeatPage from './pages/HeatPage.jsx';
 
 // Same route shapes as kansoku apps/web/src/generated-routes.ts (reimplemented, not copied):
 // /  /symbol/:sym  /symbol/sepa/:sym  /research  /settings  /settings/:section
@@ -25,6 +26,7 @@ const routes = [
   { path: '/flow', element: <AppSkeleton><FlowPage /></AppSkeleton> },
   { path: '/watch', element: <AppSkeleton><WatchPage /></AppSkeleton> },
   { path: '/board', element: <AppSkeleton><BoardPage /></AppSkeleton> },
+  { path: '/heat', element: <AppSkeleton><HeatPage /></AppSkeleton> },
   { path: '/symbol', element: <AppSkeleton><SymbolSearch /></AppSkeleton> },
   { path: '/symbol/:sym', element: <AppSkeleton><SymbolCockpit /></AppSkeleton> },
   { path: '/symbol/sepa/:sym', element: <AppSkeleton><SepaSymbolPage /></AppSkeleton> },

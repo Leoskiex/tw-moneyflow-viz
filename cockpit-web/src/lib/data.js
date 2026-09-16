@@ -403,3 +403,51 @@ export function mdToHtml(src) {
   closeLists(); closeTable();
   return html;
 }
+
+// ---------- WAVE 3 D4 P1: 長期記憶 (helper :8790 /memory, files data/memory/*) ----------
+// No keys in the frontend; memory is plain user/symbol JSON persisted on the Mac.
+export async function memoryGet(code) {
+  if (!HELPER) return { user: null, symbol: null, present: false };
+  const q = code ? `?code=${encodeURIComponent(code)}` : '';
+  return jget(`${HELPER}/memory${q}`) || { user: null, symbol: null, present: false };
+}
+export async function memorySave(scope, data, code) {
+  if (!HELPER) return { error: 'helper offline' };
+  try {
+    const r = await fetch(`${HELPER}/memory`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'save', scope, code: code || '', data }),
+    });
+    return r.json();
+  } catch (_) { return { error: 'helper offline' }; }
+}
+export async function memoryClear(scope, code) {
+  if (!HELPER) return { error: 'helper offline' };
+  try {
+    const r = await fetch(`${HELPER}/memory`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'clear', scope, code: code || '' }),
+    });
+    return r.json();
+  } catch (_) { return { error: 'helper offline' }; }
+}
+
+// ---------- WAVE 3 D4 P2: 深度研究 (helper :8790 /research-deep job + poll) ----------
+export async function researchDeepStart(code) {
+  if (!HELPER) return { error: 'helper offline' };
+  try {
+    const r = await fetch(`${HELPER}/research-deep`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    return r.json();
+  } catch (_) { return { error: 'helper offline' }; }
+}
+export async function researchDeepStatus(code) {
+  if (!HELPER) return null;
+  return jget(`${HELPER}/research-deep?code=${encodeURIComponent(code)}`);
+}
+export async function researchRead(code, deep) {
+  if (!HELPER) return null;
+  return jget(`${HELPER}/research-read?code=${encodeURIComponent(code)}&deep=${deep ? 1 : 0}`);
+}

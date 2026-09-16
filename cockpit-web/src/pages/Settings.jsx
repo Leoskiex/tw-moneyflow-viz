@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTpeClock } from '../lib/clock.js';
+import UserMemory from '../features/memory/UserMemory.jsx';
 
 // /settings — model slots + Asia/Taipei clock (like kansoku settings shot).
 // No keys in the frontend: credentials live in Mac env (FINMIND/FUGLE/LLM on :8790 helper).
@@ -31,6 +32,8 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      <UserMemory />
 
       <div className="card" style={{ marginBottom: 14 }}>
         <h3>時區 / 時鐘</h3>

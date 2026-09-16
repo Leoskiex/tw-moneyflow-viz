@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { n2, mdToHtml, comments, reassessStart, reassessStatus, explain, STANCE_LABEL, STANCE_TONE, historyRows, noteGet, noteSet, jraw, DATA, helperNews } from '../../lib/data.js';
+import SymbolMemory from './SymbolMemory.jsx';
 
 // Right rail — 预测 · 环境 · 消息 · 复盘 · AI点评 + docked ChatDock (及時 AI).
 // Tab set mirrors kansoku features/cockpit/sharedSidebarTabs.tsx (prediction/env/news/review/ai),
@@ -34,6 +35,7 @@ export default function SidebarTabs({ code, doc, rows, overlay, fundRow, etf, ne
     { k: 'news', l: '消息' },
     { k: 'review', l: '复盘' },
     { k: 'ai', l: 'AI点评' },
+    { k: 'memory', l: '记忆' },
   ];
 
   return (
@@ -93,6 +95,9 @@ export default function SidebarTabs({ code, doc, rows, overlay, fundRow, etf, ne
               <div className="kvrow"><span>量比</span><b>{n2(overlay.vol_ratio)}</b></div>
             )}
           </div>
+        )}
+        {tab === 'memory' && (
+          <SymbolMemory code={code} />
         )}
         {tab === 'news' && (
           <div className="kv">
