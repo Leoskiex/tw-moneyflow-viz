@@ -523,3 +523,24 @@
 .deep-phases { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
 .deep-ph { font-size: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
 .deep-ph.on { color: var(--text); border-color: var(--accent); background: rgba(56,189,248,.12); }
+
+/* ---------- WAVE 4: 研究庫刷新採納 (D4 P3) ---------- */
+.refresh { margin: 10px 0; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface2); }
+.rf-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.rf-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.rf-row { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: var(--surface); }
+.rf-row:hover { border-color: var(--accent); }
+.rf-detail { border-top: 1px dashed var(--border); padding-top: 8px; }
+.rf-detail-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+.rf-diffsum { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.rf-secdiff { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.sd { font-size: 11px; border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
+.sd.up { border-color: var(--ok); color: var(--ok); } .sd.dn { border-color: var(--down); color: var(--down); }
+.rf-unified { margin: 6px 0; }
+.rf-unified pre { max-height: 220px; overflow: auto; font-size: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+.rf-proposed { max-height: 340px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--surface); margin-bottom: 8px; }
+.rf-actions { display: flex; gap: 8px; margin-top: 8px; }
+.rf-timeline { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 6px; }
+.rf-tl-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.rf-tl { font-size: 10px; border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; }
+.rf-tl.up { border-color: var(--ok); } .rf-tl.dn { border-color: var(--down); }

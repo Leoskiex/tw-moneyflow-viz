@@ -4,6 +4,7 @@ import {
   HELPER, jget, jraw, DATA, getJsonl, helperAsk, mdToHtml, researchDraft, researchSave,
   researchDeepStart, researchDeepStatus, researchRead,
 } from '../lib/data.js';
+import ResearchRefresh from '../features/research/ResearchRefresh.jsx';
 // /research — 研究庫 three-pane inside the shell (left list | center doc | right 追問)
 // #17: AI 起草（head vLLM）→ 可編輯 → 存回 data/research/{code}.md
 // WAVE 3 P2: 深度研究（:8790 /research-deep）→ data/research/{code}-deep-YYYYMMDD.md + 進度 UI
@@ -123,6 +124,14 @@ export default function Research() {
     else setSavedNote(r.error || '保存失敗');
   };
 
+  // WAVE 4 P3: reload the current doc after a refresh is adopted
+  const onAdopted = async () => {
+    if (!cur) return;
+    const txt = await jraw(DATA(`data/research/${cur}.md`));
+    if (txt) { setDocText(txt); setEditing(false); }
+    await refresh();
+  };
+
   return (
     <div className="research">
       <div className="r-left">
@@ -177,6 +186,7 @@ export default function Research() {
               <div className="muted" style={{ fontSize: 11 }}>{deep.activity || '…'}</div>
             </div>
           )}
+          {cur && !editing && <ResearchRefresh code={cur} onAdopted={onAdopted} />}
           {editing ? (
             <textarea className="md-edit" value={docText} onChange={e => setDocText(e.target.value)}
               placeholder="研究檔 markdown（AI 起草或自填）" style={{ height: 'calc(100% - 44px)', marginTop: 8 }} />

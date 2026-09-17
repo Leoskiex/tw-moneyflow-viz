@@ -451,3 +451,38 @@ export async function researchRead(code, deep) {
   if (!HELPER) return null;
   return jget(`${HELPER}/research-read?code=${encodeURIComponent(code)}&deep=${deep ? 1 : 0}`);
 }
+
+// ---------- WAVE 4 D4 P3: 研究庫刷新採納 (helper :8790 /research-refresh + /research-adopt) ----------
+export async function researchRefreshStart(code, path) {
+  if (!HELPER) return { error: 'helper offline' };
+  try {
+    const r = await fetch(`${HELPER}/research-refresh`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, path: path || '' }),
+    });
+    return r.json();
+  } catch (_) { return { error: 'helper offline' }; }
+}
+export async function researchRefreshStatus(code) {
+  if (!HELPER) return null;
+  return jget(`${HELPER}/research-refresh?code=${encodeURIComponent(code)}`);
+}
+export async function researchProposals(code, file) {
+  if (!HELPER) return { proposals: [], detail: null };
+  const q = file ? `&file=${encodeURIComponent(file)}` : '';
+  return jget(`${HELPER}/research-proposals?code=${encodeURIComponent(code)}${q}`) || { proposals: [], detail: null };
+}
+export async function researchAdopt(code, proposal, action) {
+  if (!HELPER) return { error: 'helper offline' };
+  try {
+    const r = await fetch(`${HELPER}/research-adopt`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, proposal, action }),
+    });
+    return r.json();
+  } catch (_) { return { error: 'helper offline' }; }
+}
+export async function researchTimeline(code) {
+  if (!HELPER) return { rows: [] };
+  return jget(`${HELPER}/research-timeline?code=${encodeURIComponent(code)}`) || { rows: [] };
+}
