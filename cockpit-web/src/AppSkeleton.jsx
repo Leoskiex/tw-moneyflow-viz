@@ -42,7 +42,7 @@ export default function AppSkeleton({ children, right }) {
   return (
     <div className="app-root">
       <div className="titlebar">
-        <div className="brand">Kansoku TW</div>
+        <div className="brand">TW 駕駛艙</div>
         <nav className="tabstrip" aria-label="main">
           {TABS.map(t => (
             <Link key={t.to} to={hrefOf(t)}

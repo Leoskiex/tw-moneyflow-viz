@@ -42,6 +42,42 @@ export default function ChartPanel({ code, doc, tf, overlays, p2stat, onOverlay,
       grid: { visible: false }, rightPriceScale: { visible: false },
       timeScale: { borderColor: '#243041' },
     });
+    // D2: bidirectional timeScale sync (price ↔ MACD ↔ RSI) — same pattern as
+    // SepaSymbolPage (cMain/cVol/cRs). Wheel/pan on ANY pane locks all three to the
+    // same visibleLogicalRange. `syncing` guard prevents feedback loops; subs are
+    // unsubscribed on cleanup.
+    let syncing = false;
+    const subs = [];
+    const sync = (src, r) => {
+      if (syncing || !r || !Number.isFinite(r.from) || !Number.isFinite(r.to)) return;
+      syncing = true;
+      try {
+        [chart, mChart, rChart].forEach(c => {
+          if (c === src) return;
+          try { c.timeScale().setVisibleLogicalRange({ from: r.from, to: r.to }); } catch (_) {}
+        });
+      } finally { syncing = false; }
+    };
+    for (const c of [chart, mChart, rChart]) {
+      try {
+        const u = c.timeScale().subscribeVisibleLogicalRangeChange(r => sync(c, r));
+        if (typeof u === 'function') subs.push(u);
+      } catch (_) { /* LWC build without this API: no sync, still works standalone */ }
+    }
+    // After a (re)setData, re-align MACD/RSI to the main chart's current window so
+    // a zoomed price pane doesn't leave indicators at full history.
+    const mirrorRange = () => {
+      if (syncing) return;
+      let rng = null;
+      try { rng = chart.timeScale().getVisibleLogicalRange(); } catch (_) {}
+      if (!rng || !Number.isFinite(rng.from) || !Number.isFinite(rng.to)) return;
+      syncing = true;
+      try {
+        [mChart, rChart].forEach(c => {
+          try { c.timeScale().setVisibleLogicalRange({ from: rng.from, to: rng.to }); } catch (_) {}
+        });
+      } finally { syncing = false; }
+    };
     const apply = () => {
       chart.applyOptions({ width: mainEl.clientWidth, height: mainEl.clientHeight });
       mChart.applyOptions({ width: mEl.clientWidth, height: mEl.clientHeight });
@@ -123,8 +159,23 @@ export default function ChartPanel({ code, doc, tf, overlays, p2stat, onOverlay,
       };
       setOverlayOut(out);
       if (onOverlay) onOverlay(out);
+      // keep MACD/RSI locked to the price pane's current window after (re)load
+      mirrorRange();
     };
-    cRef.current = { chart, mChart, rChart, series, ro, setData, drawn };
+    cRef.current = { chart, mChart, rChart, series, ro, setData, drawn,
+      // test hook (not serialized into the bundle's data): exposes the three
+      // timeScales so smoke can verify the D2 bidirectional sync without
+      // depending on synthetic pointer events. Null-safe: under jsdom the chart
+      // has no real layout, so getVisibleLogicalRange() may return null — report
+      // null rather than throwing.
+      timeSync: () => {
+        const g = (c) => { try { const r = c.timeScale().getVisibleLogicalRange(); return (r && Number.isFinite(r.from)) ? r : null; } catch (_) { return null; } };
+        const set = (which, from, to) => {
+          const c = which === 'main' ? chart : which === 'macd' ? mChart : rChart;
+          try { c.timeScale().setVisibleLogicalRange({ from, to }); } catch (_) {}
+        };
+        return { main: g(chart), macd: g(mChart), rsi: g(rChart), set };
+      } };
 
     chart.subscribeClick((param) => {
       if (!ovRef.current.draw || !param || !param.point) return;
@@ -137,7 +188,7 @@ export default function ChartPanel({ code, doc, tf, overlays, p2stat, onOverlay,
       }
     });
 
-    return () => { ro.disconnect(); chart.remove(); mChart.remove(); rChart.remove(); cRef.current = null; };
+    return () => { ro.disconnect(); subs.forEach(u => u.unsubscribe()); chart.remove(); mChart.remove(); rChart.remove(); cRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
@@ -146,6 +197,14 @@ export default function ChartPanel({ code, doc, tf, overlays, p2stat, onOverlay,
     if (!c) return;
     c.setData(barsOf(doc, tf));
   }, [doc, tf, overlays, code]);
+
+  // expose the D2 timeSync test hook on the DOM node (for smoke); harmless in prod
+  useEffect(() => {
+    if (ref.current && cRef.current) {
+      ref.current.handleTimeSync = cRef.current.timeSync;
+      ref.current.setAttribute('data-timesync', 'on');
+    }
+  });
 
   return (
     <div className="charts">
