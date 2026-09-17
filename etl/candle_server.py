@@ -798,6 +798,20 @@ class Handler(BaseHTTPRequestHandler):
                 running = False
         return {"running": running}
 
+    def _append_timeline(self, code: str, action: str, proposal: str, target, backup, as_of) -> None:
+        """WAVE 4 P3: append an adopt/reject event to data/research/history/timeline.jsonl."""
+        hdir = ROOT / "data" / "research" / "history"
+        hdir.mkdir(parents=True, exist_ok=True)
+        tf = hdir / "timeline.jsonl"
+        row = {"code": code, "action": action, "proposal": proposal, "target": target,
+               "backup": backup, "as_of": as_of,
+               "ts": datetime.now(timezone(timedelta(hours=8))).isoformat(timespec="seconds")}
+        try:
+            with tf.open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+        except Exception as e:
+            log(f"timeline append failed: {type(e).__name__}: {e}")
+
     def do_GET(self) -> None:
         q = urllib.parse.urlparse(self.path).query
         p = urllib.parse.parse_qs(q)
@@ -867,6 +881,60 @@ class Handler(BaseHTTPRequestHandler):
             if st and st.get("running") and time.time() - st.get("updated_at", 0) > 900:
                 st = {**st, "running": False, "phase": "error", "activity": "timeout (15m)"}
             self._send(200, {"code": code, "status": st})
+            return
+        if path == "/research-refresh":
+            # WAVE 4 P3: poll refresh job status (phase file written by etl/research_refresh.py)
+            pf = Path(f"/tmp/researchrefresh_{code}.json")
+            if not code or not pf.exists():
+                self._send(200, {"code": code, "status": None})
+                return
+            try:
+                st = json.loads(pf.read_text(encoding="utf-8"))
+            except Exception:
+                st = None
+            if st and st.get("running") and time.time() - st.get("updated_at", 0) > 900:
+                st = {**st, "running": False, "phase": "error", "activity": "timeout (15m)"}
+            self._send(200, {"code": code, "status": st})
+            return
+        if path == "/research-proposals":
+            # WAVE 4 P3: list a code's proposals + optionally read one (file= in query).
+            d = ROOT / "data" / "research" / "proposals"
+            out = []
+            if d.is_dir():
+                for f in sorted(d.glob(f"{code}-*.md"), reverse=True):
+                    sc = f.with_name(f.name + ".diff.json")
+                    meta = _read_json_safe(sc) or {}
+                    out.append({"id": f.name, "file": f.name, "created_at": meta.get("created_at"),
+                                "status": meta.get("status", "open"),
+                                "diff": meta.get("diff"),
+                                "sec_added": len(meta.get("sections", {}).get("added", [])),
+                                "sec_changed": len(meta.get("sections", {}).get("changed", [])),
+                                "sec_removed": len(meta.get("sections", {}).get("removed", []))})
+            want = (p.get("file", [""]) or [""])[0]
+            extra = None
+            if want:
+                pf = d / want
+                scf = pf.with_name(want + ".diff.json")
+                extra = {"file": want,
+                         "text": pf.read_text(encoding="utf-8") if pf.exists() else None,
+                         "diff": _read_json_safe(scf)}
+            self._send(200, {"code": code, "proposals": out, "detail": extra})
+            return
+        if path == "/research-timeline":
+            # WAVE 4 P3: adopt/reject history for a code (data/research/history/timeline.jsonl)
+            tf = ROOT / "data" / "research" / "history" / "timeline.jsonl"
+            rows = []
+            if tf.exists():
+                for line in tf.read_text(encoding="utf-8").splitlines():
+                    if not line.strip():
+                        continue
+                    try:
+                        r = json.loads(line)
+                    except Exception:
+                        continue
+                    if str(r.get("code", "")).zfill(4) == code:
+                        rows.append(r)
+            self._send(200, {"code": code, "rows": rows})
             return
         if path == "/memory":
             code = (p.get("code", [""]) or [""])[0].strip().upper()
@@ -1064,6 +1132,103 @@ class Handler(BaseHTTPRequestHandler):
             self._send(202, {"started": True, "code": code})
             return
 
+        if path == "/research-refresh":
+            # WAVE 4 P3: start a research refresh job (re-write + proposal + diff). Subprocess, poll /research-refresh?code=
+            if not code or len(code) != 4 or not code.isalnum():
+                self._send(400, {"error": "code required"})
+                return
+            target = str(req.get("path") or "").strip().lstrip("/")
+            if target and (not target.endswith(".md") or "/" in target):
+                self._send(400, {"error": "path must be a bare *.md filename"})
+                return
+            target = target or f"{code}.md"
+            pf = Path(f"/tmp/researchrefresh_{code}.json")
+            if pf.exists():
+                try:
+                    st = json.loads(pf.read_text(encoding="utf-8"))
+                    if st.get("running") and time.time() - st.get("updated_at", 0) < 900:
+                        self._send(202, {"started": False, "reason": "already-running", "code": code})
+                        return
+                except Exception:
+                    pass
+            if not (ROOT / "data" / "research" / target).exists():
+                self._send(400, {"ok": False, "error": f"no research file to refresh: {target}"})
+                return
+            args = [sys.executable, "etl/research_refresh.py", code, target]
+            log(f"research-refresh {code} {target}")
+            subprocess.Popen(args, cwd=str(ROOT), start_new_session=True,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self._send(202, {"started": True, "code": code, "target": target})
+            return
+
+        if path == "/research-adopt":
+            # WAVE 4 P3: adopt/reject a refresh proposal.
+            # adopt: backup current md -> history/, overwrite md, mark sidecar adopted, append timeline.
+            # reject: mark sidecar rejected; md unchanged.
+            action = str(req.get("action") or "").strip().lower()
+            proposal = str(req.get("proposal") or "").strip()
+            if action not in ("adopt", "reject"):
+                self._send(400, {"ok": False, "error": "action must be adopt|reject"})
+                return
+            if not code or len(code) != 4 or not code.isalnum():
+                self._send(400, {"ok": False, "error": "code required"})
+                return
+            if not proposal or "/" in proposal or not proposal.endswith(".md"):
+                self._send(400, {"ok": False, "error": "proposal must be a bare <code>-<ts>.md filename"})
+                return
+            if not proposal.startswith(code + "-"):
+                self._send(400, {"ok": False, "error": "proposal filename must start with the code"})
+                return
+            pdir = ROOT / "data" / "research" / "proposals"
+            pfile = pdir / proposal
+            sidecar = pfile.with_name(proposal + ".diff.json")
+            meta = _read_json_safe(sidecar)
+            if not pfile.exists() or not meta:
+                self._send(404, {"ok": False, "error": "proposal not found"})
+                return
+            cur = meta.get("status", "open")
+            if cur in ("adopted", "rejected"):
+                self._send(409, {"ok": False, "error": f"proposal already {cur}"})
+                return
+            now_iso = datetime.now(timezone(timedelta(hours=8))).isoformat(timespec="seconds")
+            if action == "reject":
+                meta["status"] = "rejected"
+                meta["rejected_at"] = now_iso
+                sidecar.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+                self._append_timeline(code, "reject", proposal, meta.get("target"), None, meta.get("as_of"))
+                self._send(200, {"ok": True, "code": code, "action": "reject", "proposal": proposal,
+                                 "status": "rejected"})
+                return
+            # adopt
+            target = meta.get("target") or f"{code}.md"
+            tpath = ROOT / "data" / "research" / target
+            if not tpath.exists():
+                self._send(409, {"ok": False, "error": f"target md missing: {target}"})
+                return
+            hdir = ROOT / "data" / "research" / "history"
+            hdir.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now(timezone(timedelta(hours=8))).strftime("%Y%m%d-%H%M%S")
+            backup = hdir / f"{code}-backup-{ts}.md"
+            backup.write_text(tpath.read_text(encoding="utf-8"), encoding="utf-8")
+            new_text = pfile.read_text(encoding="utf-8")
+            try:
+                tpath.write_text(new_text, encoding="utf-8")
+            except Exception as e:
+                self._send(500, {"ok": False, "error": f"md 覆寫失敗 {type(e).__name__}: {e}"})
+                return
+            # mark sidecar immediately after md write so a crash can't leave the proposal "open"
+            meta["status"] = "adopted"
+            meta["adopted_at"] = now_iso
+            try:
+                sidecar.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+                self._append_timeline(code, "adopt", proposal, target, backup.name, meta.get("as_of"))
+            except Exception as e:
+                log(f"adopt sidecar/timeline partial: {type(e).__name__}: {e}")
+            log(f"research-adopt {code} {proposal} -> {target} (backup {backup.name})")
+            self._send(200, {"ok": True, "code": code, "action": "adopt", "proposal": proposal,
+                             "target": target, "backup": backup.name, "status": "adopted"})
+            return
+
         if path == "/memory":
             # WAVE 3 P1: edit / clear user memory and per-symbol memory.
             # Frontend sends the full object it wants persisted (or {} to clear a field).
@@ -1148,7 +1313,9 @@ class Handler(BaseHTTPRequestHandler):
                 return
             try:
                 import comment_feed as cf
-                from datetime import datetime, timedelta, timezone
+                # (datetime/timedelta/timezone already imported at module top — do NOT re-import
+                #  here: a local `datetime` would shadow the module one for the whole do_POST scope
+                #  and break every other POST handler's datetime.now() with UnboundLocalError.)
                 tpe = timezone(timedelta(hours=8))
                 doc = (ROOT / "data" / "candles" / f"{code}.json")
                 d = json.loads(doc.read_text(encoding="utf-8")) if doc.exists() else {}

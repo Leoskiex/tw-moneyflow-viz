@@ -1,0 +1,46 @@
+{
+  "code": "2454",
+  "target": "2454.md",
+  "file": "2454-20260917-075053.md",
+  "created_at": "2026-09-17T07:50:53+08:00",
+  "status": "rejected",
+  "as_of": "2026-09-16",
+  "old_size": 600,
+  "new_size": 791,
+  "sections": {
+    "added": [],
+    "removed": [],
+    "changed": [
+      "## 點評（句句引用本機欄位）"
+    ],
+    "unchanged": [
+      "# 2454 研究檔（as_of 2026-09-16）",
+      "## 引用欄位",
+      "## 凍結情景（jsonl 末行）"
+    ]
+  },
+  "diff_lines": [
+    "--- 2454.md",
+    "+++ proposals/2454-20260917-075053.md",
+    "@@ -6,6 +6,16 @@",
+    " as_of=2026-09-16",
+    " close=4530.0",
+    " ma20=4248.75",
+    "+ma50=3968.3",
+    "+hist=132.45370370370367",
+    "+rsi14=58.85628082380784",
+    "+vol_ratio=0.8082126492207846",
+    "+foreign_flow_yi=45.366656",
+    "+combined_5d_yi=82.95722",
+    "+regime=槓桿接力",
+    "+regime_conf=0.9",
+    "+news_top=None",
+    "+n_bars=268",
+    " ",
+    " ## 引用欄位",
+    " "
+  ],
+  "diff_truncated": false,
+  "adopted_at": null,
+  "rejected_at": "2026-09-17T07:57:15+08:00"
+}

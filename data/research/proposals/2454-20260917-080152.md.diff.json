@@ -1,0 +1,25 @@
+{
+  "code": "2454",
+  "target": "2454.md",
+  "file": "2454-20260917-080152.md",
+  "created_at": "2026-09-17T08:01:52+08:00",
+  "status": "adopted",
+  "as_of": "2026-09-16",
+  "old_size": 918,
+  "new_size": 918,
+  "sections": {
+    "added": [],
+    "removed": [],
+    "changed": [],
+    "unchanged": [
+      "# 2454 研究檔（as_of 2026-09-16）",
+      "## 點評（句句引用本機欄位）",
+      "## 引用欄位",
+      "## 凍結情景（jsonl 末行）"
+    ]
+  },
+  "diff_lines": [],
+  "diff_truncated": false,
+  "adopted_at": "2026-09-17T08:02:32+08:00",
+  "rejected_at": null
+}
