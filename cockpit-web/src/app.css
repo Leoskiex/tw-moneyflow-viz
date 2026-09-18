@@ -580,3 +580,62 @@
   .w13f-row { grid-template-columns: 60px 1fr; }
   .w13f-row span:nth-child(n+3) { display: none; }
 }
+
+/* ---------- WAVE 1 A1: Attention door（今日焦點 + What-changed） ---------- */
+.quickbar-slim { margin-bottom: 10px; }
+.qb-more-btn { cursor: pointer; background: transparent; }
+.qb-more {
+  flex: 1 1 100%; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  padding: 8px 10px; border: 1px dashed var(--border); border-radius: 10px; background: var(--surface);
+}
+.chip-muted { opacity: .75; font-size: 11px; }
+
+.attention-door {
+  margin-bottom: 16px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+}
+.ad-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.ad-title { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+.ad-sub { font-size: 11px; }
+.ad-picks { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.ad-empty { font-size: 12px; padding: 6px 0; }
+.ad-pick {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+  gap: 2px 10px; min-width: 148px; max-width: 220px; flex: 1 1 148px;
+  padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); text-decoration: none;
+}
+.ad-pick:hover { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(56,189,248,.25); }
+.ad-code { font-weight: 700; font-size: 14px; }
+.ad-name { font-size: 12px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ad-act { grid-column: 1 / -1; font-size: 11px; color: var(--accent); }
+.ad-cmi { font-size: 10px; }
+.ad-ready {
+  grid-column: 1 / -1; justify-self: start; font-size: 10px; padding: 1px 7px;
+  border-radius: 999px; border: 1px solid var(--down); color: var(--down); /* TW 紅＝可進 */
+}
+
+.ad-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ad-card {
+  padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface2); min-height: 78px;
+}
+.ad-card-tag {
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+.ad-card-title { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.ad-card-body { font-size: 12px; color: var(--text2); line-height: 1.45; }
+.ad-card-link { color: var(--accent); text-decoration: none; display: inline-block; }
+.ad-card-link:hover { text-decoration: underline; }
+.ad-what { border-left: 3px solid var(--accent); }
+.ad-why { border-left: 3px solid var(--warn); }
+.ad-investigate { border-left: 3px solid var(--down); } /* TW 紅強調下一步 */
+
+/* TW 紅漲綠跌 for any % on home door/recap */
+.home .tw-up, .board.recap .bpct.up.tw-up { color: var(--down); }
+.home .tw-dn, .board.recap .bpct.dn.tw-dn { color: var(--ok); }
+
+@media (max-width: 820px) {
+  .ad-cards { grid-template-columns: 1fr; }
+}

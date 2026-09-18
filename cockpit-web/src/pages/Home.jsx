@@ -8,9 +8,10 @@ import CmiBadge from '../features/cmi/CmiBadge.jsx';
 import ActionRadar from '../features/radar/ActionRadar.jsx';
 import DigestPanel from '../features/story/DigestPanel.jsx';
 import HeatTw from '../features/heat/HeatTw.jsx';
+import AttentionDoor from '../features/home/AttentionDoor.jsx';
 
-// / — 今日 (D1: FundFlo 五章故事 + 水流排行 遷入 SPA，讀同一 data/fundflo JSON)
-// 名稱／代號點擊 → /symbol/:code（keep code）。舊 :8777/fund-flow.html 不再是唯一入口。
+// / — WAVE 1 A1 attention door first (今日焦點 + What-changed), then FundFlo story.
+// 名稱／代號點擊 → /symbol/:code（keep code）。
 export default function Home() {
   const [ff, setFF] = useState(null);
   const [regime, setRegime] = useState(null);
@@ -18,6 +19,7 @@ export default function Home() {
   const [recap, setRecap] = useState(null);
   const [recent, setRecent] = useState(listRecent());
   const [q, setQ] = useState('');
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -48,19 +50,32 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="quickbar">
+      {/* Slim quickbar: search + 2 recent only; secondary links behind 更多 */}
+      <div className="quickbar quickbar-slim">
         <input className="qb-input" placeholder="代碼直達，如 2454" value={q}
           onChange={e => setQ(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && q.trim()) { location.href = `./symbol/${q.trim().toUpperCase()}`; setQ(''); } }} />
-        {recent.slice(0, 6).map(c => <Link key={c} className="chip" to={`/symbol/${c}`}>{c}</Link>)}
-        {(ff?.stocks || []).slice(0, 8).map(s => <Link key={s.code} className="chip" to={`/symbol/${s.code}`}>{s.code} {s.name}</Link>)}
-        <span className="qb-links muted">
-          <Link to="/flow">盤面 泡泡</Link>
-          <Link to="/heat">熱力</Link>
-          <Link to="/board">看圖版</Link>
-          <a href="http://127.0.0.1:8765/" target="_blank" rel="noreferrer" className="qb-ext">產業地圖 ↗</a>
-        </span>
+        {recent.slice(0, 2).map(c => <Link key={c} className="chip" to={`/symbol/${c}`}>{c}</Link>)}
+        <button type="button" className="chip qb-more-btn muted" onClick={() => setMoreOpen(o => !o)} aria-expanded={moreOpen}>
+          更多 {moreOpen ? '▴' : '▾'}
+        </button>
+        {moreOpen && (
+          <div className="qb-more">
+            {recent.slice(2, 6).map(c => <Link key={c} className="chip" to={`/symbol/${c}`}>{c}</Link>)}
+            {(ff?.stocks || []).slice(0, 8).map(s => (
+              <Link key={s.code} className="chip chip-muted" to={`/symbol/${s.code}`}>{s.code} {s.name}</Link>
+            ))}
+            <span className="qb-links muted">
+              <Link to="/flow">盤面 泡泡</Link>
+              <Link to="/heat">熱力</Link>
+              <Link to="/board">看圖版</Link>
+              <a href="http://127.0.0.1:8765/" target="_blank" rel="noreferrer" className="qb-ext">產業地圖 ↗</a>
+            </span>
+          </div>
+        )}
       </div>
+
+      <AttentionDoor fundflo={ff} regime={regime} />
 
       <div className="home-grid">
         <div className="home-main">
@@ -88,7 +103,7 @@ export default function Home() {
                       <span className="bc">{r.code}</span>
                       <span className="bn muted">{o.direction === 'long' ? '多' : o.direction === 'short' ? '空' : '觀望'}</span>
                       <span className="bpct">{o.anchor != null ? n2(o.anchor) : ''}{o.last != null ? ` → ${n2(o.last)}` : ''}</span>
-                      <span className={'bpct ' + (o.pct == null ? '' : o.pct >= 0 ? 'up' : 'dn')}>{o.pct != null ? (o.pct >= 0 ? '+' : '') + o.pct + '%' : '—'}</span>
+                      <span className={'bpct ' + (o.pct == null ? '' : o.pct >= 0 ? 'up tw-up' : 'dn tw-dn')}>{o.pct != null ? (o.pct >= 0 ? '+' : '') + o.pct + '%' : '—'}</span>
                       <span className={'bpct ' + tone}>{lbl}</span>
                     </Link>
                   );
